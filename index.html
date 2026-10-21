@@ -229,9 +229,60 @@
     background: var(--fg); color: var(--bg); padding: 11px 18px; border-radius: 999px; max-width: calc(100% - 32px); box-shadow: var(--shadow); font-weight: 500; }
 
   @media (max-width: 900px) { .detail { grid-template-columns: 1fr; } .panel { position: static; order: -1; } }
+  .fab, .mbar { display: none; }
+  html { -webkit-tap-highlight-color: transparent; }
+  button, a, .doc, .stage { touch-action: manipulation; }
+  @media (hover: none) { .doc:hover, .stage:hover { transform: none; } .doc::before, .stage::before, .stat::before { display: none; } }
   @media (max-width: 640px) {
-    .tool span { display: none; } .brand small { display: none; }
-    .pipe { grid-template-columns: repeat(4, 150px); margin-inline: -4px; }
+    /* Mobile-first: compact header & stepper, swipeable stats, thumb-reach actions pinned to the bottom */
+    body { font-size: 15px; }
+    input, select, textarea { font-size: 16px; padding: 11px 12px; }
+    .tool span { display: none; } .brand small { display: none; } .tool { padding: 8px; }
+    .bar-in { padding-block: 8px; } .logo { width: 32px; height: 32px; border-radius: 10px; }
+    .pipe { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; padding-top: 10px; overflow: visible; }
+    .stage { padding: 8px 4px; text-align: center; justify-items: center; border-radius: 14px; gap: 0; }
+    .stage .step, .stage:not(:last-child)::after { display: none; }
+    .stage b { font-size: .84rem; white-space: nowrap; }
+    .stage .cnt { font-size: .7rem; } .stage .cnt { white-space: nowrap; }
+    main { padding-block: 10px calc(110px + env(safe-area-inset-bottom, 0px)); }
+    .view { gap: 12px; }
+    h1.hero { font-size: 1.7rem; } .head p { font-size: .85rem; } .eyebrow { margin-bottom: 2px; }
+    .stats { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 72%; overflow-x: auto; scroll-snap-type: x mandatory; margin-inline: -16px; padding: 2px 16px 6px; scrollbar-width: none; }
+    .stats::-webkit-scrollbar { display: none; }
+    .stats { scroll-padding-inline: 16px; }
+    .panel { order: 0; }
+    .stat { scroll-snap-align: start; padding: 12px 14px; } .stat b { font-size: 1.3rem; }
+    .head:has(.seg) { flex-direction: column; align-items: stretch; gap: 8px; }
+    .head:has(.seg) input { max-width: none !important; }
+    .seg { align-self: flex-start; }
+    .doc { padding: 12px; gap: 10px 12px; } .avatar { width: 38px; height: 38px; border-radius: 12px; }
+    .fab { display: grid; place-items: center; position: fixed; z-index: 30; right: max(18px, env(safe-area-inset-right, 0px)); bottom: calc(22px + env(safe-area-inset-bottom, 0px));
+      width: 60px; height: 60px; border-radius: 20px; border: 0; color: #fff; font-size: 2rem; line-height: 1; cursor: pointer; background: var(--grad); box-shadow: 0 14px 30px -10px var(--acc-l); }
+    .fab:active { transform: scale(.94); }
+    .mbar, .mbar-form { display: flex; gap: 8px; position: fixed; z-index: 30; left: 0; right: 0; bottom: 0; margin: 0;
+      padding: 10px max(16px, env(safe-area-inset-right, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+      background: color-mix(in srgb, var(--surface) 82%, transparent); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); border-top: 1px solid var(--line); }
+    .mbar .btn, .mbar-form .btn { flex: 1; padding: 13px 12px; font-size: .95rem; }
+    .mbar .btn.danger { flex: 0 0 auto; }
+    .panel .actions { display: none; }
+    .toast { bottom: calc(90px + env(safe-area-inset-bottom, 0px)); }
+    .paper { padding: 18px 16px 22px; gap: 16px; border-radius: 12px; }
+    .paper h2 { font-size: 1.2rem; }
+    .paper .row > div[style*="text-align:right"] { text-align: left !important; }
+    .paper thead { display: none; }
+    .paper tbody tr { display: grid; grid-template-columns: 22px 1fr auto; gap: 2px 8px; padding: 10px 0; border-bottom: 1px solid #eef0f4; }
+    .paper tbody td { border: 0; padding: 0; }
+    .paper .c-no { grid-row: span 2; color: #667085; } .paper .c-name { font-weight: 600; } .paper .c-amt { grid-column: 3; grid-row: 1; font-weight: 600; }
+    .paper .c-qty, .paper .c-unit, .paper .c-price { grid-column: 2; color: #667085; font-size: .85rem; text-align: left; display: inline; }
+        .paper .c-qty, .paper .c-unit { display: none; }
+    .paper .c-price::before { content: attr(data-q) " × "; }
+    .paper .totals { max-width: none; }
+    .signs { padding-top: 12px; }
+    .lines td[colspan] { grid-column: 1 / -1; }
+    .timeline li { padding-bottom: 12px; }
+    dialog { width: 100%; max-width: none; margin: auto 0 0; border-radius: 22px 22px 0 0; border-bottom: 0; max-height: 92vh; }
+    dialog form { padding-bottom: calc(22px + env(safe-area-inset-bottom, 0px)); }
+    @keyframes dlgIn { from { transform: translateY(100%); } }
     .doc { grid-template-columns: auto minmax(0, 1fr); }
     .doc .right { grid-column: 2; justify-items: start; grid-auto-flow: column; align-items: center; justify-content: space-between; }
     .doc .acts { grid-column: 1 / -1; } .doc .acts .btn { flex: 1; }
@@ -335,7 +386,7 @@ const TYPES = {
   DO: { name: 'ใบส่งของ', short: 'ส่งของ', extra: 'วันที่ส่งของ',
         st: { pending: 'รอออกใบเสร็จ', finish: 'Finish', cancel: 'ยกเลิก' }, open: 'pending', cancel: true,
         next: { label: 'ออกใบเสร็จ/ใบกำกับภาษี', done: 'ส่งต่อไปใบเสร็จแล้ว' } },
-  RC: { name: 'ใบเสร็จรับเงิน/ใบกำกับภาษี', short: 'ใบเสร็จ/กำกับภาษี', extra: null,
+  RC: { name: 'ใบเสร็จรับเงิน/ใบกำกับภาษี', short: 'ใบเสร็จ', extra: null,
         st: { pending: 'รอออกใบเสร็จ', finish: 'เสร็จแล้ว (ชำระเงินแล้ว)', cancel: 'ยกเลิก' }, open: 'pending', cancel: true,
         next: { label: 'ยืนยันชำระเงิน', done: 'ยืนยันชำระเงินแล้ว', final: true } }
 };
@@ -582,7 +633,7 @@ function viewList() {
   const filters = [['open', 'รอดำเนินการ'], ...Object.entries(T.st).filter(([k]) => k !== T.open), ['all', 'ทั้งหมด']];
   $('#main').innerHTML = `<div class="view">
     <div class="head"><div><span class="eyebrow">ขั้นที่ ${FLOW.indexOf(type) + 1} จาก 4</span><h1 class="hero">${T.name}</h1><p>${type === 'QT' ? 'สร้างเอกสารได้ที่ขั้นนี้ขั้นเดียว แล้วกดส่งต่อไปขั้นถัดไป' : 'เอกสารในขั้นนี้มาจากขั้นก่อนหน้าอัตโนมัติ'}</p></div>
-      ${type === 'QT' ? '<button class="btn primary" id="nb" type="button">+ สร้างใบเสนอราคา</button>' : ''}</div>
+      ${type === 'QT' ? '<button class="btn primary hide-sm" id="nb" type="button">+ สร้างใบเสนอราคา</button><button class="fab" id="fab" type="button" aria-label="สร้างใบเสนอราคา">+</button>' : ''}</div>
     <div class="stats">
       <div class="stat"><span>${T.st[T.open]}</span><b data-count="${openDocs.length}">${openDocs.length} ฉบับ</b></div>
       <div class="stat glow"><span>มูลค่ารอดำเนินการ</span><b data-count="${sumOf(openDocs)}" data-fmt="money">฿${money(sumOf(openDocs))}</b></div>
@@ -603,6 +654,7 @@ function viewList() {
       </div>`; }).join('') || `<div class="empty">${filt === 'open' ? 'ไม่มีเอกสารที่รอดำเนินการในขั้นนี้' : 'ไม่พบเอกสาร'}${type === 'QT' ? '<br><button class="btn ghost" id="nb2" type="button">+ สร้างใบเสนอราคาใหม่</button>' : ''}</div>`}</div>
   </div>`;
   $('#nb')?.addEventListener('click', () => go('new', 'fresh'));
+  $('#fab')?.addEventListener('click', () => go('new', 'fresh'));
   $('#nb2')?.addEventListener('click', () => go('new', 'fresh'));
   $$('[data-f]').forEach(b => b.onclick = () => { filt = b.dataset.f; smooth(() => { viewList(); afterRender(); }); });
   $('#ds').oninput = e => { search = e.target.value; const p = e.target.selectionStart; $('#main').classList.add('calm'); viewList(); afterRender(); $('#ds').focus(); $('#ds').setSelectionRange(p, p); };
@@ -635,7 +687,7 @@ function viewDoc() {
         </div>
         <div class="tablewrap"><table>
           <thead><tr><th>#</th><th>รายการ</th><th class="num">จำนวน</th><th>หน่วย</th><th class="num">ราคา/หน่วย</th><th class="num">จำนวนเงิน</th></tr></thead>
-          <tbody>${d.lines.map((l, i) => `<tr><td>${i + 1}</td><td>${esc(l.name)}</td><td class="num">${l.qty}</td><td>${esc(l.unit)}</td><td class="num">${money(l.price)}</td><td class="num">${money(l.qty * l.price)}</td></tr>`).join('')}</tbody>
+          <tbody>${d.lines.map((l, i) => `<tr><td class="c-no">${i + 1}</td><td class="c-name">${esc(l.name)}</td><td class="num c-qty">${l.qty}</td><td class="c-unit">${esc(l.unit)}</td><td class="num c-price" data-q="${l.qty} ${esc(l.unit)}">${money(l.price)}</td><td class="num c-amt">${money(l.qty * l.price)}</td></tr>`).join('')}</tbody>
         </table></div>
         <div class="row" style="align-items:flex-start">
           <div style="flex:1 1 240px"><div class="muted sm">จำนวนเงินตัวอักษร</div><b>(${bahtText(t.grand)})</b>${d.remark ? `<div class="muted sm" style="margin-top:8px">หมายเหตุ: ${esc(d.remark)}</div>` : ''}</div>
@@ -643,6 +695,7 @@ function viewDoc() {
         </div>
         <div class="signs"><div>ผู้มีอำนาจลงนาม</div><div>${d.type === 'DO' ? 'ผู้รับของ' : d.type === 'RC' ? 'ผู้รับเงิน' : 'ลูกค้า / ผู้อนุมัติ'}</div></div>
       </article>
+      ${isOpen(d) ? `<div class="mbar">${actionButtons(d)}</div>` : ''}
       <aside class="panel">
         <div class="card"><div class="head"><h2>สถานะ</h2>${pill(d)}</div>
           ${isOpen(d) ? `<div class="actions" style="justify-content:stretch">${actionButtons(d)}</div>
@@ -706,7 +759,7 @@ function viewNew() {
       </div>
       <div class="words" id="words"></div>
     </div>
-    <div class="actions"><button class="btn" id="clear" type="button">ล้างฟอร์ม</button><button class="btn primary" id="ssave" type="button">ออกใบเสนอราคา</button></div>
+    <div class="actions mbar-form"><button class="btn" id="clear" type="button">ล้างฟอร์ม</button><button class="btn primary" id="ssave" type="button">ออกใบเสนอราคา</button></div>
   </div>`;
   $('#vat').value = draft.vatMode;
   $('#back').onclick = () => go('list', 'QT');
