@@ -229,7 +229,15 @@
     background: var(--fg); color: var(--bg); padding: 11px 18px; border-radius: 999px; max-width: calc(100% - 32px); box-shadow: var(--shadow); font-weight: 500; }
 
   @media (max-width: 900px) { .detail { grid-template-columns: 1fr; } .panel { position: static; order: -1; } }
-  .fab, .mbar { display: none; }
+  .fab, .mbar, .show-sm, .pipe[hidden] { display: none; }
+  .sections { display: flex; gap: 6px; padding-top: 14px; }
+  .sec { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--muted); border-radius: 999px; padding: 8px 16px; font-weight: 600; cursor: pointer; -webkit-backdrop-filter: var(--glass); backdrop-filter: var(--glass); }
+  .sec svg { width: 18px; height: 18px; }
+  .sec[aria-current="page"] { color: var(--accent-fg); background: var(--accent); border-color: transparent; box-shadow: 0 8px 18px -10px var(--acc-l); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 14px; cursor: pointer; font-weight: 500; color: var(--fg); }
+  .chips button[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); border-color: transparent; }
+  .chips button[aria-pressed="true"] .muted { color: inherit; opacity: .8; }
   html { -webkit-tap-highlight-color: transparent; }
   button, a, .doc, .stage { touch-action: manipulation; }
   @media (hover: none) { .doc:hover, .stage:hover { transform: none; } .doc::before, .stage::before, .stat::before { display: none; } }
@@ -249,6 +257,12 @@
     h1.hero { font-size: 1.7rem; } .head p { font-size: .85rem; } .eyebrow { margin-bottom: 2px; }
     .stats { grid-template-columns: 1fr; gap: 8px; }
     .panel { order: 0; }
+    .sections { padding-top: 10px; } .sec { flex: 1; justify-content: center; padding: 10px 6px; }
+    .show-sm { display: block; }
+    .plist tr { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+    .plist td { border: 0; padding: 0; } .plist .p-code { grid-column: 1 / -1; } .plist .p-price { grid-row: 2; grid-column: 2; font-weight: 600; }
+    .card thead:has(+ .plist) { display: none; }
+    .head > .btn.primary { width: 100%; }
     .stat { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; }
     .stat b { font-size: 1.15rem; white-space: nowrap; }
     .seg { display: flex; width: 100%; align-self: stretch !important; overflow: hidden; }
@@ -364,13 +378,15 @@
 <header class="top"><div class="wrap bar-in">
   <button class="brand" data-go="list" data-p="QT" type="button"><span class="logo">QS</span><span><b>ระบบออกเอกสาร</b><small>เวอร์ชันทดสอบ · ข้อมูลจำลอง</small></span></button>
   <nav class="tools" aria-label="ฐานข้อมูลและการตั้งค่า">
-    <button class="tool" data-go="customers" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18 14.8c2 .7 3.2 2.5 3.6 5.2"/></svg><span>ลูกค้า</span></button>
-    <button class="tool" data-go="products" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5z"/><path d="M3 7.5 12 12l9-4.5M12 12v9"/></svg><span>สินค้า</span></button>
     <button class="tool" data-go="settings" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/></svg><span>ธีม</span></button>
   </nav>
 </div></header>
 
-<div class="wrap"><div class="pipe" id="pipe"></div></div>
+<div class="wrap"><nav class="sections" aria-label="เมนูหลัก">
+  <button class="sec" data-go="list" data-p="QT" data-sec="docs" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h6"/></svg>เอกสาร</button>
+  <button class="sec" data-go="customers" data-sec="customers" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18 14.8c2 .7 3.2 2.5 3.6 5.2"/></svg>ลูกค้า</button>
+  <button class="sec" data-go="products" data-sec="products" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5z"/><path d="M3 7.5 12 12l9-4.5M12 12v9"/></svg>สินค้า</button>
+</nav><div class="pipe" id="pipe"></div></div>
 <main class="wrap" id="main"></main>
 
 <dialog id="dlg"><form method="dialog" id="dlgForm"></form></dialog>
@@ -596,6 +612,12 @@ let lastClick = { x: innerWidth / 2, y: innerHeight / 2 };
 document.addEventListener('pointerdown', e => lastClick = { x: e.clientX, y: e.clientY }, true);
 $$('[data-go]').forEach(b => b.onclick = () => go(b.dataset.go, b.dataset.p || null));
 function currentStage() { return route === 'list' ? param : route === 'doc' ? findDoc(param)?.type : route === 'new' ? 'QT' : null; }
+function syncNav() {
+  const sec = ['list', 'doc', 'new'].includes(route) ? 'docs' : route;
+  $$('.sec').forEach(b => b.setAttribute('aria-current', b.dataset.sec === sec ? 'page' : 'false'));
+  $$('.tool').forEach(t => t.setAttribute('aria-current', t.dataset.go === route ? 'page' : 'false'));
+  $('#pipe').hidden = sec !== 'docs';
+}
 function renderPipe() {
   const cur = currentStage();
   if ($('#pipe').children.length) {
@@ -604,7 +626,7 @@ function renderPipe() {
       cur === k ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current');
       $('.cnt', b).innerHTML = `${all.length} ฉบับ${open ? ` · <em>รอ ${open}</em>` : ''}`;
     });
-    $$('.tool').forEach(t => t.setAttribute('aria-current', t.dataset.go === route ? 'page' : 'false'));
+    syncNav();
     return;
   }
   $('#pipe').innerHTML = FLOW.map((k, i) => {
@@ -614,7 +636,7 @@ function renderPipe() {
       <span class="cnt">${all.length} ฉบับ${open ? ` · <em>รอ ${open}</em>` : ''}</span></button>`;
   }).join('');
   $$('[data-stage]').forEach(b => b.onclick = () => go('list', b.dataset.stage));
-  $$('.tool').forEach(t => t.setAttribute('aria-current', t.dataset.go === route ? 'page' : 'false'));
+  syncNav();
 }
 function render() {
   renderPipe();
@@ -892,10 +914,10 @@ function viewProducts() {
     .sort((a, b) => a.cat.localeCompare(b.cat, 'th') || a.code.localeCompare(b.code));
   $('#main').innerHTML = `<div class="view">
     <div class="head"><div><h1>ฐานข้อมูลสินค้า / บริการ</h1><p>${db.products.length} รายการ · สินค้าที่เพิ่มจากหน้าใบเสนอราคาจะถูกบันทึกที่นี่ด้วย</p></div><button class="btn primary" id="add" type="button">+ เพิ่มสินค้า</button></div>
-    <div class="seg">${[['', 'ทั้งหมด'], ...cats().map(c => [c, c])].map(([k, n]) => `<button data-cat="${esc(k)}" aria-pressed="${prodCat === k}" type="button">${esc(n)} <span class="muted">${k ? db.products.filter(p => p.cat === k).length : db.products.length}</span></button>`).join('')}</div>
+    <div class="chips">${[['', 'ทั้งหมด'], ...cats().map(c => [c, c])].map(([k, n]) => `<button data-cat="${esc(k)}" aria-pressed="${prodCat === k}" type="button">${esc(n)} <span class="muted">${k ? db.products.filter(p => p.cat === k).length : db.products.length}</span></button>`).join('')}</div>
     <div class="card"><input id="s" type="search" placeholder="ค้นหาชื่อหรือรหัสสินค้า" value="${esc(prodSearch)}">
       <div class="tablewrap"><table><thead><tr><th>รหัส</th><th>ชื่อสินค้า</th><th class="hide-sm">หมวดหมู่</th><th>หน่วย</th><th class="num">ราคา/หน่วย</th></tr></thead>
-      <tbody>${list.map(p => `<tr class="click" data-id="${p.id}" tabindex="0"><td><span class="tag">${esc(p.code)}</span></td><td>${esc(p.name)}</td><td class="hide-sm muted">${esc(p.cat)}</td><td>${esc(p.unit)}</td><td class="num">${money(p.price)}</td></tr>`).join('') || `<tr><td colspan="5" class="empty">ไม่พบสินค้า</td></tr>`}</tbody></table></div></div></div>`;
+      <tbody class="plist">${list.map(p => `<tr class="click" data-id="${p.id}" tabindex="0"><td class="p-code"><span class="tag">${esc(p.code)}</span></td><td class="p-name">${esc(p.name)}<div class="muted sm show-sm">${esc(p.cat)} · ${esc(p.unit)}</div></td><td class="hide-sm muted">${esc(p.cat)}</td><td class="hide-sm">${esc(p.unit)}</td><td class="num p-price">${money(p.price)}</td></tr>`).join('') || `<tr><td colspan="5" class="empty">ไม่พบสินค้า</td></tr>`}</tbody></table></div></div></div>`;
   $$('[data-cat]').forEach(b => b.onclick = () => { prodCat = b.dataset.cat; smooth(() => { viewProducts(); afterRender(); }); });
   $('#add').onclick = () => productDialog(null, '', viewProducts);
   $('#s').oninput = e => { prodSearch = e.target.value; const p = e.target.selectionStart; viewProducts(); $('#s').focus(); $('#s').setSelectionRange(p, p); };
