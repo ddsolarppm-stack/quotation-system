@@ -368,14 +368,6 @@
     .orbs i:nth-child(2) { animation-duration: 28s; animation-delay: -8s; }
     .orbs i:nth-child(3) { animation-duration: 34s; animation-delay: -15s; }
     @keyframes drift { 50% { transform: translate(8vw, 6vh) scale(1.12); } 100% { transform: translate(-6vw, 10vh) scale(.92); } }
-    /* Page changes: old and new content cross-fade at the same time, so the screen is never blank */
-    #main { view-transition-name: page; }
-    ::view-transition-group(root) { animation: none; }
-    ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
-    ::view-transition-group(page) { animation-duration: .38s; animation-timing-function: cubic-bezier(.2,.8,.2,1); }
-    ::view-transition-old(page) { animation: .2s ease-out both fadeOut; }
-    ::view-transition-new(page) { animation: .38s cubic-bezier(.2,.8,.2,1) both fadeUp; }
-    ::view-transition-old(*), ::view-transition-new(*) { mix-blend-mode: normal; }
     @keyframes fadeOut { to { opacity: 0; } }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } }
   }
@@ -393,7 +385,11 @@
   .stage::after, .stage:not(:last-child)::after { content: ""; position: absolute; left: 12%; right: 12%; bottom: -1px; height: 3px; border-radius: 3px 3px 0 0; background: var(--grad);
     transform: scaleX(0); transition: transform .3s cubic-bezier(.2,.8,.2,1); top: auto; color: transparent; font-size: 0; }
   .stage[aria-current="page"], .stage[aria-current="page"]:hover { color: var(--fg); background: none; box-shadow: none; animation: none; }
-  .stage[aria-current="page"]::after { transform: scaleX(1); }
+  .stage::after, .stage:not(:last-child)::after, .stage[aria-current="page"]::after { display: none !important; }
+  .pipe { position: relative; }
+  .pind { position: absolute; bottom: -1px; left: 0; height: 3px; border-radius: 3px 3px 0 0; background: var(--grad); pointer-events: none;
+    transition: transform .38s cubic-bezier(.2,.8,.2,1), width .38s cubic-bezier(.2,.8,.2,1); }
+  .stage { transition: color .3s; }
   .stage .cnt { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; display: inline-grid; place-items: center; font-size: .72rem; font-weight: 700;
     background: color-mix(in srgb, var(--warn) 16%, transparent); color: var(--warn); }
   .stage .cnt[hidden] { display: none; }
@@ -629,13 +625,25 @@ function chain(d) {
 
 /* ---------- Router ---------- */
 let route = 'list', param = 'QT';
+/* Navigation never blanks or dims the screen: the new content is drawn immediately at full opacity,
+   then glides a few pixels into place (sideways between stage tabs, upward otherwise). */
 function go(r, p = null) {
   if (r === 'list') { filt = 'open'; search = ''; }
-  route = r; param = p; countUp = true;
-  const run = () => { $('#main').classList.remove('calm'); render(); window.scrollTo({ top: 0, behavior: 'instant' }); };
-  smooth(run);
+  const from = currentStage(), wasList = route === 'list';
+  route = r; param = p;
+  $('#main').classList.remove('calm');
+  render();
+  if (scrollY > 0) window.scrollTo({ top: 0, behavior: 'instant' });
+  const to = currentStage();
+  const dir = wasList && r === 'list' && from && to && from !== to ? Math.sign(FLOW.indexOf(to) - FLOW.indexOf(from)) : 0;
+  glide($('#main'), dir);
 }
-const smooth = fn => document.startViewTransition && !reduced() ? document.startViewTransition(fn) : fn();
+function glide(el, dir = 0) {
+  if (reduced() || !el.animate) return;
+  el.getAnimations().forEach(a => a.cancel());
+  el.animate([{ transform: dir ? `translateX(${dir * 28}px)` : 'translateY(10px)' }, { transform: 'none' }], { duration: 320, easing: 'cubic-bezier(.2,.8,.2,1)' });
+}
+const smooth = fn => fn();
 const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 let countUp = true, segPos = {};
 /* Motion helpers: stagger entrance, sliding segment indicator, animated numbers */
@@ -684,7 +692,15 @@ function syncNav() {
   $('#pipe').hidden = sec !== 'docs';
   document.body.classList.toggle('sub', ['doc', 'new', 'tpl'].includes(route));
 }
+function movePind() {
+  const on = $('.stage[aria-current="page"]'), ind = $('#pipe .pind');
+  if (!on || !ind) return;
+  const w = on.offsetWidth * .7;
+  ind.style.width = w + 'px'; ind.style.transform = `translateX(${on.offsetLeft + (on.offsetWidth - w) / 2}px)`;
+}
+addEventListener('resize', () => { const i = $('#pipe .pind'); if (i) { i.style.transition = 'none'; movePind(); requestAnimationFrame(() => i.style.transition = ''); } });
 function renderPipe() {
+  requestAnimationFrame(movePind);
   const cur = currentStage();
   if ($('#pipe').children.length) {
     FLOW.forEach(k => {
@@ -697,9 +713,9 @@ function renderPipe() {
   }
   $('#pipe').innerHTML = FLOW.map((k, i) => {
     const all = db.docs.filter(d => d.type === k), open = all.filter(isOpen).length;
-    return `<button class="stage" type="button" data-stage="${k}" style="view-transition-name:stage-${k}" ${cur === k ? 'aria-current="page"' : ''}>
+    return `<button class="stage" type="button" data-stage="${k}" ${cur === k ? 'aria-current="page"' : ''}>
       <b>${TYPES[k].short}</b><span class="cnt" ${open ? '' : 'hidden'} title="รอดำเนินการ">${open || ''}</span></button>`;
-  }).join('');
+  }).join('') + '<span class="pind" aria-hidden="true"></span>';
   $$('[data-stage]').forEach(b => b.onclick = () => go('list', b.dataset.stage));
   syncNav();
 }
@@ -744,7 +760,7 @@ function viewList() {
       </div>`; }).join('') || `<div class="empty">${filt === 'open' ? 'ไม่มีเอกสารที่รอดำเนินการในขั้นนี้' : 'ไม่พบเอกสาร'}${type === 'QT' ? '<br><button class="btn ghost" id="nb2" type="button">+ สร้างใบเสนอราคาใหม่</button>' : ''}</div>`}</div>
   </div>`;
   ['#nb', '#fab', '#nb2'].forEach(id => $(id)?.addEventListener('click', pickKind));
-  $$('[data-f]').forEach(b => b.onclick = () => { filt = b.dataset.f; smooth(() => { viewList(); afterRender(); }); });
+  $$('[data-f]').forEach(b => b.onclick = () => { filt = b.dataset.f; viewList(); afterRender(); glide($('.docs')); });
   $('#ds').oninput = e => { search = e.target.value; const p = e.target.selectionStart; $('#main').classList.add('calm'); viewList(); afterRender(); $('#ds').focus(); $('#ds').setSelectionRange(p, p); };
   $$('.doc').forEach(el => { el.onclick = () => go('doc', el.dataset.no); el.onkeydown = e => e.key === 'Enter' && e.target === el && el.onclick(); });
   bindActions($('#main'));
@@ -1083,7 +1099,7 @@ function viewProducts() {
     <div class="card"><input id="s" type="search" placeholder="ค้นหาชื่อหรือรหัสสินค้า" value="${esc(prodSearch)}">
       <div class="tablewrap"><table><thead><tr><th>รหัส</th><th>ชื่อสินค้า</th><th class="hide-sm">หมวดหมู่</th><th>หน่วย</th><th class="num">ราคา/หน่วย</th></tr></thead>
       <tbody class="plist">${list.map(p => `<tr class="click" data-id="${p.id}" tabindex="0"><td class="p-code"><span class="tag">${esc(p.code)}</span></td><td class="p-name">${esc(p.name)}<div class="muted sm show-sm">${esc(p.cat)} · ${esc(p.unit)}</div></td><td class="hide-sm muted">${esc(p.cat)}</td><td class="hide-sm">${esc(p.unit)}</td><td class="num p-price">${money(p.price)}</td></tr>`).join('') || `<tr><td colspan="5" class="empty">ไม่พบสินค้า</td></tr>`}</tbody></table></div></div></div>`;
-  $$('[data-cat]').forEach(b => b.onclick = () => { prodCat = b.dataset.cat; smooth(() => { viewProducts(); afterRender(); }); });
+  $$('[data-cat]').forEach(b => b.onclick = () => { prodCat = b.dataset.cat; viewProducts(); afterRender(); glide($('#main .card')); });
   $('#add').onclick = () => productDialog(null, '', viewProducts);
   $('#s').oninput = e => { prodSearch = e.target.value; const p = e.target.selectionStart; viewProducts(); $('#s').focus(); $('#s').setSelectionRange(p, p); };
   $$('tr[data-id]').forEach(tr => { tr.onclick = () => productDialog(db.products.find(p => p.id === tr.dataset.id), '', viewProducts); tr.onkeydown = e => e.key === 'Enter' && tr.onclick(); });
