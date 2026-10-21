@@ -1,37 +1,293 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ระบบใบเสนอราคา – ทดสอบ</title>
-  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
-      font-family: 'Sarabun', sans-serif; background: #f4f6f9; color: #222; padding: 16px;
-    }
-    .card {
-      background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,.08);
-      padding: 32px 24px; text-align: center; width: 100%; max-width: 480px;
-    }
-    h1 { font-size: clamp(1.4rem, 5vw, 2rem); margin: 0 0 16px; color: #1a5fb4; }
-    #now { font-size: clamp(1rem, 4vw, 1.25rem); }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>ระบบใบเสนอราคา – ทดสอบ</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@500;600&family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  /* Layout: one column of form sections; items table collapses to cards on phones; totals summary sticks under items */
+  :root {
+    --bg: #eef1f5; --paper: #ffffff; --fg: #1f2733; --muted: #5d6878; --line: #d6dce5;
+    --accent: #1d5fa8; --accent-fg: #ffffff; --soft: #e6eef8; --danger: #b3261e;
+    --display: 'Prompt', 'Tahoma', sans-serif; --body: 'Sarabun', 'Tahoma', sans-serif;
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+    --bg: #12161c; --paper: #1b2129; --fg: #e5e9ef; --muted: #9aa5b4; --line: #2f3844;
+    --accent: #6ea8ec; --accent-fg: #0d1520; --soft: #1f2d3e; --danger: #f2948d; color-scheme: dark } }
+  :root[data-theme="dark"] {
+    --bg: #12161c; --paper: #1b2129; --fg: #e5e9ef; --muted: #9aa5b4; --line: #2f3844;
+    --accent: #6ea8ec; --accent-fg: #0d1520; --soft: #1f2d3e; --danger: #f2948d; color-scheme: dark }
+
+  * { box-sizing: border-box; }
+  body { margin: 0;
+    background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 16px; line-height: 1.5;
+    padding-block: 16px 40px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .wrap { max-width: 920px; margin: 0 auto; display: grid; gap: 16px; }
+  h1, h2 { font-family: var(--display); font-weight: 600; margin: 0; text-wrap: balance; }
+  h1 { font-size: clamp(1.3rem, 4.5vw, 1.75rem); }
+  h2 { font-size: 1.05rem; }
+  .top { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .clock { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .badge { display: inline-block; font-size: .8rem; padding: 2px 10px; border-radius: 999px; background: var(--soft); color: var(--accent); }
+
+  .tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
+  .tabs button {
+    flex: 0 0 auto; font: 500 .95rem var(--display); padding: 8px 14px; border-radius: 8px;
+    border: 1px solid var(--line); background: var(--paper); color: var(--fg); cursor: pointer;
+  }
+  .tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+
+  section { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+  .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  label { display: grid; gap: 4px; font-size: .9rem; color: var(--muted); }
+  input, textarea, select {
+    font: inherit; color: var(--fg); background: var(--paper); border: 1px solid var(--line);
+    border-radius: 6px; padding: 8px 10px; width: 100%; min-width: 0;
+  }
+  textarea { resize: vertical; min-height: 64px; }
+  input:focus-visible, textarea:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .docno { font-family: var(--display); font-size: 1.15rem; color: var(--accent); font-variant-numeric: tabular-nums; }
+
+  table { width: 100%; border-collapse: collapse; }
+  th { font: 500 .85rem var(--display); color: var(--muted); text-align: left; padding: 6px; border-bottom: 1px solid var(--line); }
+  td { padding: 6px; vertical-align: top; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  td.amount { padding-top: 14px; white-space: nowrap; }
+  .del { border: 0; background: none; color: var(--danger); font-size: 1.2rem; cursor: pointer; padding: 6px 8px; }
+  .btn { font: 500 .95rem var(--display); padding: 10px 16px; border-radius: 8px; cursor: pointer; border: 1px solid var(--accent); }
+  .btn.primary { background: var(--accent); color: var(--accent-fg); }
+  .btn.ghost { background: transparent; color: var(--accent); }
+
+  .totals { display: grid; gap: 6px; margin-left: auto; width: 100%; max-width: 360px; }
+  .totals div { display: flex; justify-content: space-between; gap: 12px; font-variant-numeric: tabular-nums; }
+  .totals .grand { font: 600 1.15rem var(--display); border-top: 1px solid var(--line); padding-top: 8px; }
+  .totals input { width: 110px; text-align: right; padding: 4px 8px; }
+  .words { text-align: right; color: var(--muted); font-size: .95rem; }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+  .note { font-size: .85rem; color: var(--muted); }
+  .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 8px; max-width: calc(100% - 32px); }
+
+  /* Phones: item rows become stacked cards */
+  @media (max-width: 640px) {
+    thead { display: none; }
+    tbody tr { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+    td { padding: 0; }
+    td.desc { grid-column: 1 / -1; }
+    td[data-label]::before { content: attr(data-label); display: block; font-size: .8rem; color: var(--muted); }
+    td.amount { padding-top: 0; text-align: left; }
+    td.rm { text-align: right; }
+  }
+  @media (prefers-reduced-motion: no-preference) { .tabs button { transition: background .15s; } }
+</style>
 </head>
 <body>
-  <div class="card">
-    <h1>ระบบใบเสนอราคา – ทดสอบ</h1>
-    <div id="now"></div>
+
+<div class="wrap">
+  <div class="top">
+    <h1>ระบบออกเอกสาร <span class="badge">ทดสอบ</span></h1>
+    <div class="clock" id="clock"></div>
   </div>
-  <script>
-    function tick() {
-      document.getElementById('now').textContent = new Date().toLocaleString('th-TH', {
-        dateStyle: 'full', timeStyle: 'medium'
-      });
+
+  <div class="tabs" role="tablist" id="tabs"></div>
+
+  <section aria-label="ข้อมูลเอกสาร">
+    <div class="top">
+      <h2 id="docTitle">ใบเสนอราคา</h2>
+      <div>เลขที่ <span class="docno" id="docNo"></span></div>
+    </div>
+    <div class="grid">
+      <label>วันที่เอกสาร <input type="date" id="docDate"></label>
+      <label id="extraWrap"><span id="extraLabel">ยืนราคาถึงวันที่</span> <input type="date" id="extraDate"></label>
+      <label>อ้างอิง <input id="ref" placeholder="เช่น เลขที่ใบเสนอราคา"></label>
+    </div>
+  </section>
+
+  <section aria-label="ข้อมูลลูกค้า">
+    <h2>ลูกค้า</h2>
+    <div class="grid">
+      <label>ชื่อลูกค้า / บริษัท <input id="custName" value="บริษัท ตัวอย่าง จำกัด"></label>
+      <label>เลขประจำตัวผู้เสียภาษี (13 หลัก) <input id="taxId" inputmode="numeric" maxlength="13" value="0105561234567"></label>
+      <label>สาขา <input id="branch" value="สำนักงานใหญ่"></label>
+    </div>
+    <label>ที่อยู่ <textarea id="address">99/1 ถนนตัวอย่าง แขวงลาดยาว เขตจตุจักร กรุงเทพฯ 10900</textarea></label>
+  </section>
+
+  <section aria-label="รายการสินค้า">
+    <h2>รายการ</h2>
+    <div style="overflow-x:auto">
+      <table>
+        <thead><tr>
+          <th style="width:40%">รายละเอียด</th><th class="num">จำนวน</th><th>หน่วย</th>
+          <th class="num">ราคา/หน่วย</th><th class="num">จำนวนเงิน</th><th></th>
+        </tr></thead>
+        <tbody id="items"></tbody>
+      </table>
+    </div>
+    <div><button class="btn ghost" id="addRow" type="button">+ เพิ่มรายการ</button></div>
+
+    <div class="totals">
+      <div><span>รวมเป็นเงิน</span><span id="subtotal"></span></div>
+      <div><span>ส่วนลด</span><input id="discount" type="number" min="0" step="0.01" value="0" inputmode="decimal"></div>
+      <div><span>ยอดหลังหักส่วนลด</span><span id="afterDisc"></span></div>
+      <div><span>ภาษีมูลค่าเพิ่ม 7%</span><span id="vat"></span></div>
+      <div class="grand"><span>จำนวนเงินรวมทั้งสิ้น</span><span id="grand"></span></div>
+    </div>
+    <div class="words" id="words"></div>
+  </section>
+
+  <section aria-label="หมายเหตุ">
+    <label>หมายเหตุ <textarea id="remark">ชำระเงินภายใน 30 วันนับจากวันที่ในเอกสาร</textarea></label>
+    <div class="actions">
+      <button class="btn ghost" id="reset" type="button">ล้างฟอร์ม</button>
+      <button class="btn primary" id="save" type="button">บันทึกเอกสาร</button>
+    </div>
+    <p class="note">ข้อมูลในฟอร์มเป็นตัวอย่าง หน้านี้ยังไม่ได้เชื่อมกับ Google Sheet เลขที่เอกสารจึงเป็นการจำลอง</p>
+  </section>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+  const DOCS = [
+    { key: 'QT', name: 'ใบเสนอราคา', extra: 'ยืนราคาถึงวันที่' },
+    { key: 'IV', name: 'ใบแจ้งหนี้', extra: 'ครบกำหนดชำระ' },
+    { key: 'DO', name: 'ใบส่งของ', extra: 'วันที่ส่งของ' },
+    { key: 'RC', name: 'ใบเสร็จรับเงิน / ใบกำกับภาษี', extra: null }
+  ];
+  // Simulated running numbers per type; the real ones will come from Google Sheet
+  const counters = { QT: 1, IV: 1, DO: 1, RC: 1 };
+  let current = DOCS[0];
+  const $ = id => document.getElementById(id);
+  const money = n => n.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const iso = d => d.toISOString().slice(0, 10);
+
+  function docNumber(type) {
+    const d = new Date();
+    const yy = String(d.getFullYear() + 543).slice(-2);
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    return `${type}${yy}${mm}-${String(counters[type]).padStart(4, '0')}`;
+  }
+
+  function renderTabs() {
+    $('tabs').innerHTML = '';
+    DOCS.forEach(doc => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.role = 'tab'; b.textContent = doc.name;
+      b.setAttribute('aria-selected', doc === current);
+      b.onclick = () => { current = doc; renderTabs(); renderHeader(); };
+      $('tabs').appendChild(b);
+    });
+  }
+
+  function renderHeader() {
+    $('docTitle').textContent = current.name;
+    $('docNo').textContent = docNumber(current.key);
+    $('extraWrap').hidden = !current.extra;
+    if (current.extra) $('extraLabel').textContent = current.extra;
+  }
+
+  let rowId = 0;
+  function addRow(item = { desc: '', qty: 1, unit: 'ชิ้น', price: 0 }) {
+    const id = ++rowId;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="desc" data-label="รายละเอียด"><input id="d${id}" class="f-desc"></td>
+      <td data-label="จำนวน"><input id="q${id}" class="f-qty num" type="number" min="0" step="any" inputmode="decimal"></td>
+      <td data-label="หน่วย"><input id="u${id}" class="f-unit"></td>
+      <td data-label="ราคา/หน่วย"><input id="p${id}" class="f-price num" type="number" min="0" step="0.01" inputmode="decimal"></td>
+      <td class="amount num" data-label="จำนวนเงิน"><span class="f-amt"></span></td>
+      <td class="rm"><button class="del" type="button" aria-label="ลบรายการ">×</button></td>`;
+    tr.querySelector('.f-desc').value = item.desc;
+    tr.querySelector('.f-qty').value = item.qty;
+    tr.querySelector('.f-unit').value = item.unit;
+    tr.querySelector('.f-price').value = item.price;
+    tr.querySelector('.del').onclick = () => { tr.remove(); calc(); };
+    tr.addEventListener('input', calc);
+    $('items').appendChild(tr);
+    calc();
+  }
+
+  function calc() {
+    let sub = 0;
+    $('items').querySelectorAll('tr').forEach(tr => {
+      const amt = (+tr.querySelector('.f-qty').value || 0) * (+tr.querySelector('.f-price').value || 0);
+      tr.querySelector('.f-amt').textContent = money(amt);
+      sub += amt;
+    });
+    const after = Math.max(0, sub - (+$('discount').value || 0));
+    const vat = Math.round(after * 7) / 100;
+    const grand = after + vat;
+    $('subtotal').textContent = money(sub);
+    $('afterDisc').textContent = money(after);
+    $('vat').textContent = money(vat);
+    $('grand').textContent = money(grand);
+    $('words').textContent = '(' + bahtText(grand) + ')';
+  }
+
+  // Thai baht text, e.g. 1,021.50 -> หนึ่งพันยี่สิบเอ็ดบาทห้าสิบสตางค์
+  function thaiNum(num, hasHigher) {
+    const digits = ['', 'หนึ่ง', 'สอง', 'สาม', 'สี่', 'ห้า', 'หก', 'เจ็ด', 'แปด', 'เก้า'];
+    const pos = ['', 'สิบ', 'ร้อย', 'พัน', 'หมื่น', 'แสน'];
+    if (num >= 1e6) return thaiNum(Math.floor(num / 1e6), hasHigher) + 'ล้าน' + thaiNum(num % 1e6, true);
+    const s = String(num); let out = '';
+    for (let i = 0; i < s.length; i++) {
+      const d = +s[i], p = s.length - i - 1;
+      if (!d) continue;
+      if (p === 1 && d === 1) out += 'สิบ';
+      else if (p === 1 && d === 2) out += 'ยี่สิบ';
+      else if (p === 0 && d === 1 && (s.length > 1 || hasHigher)) out += 'เอ็ด';
+      else out += digits[d] + pos[p];
     }
-    tick();
-    setInterval(tick, 1000);
-  </script>
+    return out;
+  }
+  function bahtText(n) {
+    const total = Math.round(n * 100);
+    const baht = Math.floor(total / 100), sat = total % 100;
+    if (!baht && !sat) return 'ศูนย์บาทถ้วน';
+    return (baht ? thaiNum(baht) + 'บาท' : '') + (sat ? thaiNum(sat) + 'สตางค์' : 'ถ้วน');
+  }
+
+  function toast(msg) {
+    $('toast').textContent = msg; $('toast').hidden = false;
+    clearTimeout(toast.t); toast.t = setTimeout(() => $('toast').hidden = true, 3000);
+  }
+
+  function resetForm() {
+    $('items').innerHTML = '';
+    addRow();
+    ['ref', 'custName', 'taxId', 'branch', 'address', 'remark'].forEach(id => $(id).value = '');
+    $('discount').value = 0; calc();
+  }
+
+  $('addRow').onclick = () => addRow();
+  $('discount').addEventListener('input', calc);
+  $('reset').onclick = resetForm;
+  $('save').onclick = () => {
+    const tax = $('taxId').value.trim();
+    if (!$('custName').value.trim()) return toast('กรุณากรอกชื่อลูกค้า');
+    if (tax && !/^\d{13}$/.test(tax)) return toast('เลขประจำตัวผู้เสียภาษีต้องเป็นตัวเลข 13 หลัก');
+    const no = $('docNo').textContent;
+    counters[current.key]++;
+    renderHeader();
+    toast(`บันทึก ${current.name} เลขที่ ${no} แล้ว (จำลอง)`);
+  };
+
+  function tick() {
+    $('clock').textContent = new Date().toLocaleString('th-TH', { dateStyle: 'full', timeStyle: 'medium' });
+  }
+
+  const today = new Date();
+  $('docDate').value = iso(today);
+  $('extraDate').value = iso(new Date(today.getTime() + 30 * 864e5));
+  renderTabs(); renderHeader();
+  addRow({ desc: 'แผงโซลาร์เซลล์ 550W Mono', qty: 10, unit: 'แผง', price: 4500 });
+  addRow({ desc: 'อินเวอร์เตอร์ 5kW', qty: 1, unit: 'เครื่อง', price: 28500 });
+  addRow({ desc: 'ค่าติดตั้งและเดินระบบ', qty: 1, unit: 'งาน', price: 15000 });
+  tick(); setInterval(tick, 1000);
+</script>
 </body>
 </html>
