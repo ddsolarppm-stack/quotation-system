@@ -235,6 +235,19 @@
   .sec svg { width: 18px; height: 18px; }
   .sec[aria-current="page"] { color: var(--accent-fg); background: var(--accent); border-color: transparent; box-shadow: 0 8px 18px -10px var(--acc-l); }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .sharegrid { display: grid; gap: 8px; grid-template-columns: 1fr 1fr; }
+  .sharegrid .line { grid-column: 1 / -1; background: #06c755; border-color: #06c755; color: #fff; }
+  .sharegrid .btn:disabled { opacity: .6; cursor: progress; }
+  .paper .lumprow td { border-top: 2px solid #e6e8ef; padding-top: 12px; }
+  .paper.capture { box-shadow: none; border-radius: 0; }
+  .paper.capture .stamp { opacity: .9; }
+  @media print {
+    @page { size: A4; margin: 10mm; }
+    body { background: #fff !important; }
+    .orbs, header.top, .sections, .pipe, .panel, .mbar, .fab, .head, .toast { display: none !important; }
+    .detail { display: block; } main { padding: 0 !important; }
+    .paper { box-shadow: none; border-radius: 0; padding: 0; } .paper::before { display: none; }
+  }
   .kind { font-size: .72rem; font-weight: 600; padding: 2px 8px; border-radius: 6px; color: var(--accent); background: var(--accent-soft); white-space: nowrap; }
   .tpls { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
   .tplcard { display: grid; gap: 4px; justify-items: start; text-align: left; padding: 14px; border-radius: calc(var(--r) - 2px); border: 1px solid var(--line); background: var(--surface); cursor: pointer; color: var(--fg); }
@@ -303,6 +316,9 @@
     .paper .c-qty, .paper .c-unit, .paper .c-price { grid-column: 2; color: #667085; font-size: .85rem; text-align: left; display: inline; }
         .paper .c-qty, .paper .c-unit { display: none; }
     .paper .c-price::before { content: attr(data-q) " × "; }
+    .paper .lump tr:not(.lumprow) { grid-template-columns: 22px 1fr auto; }
+    .paper .lump .c-qty2 { grid-column: 3; grid-row: 1; color: #667085; } .paper .lump .c-unit2 { display: none; } .paper .lump .c-qty2::after { content: " " attr(data-u); }
+    .paper .lumprow { grid-template-columns: 1fr auto !important; } .paper .lumprow td:first-child { display: none; }
     .paper .totals { max-width: none; }
     .signs { padding-top: 12px; }
     .lines td[colspan] { grid-column: 1 / -1; }
@@ -770,6 +786,7 @@ function viewList() {
 function viewDoc() {
   const d = findDoc(param); if (!d) return go('list', 'QT');
   const c = cust(d.custId) || {}, t = totals(d), T = TYPES[d.type], ch = chain(d);
+  const lump = d.kind === 'install' && d.priceMode === 'lump';
   const steps = FLOW.map(k => ch.find(x => x.type === k) ? { k, d: ch.find(x => x.type === k) } : { k });
   $('#main').innerHTML = `<div class="view">
     <div class="head"><div><button class="btn ghost" id="back" type="button">← ${T.name}ทั้งหมด</button><h1>${esc(d.no)}</h1></div></div>
@@ -791,8 +808,11 @@ function viewDoc() {
             ${d.project ? `<span class="muted">โครงการ</span><span>${esc(d.project)}</span>` : ''}</div>
         </div>
         <div class="tablewrap"><table>
-          <thead><tr><th>#</th><th>รายการ</th><th class="num">จำนวน</th><th>หน่วย</th><th class="num">ราคา/หน่วย</th><th class="num">จำนวนเงิน</th></tr></thead>
-          <tbody>${d.lines.map((l, i) => `<tr><td class="c-no">${i + 1}</td><td class="c-name">${esc(l.name)}</td><td class="num c-qty">${l.qty}</td><td class="c-unit">${esc(l.unit)}</td><td class="num c-price" data-q="${l.qty} ${esc(l.unit)}">${money(l.price)}</td><td class="num c-amt">${money(l.qty * l.price)}</td></tr>`).join('')}</tbody>
+          ${lump ? `<thead><tr><th>#</th><th>รายการอุปกรณ์และงานติดตั้ง</th><th class="num">จำนวน</th><th>หน่วย</th></tr></thead>
+          <tbody class="lump">${d.lines.map((l, i) => `<tr><td class="c-no">${i + 1}</td><td class="c-name">${esc(l.name)}</td><td class="num c-qty2" data-u="${esc(l.unit)}">${l.qty}</td><td class="c-unit2">${esc(l.unit)}</td></tr>`).join('')}
+            <tr class="lumprow"><td></td><td colspan="2"><b>ราคาเหมารวมทั้งระบบ (อุปกรณ์ + ติดตั้ง)</b></td><td class="num"><b>${money(t.sum)}</b></td></tr></tbody>` :
+          `<thead><tr><th>#</th><th>รายการ</th><th class="num">จำนวน</th><th>หน่วย</th><th class="num">ราคา/หน่วย</th><th class="num">จำนวนเงิน</th></tr></thead>
+          <tbody>${d.lines.map((l, i) => `<tr><td class="c-no">${i + 1}</td><td class="c-name">${esc(l.name)}</td><td class="num c-qty">${l.qty}</td><td class="c-unit">${esc(l.unit)}</td><td class="num c-price" data-q="${l.qty} ${esc(l.unit)}">${money(l.price)}</td><td class="num c-amt">${money(l.qty * l.price)}</td></tr>`).join('')}</tbody>`}
         </table></div>
         <div class="row" style="align-items:flex-start">
           <div style="flex:1 1 240px"><div class="muted sm">จำนวนเงินตัวอักษร</div><b>(${bahtText(t.grand)})</b>${d.remark ? `<div class="muted sm" style="margin-top:8px">หมายเหตุ: ${esc(d.remark)}</div>` : ''}</div>
@@ -808,6 +828,16 @@ function viewDoc() {
             `<p class="muted sm" style="margin:0">${d.status === 'cancel' ? 'เอกสารนี้ถูกยกเลิกแล้ว' + (d.cancelReason ? ' · เหตุผล: ' + esc(d.cancelReason) : '') : T.next.done}</p>`}
           ${d.type === 'QT' ? '<button class="btn small" id="dup" type="button">คัดลอกเป็นใบเสนอราคาใหม่</button>' : ''}
         </div>
+        <div class="card"><h2>พิมพ์ / ส่งเอกสาร</h2>
+          ${d.kind === 'install' ? `<div><div class="muted sm" style="margin-bottom:6px">รูปแบบแสดงราคา</div><div class="seg">
+            <button data-pm="breakdown" aria-pressed="${!lump}" type="button">แยกรายการ</button><button data-pm="lump" aria-pressed="${lump}" type="button">ราคารวมก้อนเดียว</button></div></div>` : ''}
+          <div class="sharegrid">
+            <button class="btn" id="pdf" type="button">⬇ ดาวน์โหลด PDF</button>
+            <button class="btn" id="print" type="button">🖨 พิมพ์</button>
+            <button class="btn line" id="line" type="button">ส่งทาง LINE</button>
+          </div>
+          <p class="muted sm" id="shareNote" style="margin:0"></p>
+        </div>
         <div class="card"><h2>เส้นทางเอกสาร</h2><ol class="timeline">${steps.map(s => {
           const cls = !s.d ? '' : s.d.status === 'cancel' ? 'cancel' : s.d === d ? 'cur' : s.d.status === 'finish' ? 'done' : 'cur';
           return `<li class="${cls}"><div class="muted sm">${TYPES[s.k].name}</div>${s.d ? `<a data-open="${esc(s.d.no)}">${esc(s.d.no)}</a> <span class="sm">${pill(s.d)}</span>` : '<span class="muted sm">ยังไม่ถึงขั้นนี้</span>'}</li>`;
@@ -816,6 +846,10 @@ function viewDoc() {
     </div></div>`;
   $('#back').onclick = () => go('list', d.type);
   $('#dup')?.addEventListener('click', () => go('new', { from: d.no }));
+  $$('[data-pm]').forEach(b => b.onclick = () => { d.priceMode = b.dataset.pm; save(); const y = scrollY; viewDoc(); afterRender(); scrollTo(0, y); glide($('.paper')); });
+  $('#pdf').onclick = () => exportPdf(d, 'download');
+  $('#print').onclick = () => printDoc(d);
+  $('#line').onclick = () => exportPdf(d, 'line');
   $$('[data-open]').forEach(a => a.onclick = () => go('doc', a.dataset.open));
   bindActions($('#main'));
 }
@@ -855,6 +889,7 @@ function viewNew() {
         <label class="f">ยืนราคาถึง <input id="extra" type="date" value="${draft.extra}"></label>
       </div></div>
     <div class="card"><div class="head"><h2>รายการสินค้า / บริการ</h2>
+        ${inst ? `<div class="seg" id="pmSeg"><button data-pm="breakdown" aria-pressed="${draft.priceMode !== 'lump'}" type="button">แยกรายการ</button><button data-pm="lump" aria-pressed="${draft.priceMode === 'lump'}" type="button">ราคารวมก้อนเดียว</button></div>` : ''}
         <select id="vat" style="width:auto" aria-label="รูปแบบ VAT"><option value="ex">ราคาไม่รวม VAT (+7%)</option><option value="in">ราคารวม VAT แล้ว</option><option value="none">ไม่มี VAT</option></select></div>
       <div class="addline">
         <label class="f">หมวดหมู่ ${catSelect('pc', pickCat)}</label>
@@ -878,6 +913,8 @@ function viewNew() {
   $('#back').onclick = () => go('list', 'QT');
   ['project', 'date', 'extra', 'remark'].forEach(id => $('#' + id).oninput = () => { syncDraft(); if (id === 'date') $('#no').textContent = nextDocNo('QT', draft.date); });
   $('#vat').onchange = () => { draft.vatMode = $('#vat').value; drawTotals(); };
+  $$('#pmSeg [data-pm]').forEach(b => b.onclick = () => { draft.priceMode = b.dataset.pm; $$('#pmSeg [data-pm]').forEach(x => x.setAttribute('aria-pressed', x === b)); afterRender();
+    toast(b.dataset.pm === 'lump' ? 'ลูกค้าจะเห็นรายการอุปกรณ์ แต่ไม่เห็นราคาแต่ละรายการ' : 'ลูกค้าจะเห็นราคาแยกทุกรายการ'); });
   $('#disc').oninput = () => { draft.discount = +$('#disc').value || 0; drawTotals(); };
   $('#clear').onclick = () => go('new', { kind: draft.kind });
   $('#ssave').onclick = commit;
@@ -968,6 +1005,55 @@ function commit() {
   db.docs.push(doc); save(); draft = null;
   toast(`ออกใบเสนอราคา ${doc.no} แล้ว`);
   go('doc', doc.no);
+}
+
+/* ---------- Print / PDF / LINE ----------
+   Sandboxed previews (like this test page) may block printing, file downloads and the share sheet.
+   In the Apps Script version the server will render the PDF into Drive and return a shareable link. */
+const loadScript = src => new Promise((ok, bad) => { if ($(`script[src="${src}"]`)) return ok(); const el = document.createElement('script'); el.src = src; el.onload = ok; el.onerror = bad; document.head.appendChild(el); });
+const note = msg => { const n = $('#shareNote'); if (n) n.textContent = msg; };
+async function makePdf(d) {
+  await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+  await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+  const paper = $('.paper'); paper.classList.add('capture');
+  const canvas = await html2canvas(paper, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
+  paper.classList.remove('capture');
+  const pdf = new jspdf.jsPDF({ unit: 'mm', format: 'a4' });
+  const W = 210, H = 297, m = 8, iw = W - m * 2, pageH = (H - m * 2) * canvas.width / iw;
+  for (let y = 0, i = 0; y < canvas.height; y += pageH, i++) {
+    const c = document.createElement('canvas'); c.width = canvas.width; c.height = Math.min(pageH, canvas.height - y);
+    c.getContext('2d').drawImage(canvas, 0, y, c.width, c.height, 0, 0, c.width, c.height);
+    if (i) pdf.addPage();
+    pdf.addImage(c.toDataURL('image/jpeg', .92), 'JPEG', m, m, iw, c.height * iw / c.width);
+  }
+  return new File([pdf.output('blob')], `${d.no}.pdf`, { type: 'application/pdf' });
+}
+function lineText(d) {
+  const c = cust(d.custId) || {};
+  return `${TYPES[d.type].name} เลขที่ ${d.no}\nลูกค้า: ${c.name || '-'}${d.project ? '\nโครงการ: ' + d.project : ''}\nยอดรวมทั้งสิ้น: ฿${money(totals(d).grand)}\n${COMPANY.name} โทร ${COMPANY.phone}`;
+}
+async function exportPdf(d, mode) {
+  const btn = $(mode === 'line' ? '#line' : '#pdf'), label = btn.textContent;
+  btn.disabled = true; btn.textContent = 'กำลังสร้าง PDF…'; note('');
+  let file = null;
+  try { file = await makePdf(d); } catch (e) { note('สร้างไฟล์ PDF ไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่'); }
+  btn.disabled = false; btn.textContent = label;
+  if (mode === 'line') {
+    if (file && navigator.canShare?.({ files: [file] })) {
+      try { await navigator.share({ files: [file], title: d.no, text: lineText(d) }); return; } catch (e) { if (e.name === 'AbortError') return; }
+    }
+    const url = 'https://line.me/R/share?text=' + encodeURIComponent(lineText(d));
+    const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener'; a.click();
+    note('เปิด LINE พร้อมข้อความสรุปเอกสารแล้ว · การแนบไฟล์ PDF จะใช้ได้ในเวอร์ชันจริงบน Google Apps Script');
+    return;
+  }
+  if (!file) return;
+  const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
+  note(`สร้าง ${file.name} แล้ว · ถ้าไฟล์ไม่ถูกดาวน์โหลด แสดงว่าหน้าทดสอบนี้บล็อกการดาวน์โหลด จะใช้ได้ในเวอร์ชันจริง`);
+}
+function printDoc(d) {
+  window.print();
+  note('ถ้าหน้าต่างพิมพ์ไม่ขึ้น แสดงว่าหน้าทดสอบนี้บล็อกการพิมพ์ ใช้ปุ่มดาวน์โหลด PDF แล้วพิมพ์จากไฟล์แทน');
 }
 
 /* ---------- Quotation kinds & templates ---------- */
