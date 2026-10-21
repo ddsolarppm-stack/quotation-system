@@ -235,11 +235,24 @@
   .sec svg { width: 18px; height: 18px; }
   .sec[aria-current="page"] { color: var(--accent-fg); background: var(--accent); border-color: transparent; box-shadow: 0 8px 18px -10px var(--acc-l); }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  dialog.pv { width: min(860px, calc(100% - 24px)); max-width: none; height: min(92vh, 1100px); max-height: none; padding: 0; display: none; flex-direction: column; overflow: hidden; }
+  dialog.pv[open] { display: flex; }
+  .pvhead, .pvfoot { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+  .pvfoot { border-bottom: 0; border-top: 1px solid var(--line); justify-content: flex-end; padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
+  .pvbody { flex: 1; overflow-y: auto; background: #525659; padding: 18px; display: grid; gap: 18px; justify-items: center; align-content: start; }
+  .pvpage { margin: 0; display: grid; gap: 6px; justify-items: center; width: 100%; max-width: 680px; }
+  .pvpage img { width: 100%; height: auto; background: #fff; box-shadow: 0 6px 24px rgba(0,0,0,.4); aspect-ratio: 210 / 297; object-fit: contain; object-position: top; }
+  .pvpage figcaption { color: #e5e7eb; font-size: .8rem; }
+  .pvwait { color: #e5e7eb; display: flex; gap: 10px; align-items: center; padding: 40px 0; }
+  .spin { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media print { dialog { display: none !important; } }
   .sharegrid { display: grid; gap: 8px; grid-template-columns: 1fr 1fr; }
   .sharegrid .line { grid-column: 1 / -1; background: #06c755; border-color: #06c755; color: #fff; }
   .sharegrid .btn:disabled { opacity: .6; cursor: progress; }
   .paper .lumprow td { border-top: 2px solid #e6e8ef; padding-top: 12px; }
-  .paper.capture { box-shadow: none; border-radius: 0; }
+  .paper.capture { box-shadow: none; border-radius: 0; border-top: 6px solid var(--acc-l); }
+  .paper.capture::before { display: none; }
   .paper.capture .stamp { opacity: .9; }
   @media print {
     @page { size: A4; margin: 10mm; }
@@ -315,7 +328,7 @@
     .paper .c-no { grid-row: span 2; color: #667085; } .paper .c-name { font-weight: 600; } .paper .c-amt { grid-column: 3; grid-row: 1; font-weight: 600; }
     .paper .c-qty, .paper .c-unit, .paper .c-price { grid-column: 2; color: #667085; font-size: .85rem; text-align: left; display: inline; }
         .paper .c-qty, .paper .c-unit { display: none; }
-    .paper .c-price::before { content: attr(data-q) " × "; }
+    .paper:not(.capture) .c-price::before { content: attr(data-q) " × "; }
     .paper .lump tr:not(.lumprow) { grid-template-columns: 22px 1fr auto; }
     .paper .lump .c-qty2 { grid-column: 3; grid-row: 1; color: #667085; } .paper .lump .c-unit2 { display: none; } .paper .lump .c-qty2::after { content: " " attr(data-u); }
     .paper .lumprow { grid-template-columns: 1fr auto !important; } .paper .lumprow td:first-child { display: none; }
@@ -454,6 +467,9 @@
 </nav><div class="pipe" id="pipe"></div></div>
 <main class="wrap" id="main"></main>
 
+<dialog id="pv" class="pv"><div class="pvhead"><b id="pvTitle"></b><button class="icon-btn" id="pvClose" type="button" aria-label="ปิด">✕</button></div>
+  <div class="pvbody" id="pvBody"></div>
+  <div class="pvfoot"><button class="btn" id="pvAlt" type="button"></button><button class="btn primary" id="pvGo" type="button"></button></div></dialog>
 <dialog id="dlg"><form method="dialog" id="dlgForm"></form></dialog>
 <div class="toast" id="toast" hidden></div>
 
@@ -847,8 +863,8 @@ function viewDoc() {
   $('#back').onclick = () => go('list', d.type);
   $('#dup')?.addEventListener('click', () => go('new', { from: d.no }));
   $$('[data-pm]').forEach(b => b.onclick = () => { d.priceMode = b.dataset.pm; save(); const y = scrollY; viewDoc(); afterRender(); scrollTo(0, y); glide($('.paper')); });
-  $('#pdf').onclick = () => exportPdf(d, 'download');
-  $('#print').onclick = () => printDoc(d);
+  $('#pdf').onclick = () => previewDoc(d, 'pdf');
+  $('#print').onclick = () => previewDoc(d, 'print');
   $('#line').onclick = () => exportPdf(d, 'line');
   $$('[data-open]').forEach(a => a.onclick = () => go('doc', a.dataset.open));
   bindActions($('#main'));
@@ -1012,21 +1028,59 @@ function commit() {
    In the Apps Script version the server will render the PDF into Drive and return a shareable link. */
 const loadScript = src => new Promise((ok, bad) => { if ($(`script[src="${src}"]`)) return ok(); const el = document.createElement('script'); el.src = src; el.onload = ok; el.onerror = bad; document.head.appendChild(el); });
 const note = msg => { const n = $('#shareNote'); if (n) n.textContent = msg; };
-async function makePdf(d) {
+async function renderPages() {
   await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
-  await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
   const paper = $('.paper'); paper.classList.add('capture');
-  const canvas = await html2canvas(paper, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
+  const canvas = await html2canvas(paper, { scale: 2, backgroundColor: '#ffffff', useCORS: true, windowWidth: 820 });
   paper.classList.remove('capture');
-  const pdf = new jspdf.jsPDF({ unit: 'mm', format: 'a4' });
-  const W = 210, H = 297, m = 8, iw = W - m * 2, pageH = (H - m * 2) * canvas.width / iw;
-  for (let y = 0, i = 0; y < canvas.height; y += pageH, i++) {
+  const W = 210, H = 297, m = 8, iw = W - m * 2, pageH = Math.floor((H - m * 2) * canvas.width / iw);
+  const pages = [];
+  for (let y = 0; y < canvas.height; y += pageH) {
     const c = document.createElement('canvas'); c.width = canvas.width; c.height = Math.min(pageH, canvas.height - y);
     c.getContext('2d').drawImage(canvas, 0, y, c.width, c.height, 0, 0, c.width, c.height);
-    if (i) pdf.addPage();
-    pdf.addImage(c.toDataURL('image/jpeg', .92), 'JPEG', m, m, iw, c.height * iw / c.width);
+    pages.push({ src: c.toDataURL('image/jpeg', .92), w: c.width, h: c.height });
   }
+  return pages;
+}
+async function buildPdf(d, pages) {
+  await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+  const pdf = new jspdf.jsPDF({ unit: 'mm', format: 'a4' }), m = 8, iw = 210 - m * 2;
+  pages.forEach((pg, i) => { if (i) pdf.addPage(); pdf.addImage(pg.src, 'JPEG', m, m, iw, pg.h * iw / pg.w); });
   return new File([pdf.output('blob')], `${d.no}.pdf`, { type: 'application/pdf' });
+}
+async function makePdf(d) { return buildPdf(d, await renderPages()); }
+async function saveFile(file) {
+  const dl = window.claude?.use ? await window.claude.use('downloads') : null;
+  if (dl) {
+    try { await dl.save({ filename: file.name, data: file }); toast(`บันทึก ${file.name} แล้ว`); }
+    catch (e) { toast(e.code === 'declined' ? 'ยกเลิกการบันทึกไฟล์' : e.code === 'rate_limited' ? 'มีหน้าต่างบันทึกไฟล์เปิดอยู่ ลองใหม่อีกครั้ง' : 'บันทึกไฟล์ในหน้านี้ไม่ได้'); }
+    return;
+  }
+  // Outside the claude.ai viewer (e.g. Apps Script) a normal browser download works
+  const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
+  toast(`ดาวน์โหลด ${file.name} แล้ว`);
+}
+/* Preview first: show exactly the pages the viewer will get, then confirm download or print inside the preview */
+async function previewDoc(d, mode) {
+  const dlg = $('#pv'), body = $('#pvBody');
+  $('#pvTitle').textContent = `${mode === 'print' ? 'ตัวอย่างก่อนพิมพ์' : 'ตัวอย่างไฟล์ PDF'} · ${d.no}`;
+  body.innerHTML = '<div class="pvwait"><span class="spin"></span>กำลังจัดหน้าเอกสาร A4…</div>';
+  $('#pvGo').textContent = mode === 'print' ? '🖨 ยืนยันพิมพ์' : '⬇ ยืนยันดาวน์โหลด PDF';
+  $('#pvGo').disabled = true; $('#pvAlt').textContent = mode === 'print' ? 'ดาวน์โหลด PDF แทน' : 'พิมพ์แทน';
+  dlg.showModal();
+  let pages;
+  try { pages = await renderPages(); }
+  catch (e) { body.innerHTML = '<div class="pvwait">จัดหน้าเอกสารไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่</div>'; return; }
+  body.innerHTML = pages.map((pg, i) => `<figure class="pvpage"><img src="${pg.src}" alt="หน้า ${i + 1}"><figcaption>หน้า ${i + 1} / ${pages.length}</figcaption></figure>`).join('');
+  $('#pvGo').disabled = false;
+  const run = async m => {
+    if (m === 'print') { dlg.close(); window.print(); toast('ถ้าหน้าต่างพิมพ์ไม่ขึ้น แสดงว่าหน้าทดสอบนี้บล็อกการพิมพ์ ให้ดาวน์โหลด PDF แล้วพิมพ์จากไฟล์'); return; }
+    $('#pvGo').disabled = true; $('#pvGo').textContent = 'กำลังสร้างไฟล์…';
+    try { const f = await buildPdf(d, pages); dlg.close(); await saveFile(f); }
+    catch (e) { toast('สร้างไฟล์ PDF ไม่สำเร็จ'); $('#pvGo').disabled = false; }
+  };
+  $('#pvGo').onclick = () => run(mode);
+  $('#pvAlt').onclick = () => run(mode === 'print' ? 'pdf' : 'print');
 }
 function lineText(d) {
   const c = cust(d.custId) || {};
@@ -1048,19 +1102,7 @@ async function exportPdf(d, mode) {
     return;
   }
   if (!file) return;
-  const dl = window.claude?.use ? await window.claude.use('downloads') : null;
-  if (dl) {
-    try { await dl.save({ filename: file.name, data: file }); note(`บันทึก ${file.name} แล้ว`); }
-    catch (e) { note(e.code === 'declined' ? 'ยกเลิกการบันทึกไฟล์' : e.code === 'rate_limited' ? 'มีหน้าต่างบันทึกไฟล์เปิดอยู่ ลองใหม่อีกครั้ง' : 'บันทึกไฟล์ในหน้านี้ไม่ได้'); }
-    return;
-  }
-  // Outside the claude.ai viewer (e.g. Apps Script) a normal browser download works
-  const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
-  note(`ดาวน์โหลด ${file.name} แล้ว`);
-}
-function printDoc(d) {
-  window.print();
-  note('ถ้าหน้าต่างพิมพ์ไม่ขึ้น แสดงว่าหน้าทดสอบนี้บล็อกการพิมพ์ ใช้ปุ่มดาวน์โหลด PDF แล้วพิมพ์จากไฟล์แทน');
+  return saveFile(file);
 }
 
 /* ---------- Quotation kinds & templates ---------- */
@@ -1260,6 +1302,7 @@ function viewSettings() {
 }
 
 /* ---------- Boot ---------- */
+$('#pvClose').onclick = () => $('#pv').close();
 try { Object.assign(pref, JSON.parse(localStorage.getItem('qs-theme')) || {}); } catch (e) {}
 applyTheme(); load(); render();
 </script>
