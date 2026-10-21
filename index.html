@@ -4,41 +4,67 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ระบบใบเสนอราคา – ทดสอบ</title>
-<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Bai+Jamjuree:wght@400;500;600;700&family=Kanit:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   /* Layout: top app bar + 4-stage pipeline stepper (QT → IV → DO → RC); each stage lists document cards; detail = paper + action/timeline panel */
+  /* Each skin restyles the whole page: background, surfaces, corner radius, typeface, glass, accent.
+     --acc-l is the accent used on the white document paper, so it must read on white in every skin. */
   :root {
-    --ocean-l: #2563eb; --ocean-d: #7aa7ff; --ocean-2: #06b6d4;
-    --forest-l: #059669; --forest-d: #5ee0b0; --forest-2: #84cc16;
-    --sunset-l: #ea580c; --sunset-d: #ffa86b; --sunset-2: #e11d48;
-    --plum-l: #7c3aed; --plum-d: #b9a0ff; --plum-2: #db2777;
-    --acc-l: var(--ocean-l); --acc-d: var(--ocean-d); --acc-2: var(--ocean-2);
-
+    --acc-l: #2563eb; --acc-2: #06b6d4;
     --bg: #f5f6fa; --surface: #ffffff; --surface-2: #f1f3f8; --fg: #121826; --muted: #667085; --line: #e6e8ef;
+    --bg-img: radial-gradient(1200px 420px at 10% -10%, rgba(37,99,235,.16), transparent 70%), radial-gradient(900px 380px at 100% -5%, rgba(6,182,212,.12), transparent 70%);
     --accent: var(--acc-l); --accent-fg: #ffffff;
     --accent-soft: color-mix(in srgb, var(--accent) 10%, var(--surface));
-    --ok: #12805c; --warn: #b54708; --bad: #c0362c; --idle: #475467;
+    --ok: #12805c; --warn: #c2620a; --bad: #c0362c;
     --shadow-sm: 0 1px 2px rgba(16,24,40,.05);
     --shadow: 0 1px 3px rgba(16,24,40,.06), 0 12px 32px -12px rgba(16,24,40,.14);
     --font: 'Anuphan', 'Tahoma', sans-serif;
-    --r: 16px;
+    --r: 16px; --pill: 999px; --glass: none; --grad: linear-gradient(135deg, var(--acc-l), var(--acc-2));
   }
-  :root[data-palette="forest"] { --acc-l: var(--forest-l); --acc-d: var(--forest-d); --acc-2: var(--forest-2); }
-  :root[data-palette="sunset"] { --acc-l: var(--sunset-l); --acc-d: var(--sunset-d); --acc-2: var(--sunset-2); }
-  :root[data-palette="plum"]   { --acc-l: var(--plum-l);   --acc-d: var(--plum-d);   --acc-2: var(--plum-2); }
-  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  @media (prefers-color-scheme: dark) { :root[data-skin="modern"]:not([data-theme="light"]) {
     --bg: #0c0f16; --surface: #151a24; --surface-2: #1c2230; --fg: #eef1f7; --muted: #98a2b3; --line: #262e3d;
-    --accent: var(--acc-d); --accent-fg: #0b0f17; --ok: #5fd4a5; --warn: #f7b267; --bad: #ff8a80; --idle: #aab4c3;
+    --bg-img: radial-gradient(1200px 420px at 10% -10%, rgba(37,99,235,.22), transparent 70%), radial-gradient(900px 380px at 100% -5%, rgba(6,182,212,.14), transparent 70%);
+    --accent: #7aa7ff; --accent-fg: #0b0f17; --ok: #5fd4a5; --warn: #ffab5e; --bad: #ff8a80;
     --shadow-sm: none; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 16px 36px -16px rgba(0,0,0,.6); color-scheme: dark } }
-  :root[data-theme="dark"] {
+  :root[data-skin="modern"][data-theme="dark"] {
     --bg: #0c0f16; --surface: #151a24; --surface-2: #1c2230; --fg: #eef1f7; --muted: #98a2b3; --line: #262e3d;
-    --accent: var(--acc-d); --accent-fg: #0b0f17; --ok: #5fd4a5; --warn: #f7b267; --bad: #ff8a80; --idle: #aab4c3;
+    --bg-img: radial-gradient(1200px 420px at 10% -10%, rgba(37,99,235,.22), transparent 70%), radial-gradient(900px 380px at 100% -5%, rgba(6,182,212,.14), transparent 70%);
+    --accent: #7aa7ff; --accent-fg: #0b0f17; --ok: #5fd4a5; --warn: #ffab5e; --bad: #ff8a80;
     --shadow-sm: none; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 16px 36px -16px rgba(0,0,0,.6); color-scheme: dark }
+
+  :root[data-skin="minimal"] {
+    --acc-l: #111111; --acc-2: #444444; --accent: #111111; --accent-fg: #ffffff;
+    --bg: #fafafa; --surface: #ffffff; --surface-2: #f2f2f2; --fg: #111111; --muted: #6b6b6b; --line: #e3e3e3; --bg-img: none;
+    --ok: #157f3b; --warn: #c25e00; --bad: #c62828;
+    --shadow-sm: none; --shadow: 0 8px 24px -12px rgba(0,0,0,.18);
+    --font: 'IBM Plex Sans Thai', 'Tahoma', sans-serif; --r: 6px; --pill: 6px; --grad: #111111; color-scheme: light }
+  :root[data-skin="aurora"] {
+    --acc-l: #7c3aed; --acc-2: #06b6d4; --accent: #b79cff; --accent-fg: #160b33;
+    --bg: #0d0b1f; --surface: rgba(255,255,255,.07); --surface-2: rgba(255,255,255,.09); --fg: #f4f2ff; --muted: #b3aed0; --line: rgba(255,255,255,.14);
+    --bg-img: radial-gradient(700px 500px at 0% 0%, rgba(124,58,237,.55), transparent 65%), radial-gradient(700px 500px at 100% 10%, rgba(6,182,212,.4), transparent 65%), radial-gradient(800px 600px at 50% 110%, rgba(236,72,153,.35), transparent 65%);
+    --accent-soft: rgba(183,156,255,.16);
+    --ok: #6ee7b7; --warn: #fdba74; --bad: #fca5a5;
+    --shadow-sm: none; --shadow: 0 20px 40px -20px rgba(0,0,0,.7);
+    --glass: blur(18px) saturate(1.3); --r: 20px; --grad: linear-gradient(135deg, #7c3aed, #06b6d4); color-scheme: dark }
+  :root[data-skin="nature"] {
+    --acc-l: #2f6b3f; --acc-2: #7fa64a; --accent: #2f6b3f; --accent-fg: #ffffff;
+    --bg: #edf2e9; --surface: #fbfdf8; --surface-2: #eef3e8; --fg: #1d2a1f; --muted: #5e6f60; --line: #d9e3d2;
+    --bg-img: radial-gradient(900px 400px at 100% 0%, rgba(127,166,74,.22), transparent 70%);
+    --ok: #2f7d32; --warn: #c26a0a; --bad: #b3362b;
+    --shadow-sm: 0 1px 2px rgba(29,42,31,.06); --shadow: 0 14px 30px -16px rgba(29,42,31,.25);
+    --font: 'Bai Jamjuree', 'Tahoma', sans-serif; --r: 24px; --grad: linear-gradient(135deg, #2f6b3f, #7fa64a); color-scheme: light }
+  :root[data-skin="sunset"] {
+    --acc-l: #d9480f; --acc-2: #f59f00; --accent: #d9480f; --accent-fg: #ffffff;
+    --bg: #fff5ee; --surface: #ffffff; --surface-2: #fff0e6; --fg: #2b1a12; --muted: #8a6a5a; --line: #f3dccd;
+    --bg-img: linear-gradient(180deg, rgba(255,186,140,.45), transparent 320px);
+    --ok: #2b8a3e; --warn: #e8590c; --bad: #c92a2a;
+    --shadow-sm: 0 1px 2px rgba(120,50,10,.06); --shadow: 0 16px 34px -18px rgba(160,60,10,.35);
+    --font: 'Kanit', 'Tahoma', sans-serif; --r: 14px; --grad: linear-gradient(135deg, #d9480f, #f59f00); color-scheme: light }
+  .card, .doc, .stage, .stat, .menu, dialog { -webkit-backdrop-filter: var(--glass); backdrop-filter: var(--glass); }
 
   * { box-sizing: border-box; }
   body { margin: 0; min-height: 100%; color: var(--fg); font: 15px/1.6 var(--font);
-    background: radial-gradient(1200px 420px at 10% -10%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 70%),
-                radial-gradient(900px 380px at 100% -5%, color-mix(in srgb, var(--acc-2) 12%, transparent), transparent 70%), var(--bg);
+    background: var(--bg-img), var(--bg);
     background-attachment: fixed; }
   body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: color-mix(in srgb, var(--bg) 80%, transparent); }
   h1, h2, h3 { margin: 0; text-wrap: balance; letter-spacing: -.01em; }
@@ -55,7 +81,7 @@
   .bar-in { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 12px; }
   .brand { display: flex; align-items: center; gap: 10px; border: 0; background: none; cursor: pointer; padding: 0; text-align: left; }
   .logo { width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center; color: #fff; font-weight: 700;
-    background: linear-gradient(135deg, var(--acc-l), var(--acc-2)); box-shadow: 0 6px 16px -6px var(--acc-l); }
+    background: var(--grad); box-shadow: 0 6px 16px -6px var(--acc-l); }
   .brand b { display: block; line-height: 1.2; } .brand small { color: var(--muted); font-size: .75rem; }
   .tools { display: flex; gap: 4px; }
   .tool { display: inline-flex; align-items: center; gap: 6px; border: 1px solid transparent; background: none; border-radius: 999px; padding: 7px 12px; cursor: pointer; color: var(--muted); font-weight: 500; }
@@ -72,7 +98,7 @@
   .stage b { font-size: 1rem; font-weight: 600; }
   .stage .cnt { font-size: .82rem; color: var(--muted); }
   .stage .cnt em { font-style: normal; color: var(--warn); font-weight: 600; }
-  .stage[aria-current="page"] { border-color: transparent; color: #fff; background: linear-gradient(135deg, var(--acc-l), var(--acc-2)); box-shadow: 0 12px 28px -12px var(--acc-l); }
+  .stage[aria-current="page"] { border-color: transparent; color: #fff; background: var(--grad); box-shadow: 0 12px 28px -12px var(--acc-l); }
   .stage[aria-current="page"] .step, .stage[aria-current="page"] .cnt, .stage[aria-current="page"] .cnt em { color: rgba(255,255,255,.85); }
   .stage:not(:last-child)::after { content: "›"; position: absolute; right: -10px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 1.1rem; z-index: 1; }
 
@@ -90,11 +116,11 @@
   textarea { resize: vertical; min-height: 64px; }
   :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 999px; padding: 10px 18px; cursor: pointer; font-weight: 600;
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: var(--pill); padding: 10px 18px; cursor: pointer; font-weight: 600;
     border: 1px solid var(--line); background: var(--surface); white-space: nowrap; transition: transform .1s, box-shadow .15s, border-color .15s; }
   .btn:hover { border-color: color-mix(in srgb, var(--accent) 50%, var(--line)); }
   .btn:active { transform: scale(.98); }
-  .btn.primary { color: #fff; border-color: transparent; background: linear-gradient(135deg, var(--acc-l), color-mix(in srgb, var(--acc-l) 60%, var(--acc-2))); box-shadow: 0 8px 20px -10px var(--acc-l); }
+  .btn.primary { color: #fff; border-color: transparent; background: var(--grad); box-shadow: 0 8px 20px -10px var(--acc-l); }
   .btn.ok { color: #fff; border-color: transparent; background: linear-gradient(135deg, #12805c, #22a06b); box-shadow: 0 8px 20px -10px #12805c; }
   .btn.danger { color: var(--bad); }
   .btn.small { padding: 6px 12px; font-size: .84rem; }
@@ -109,7 +135,7 @@
   .pill { display: inline-flex; align-items: center; gap: 6px; font-size: .78rem; font-weight: 600; padding: 3px 10px; border-radius: 999px; white-space: nowrap;
     background: color-mix(in srgb, currentColor 12%, transparent); }
   .pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-  .s-pending { color: var(--warn); } .s-finish { color: var(--ok); } .s-cancel { color: var(--bad); } .s-issued { color: var(--accent); }
+  .s-pending { color: var(--warn); } .s-finish { color: var(--ok); } .s-cancel { color: var(--bad); } .s-issued { color: var(--warn); }
 
   /* Document cards */
   .docs { display: grid; gap: 10px; }
@@ -144,9 +170,10 @@
   .opt { display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 9px 10px; border: 0; background: none; border-radius: 10px; cursor: pointer; color: var(--fg); font-weight: 400; }
   .opt:hover { background: var(--accent-soft); }
   .opt.add { color: var(--accent); font-weight: 600; }
+  .grp { font-size: .72rem; font-weight: 600; letter-spacing: .04em; color: var(--muted); padding: 8px 10px 2px; }
   .selcust { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding: 14px; border-radius: 14px; background: var(--accent-soft); }
   .selcust > div { flex: 1 1 220px; min-width: 0; }
-  .addline { display: grid; grid-template-columns: 1fr 100px auto; gap: 10px; align-items: end; }
+  .addline { display: grid; grid-template-columns: 180px 1fr 100px auto; gap: 10px; align-items: end; }
   .lines input { padding: 7px 10px; }
   .lines .q { width: 90px; } .lines .p { width: 130px; }
   .totals { display: grid; gap: 6px; width: 100%; max-width: 360px; margin-left: auto; }
@@ -170,7 +197,7 @@
   .timeline a { color: inherit; text-decoration: none; font-weight: 600; cursor: pointer; }
   .timeline a:hover { color: var(--accent); }
   .paper { background: #ffffff; color: #121826; border-radius: 14px; box-shadow: var(--shadow); padding: clamp(18px, 4vw, 44px); display: grid; gap: 22px; position: relative; overflow: hidden; }
-  .paper::before { content: ""; position: absolute; inset: 0 0 auto; height: 6px; background: linear-gradient(90deg, var(--acc-l), var(--acc-2)); }
+  .paper::before { content: ""; position: absolute; inset: 0 0 auto; height: 6px; background: var(--grad); }
   .paper .row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; }
   .paper h2 { font-size: 1.45rem; font-weight: 700; color: var(--acc-l); }
   .paper .muted { color: #667085; }
@@ -187,6 +214,14 @@
   .sw i { width: 28px; height: 28px; border-radius: 50%; display: block; }
   .sw[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
 
+  .skins { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+  .skin { display: grid; gap: 4px; text-align: left; padding: 10px; border-radius: var(--r); border: 1px solid var(--line); background: var(--surface); cursor: pointer; -webkit-backdrop-filter: var(--glass); backdrop-filter: var(--glass); }
+  .skin[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .skin .prev { display: grid; place-items: center; height: 96px; border-radius: calc(var(--r) - 4px); margin-bottom: 6px; border: 1px solid var(--line); }
+  .skin .pc { width: 70%; padding: 10px; border-radius: 10px; display: grid; gap: 5px; box-shadow: 0 6px 14px -8px rgba(0,0,0,.35); }
+  .skin .pc i { display: block; height: 10px; width: 55%; border-radius: 99px; }
+  .skin .pc u { display: block; height: 6px; border-radius: 99px; background: rgba(128,128,128,.3); }
+  .skin .pc u + u { width: 70%; }
   dialog { border: 1px solid var(--line); border-radius: 20px; padding: 0; background: var(--surface); color: var(--fg); width: min(540px, calc(100% - 32px)); box-shadow: var(--shadow); }
   dialog::backdrop { background: rgba(8, 12, 20, .5); backdrop-filter: blur(3px); }
   dialog form { padding: 22px; display: grid; gap: 14px; }
@@ -201,7 +236,7 @@
     .doc .right { grid-column: 2; justify-items: start; grid-auto-flow: column; align-items: center; justify-content: space-between; }
     .doc .acts { grid-column: 1 / -1; } .doc .acts .btn { flex: 1; }
     .hide-sm { display: none; }
-    .addline { grid-template-columns: 1fr 80px; } .addline .btn { grid-column: 1 / -1; }
+    .addline { grid-template-columns: 1fr 80px; } .addline > label:first-child { grid-column: 1 / -1; } .addline .btn { grid-column: 1 / -1; }
     .lines thead { display: none; }
     .lines tr { display: grid; grid-template-columns: 1fr 1fr auto; gap: 6px 10px; padding: 12px 0; border-bottom: 1px solid var(--line); }
     .lines td { border: 0; padding: 0; } .lines td.n { grid-column: 1 / -1; } .lines .q, .lines .p { width: 100%; }
@@ -236,10 +271,10 @@ const TYPES = {
         st: { issued: 'ออกใบเสนอราคาแล้ว', finish: 'ลูกค้าสั่งซื้อแล้ว' }, open: 'issued',
         next: { label: 'ลูกค้าสั่งซื้อ', done: 'ขายสำเร็จ ส่งต่อไปใบแจ้งหนี้แล้ว' } },
   IV: { name: 'ใบแจ้งหนี้', short: 'แจ้งหนี้', extra: 'ครบกำหนดชำระ',
-        st: { pending: 'รอส่งของ', finish: 'ส่งต่อไปส่งของแล้ว', cancel: 'ยกเลิก' }, open: 'pending', cancel: true,
+        st: { pending: 'รอส่งของ', finish: 'Finish', cancel: 'ยกเลิก' }, open: 'pending', cancel: true,
         next: { label: 'ไปขั้นส่งของ', done: 'ส่งต่อไปใบส่งของแล้ว' } },
   DO: { name: 'ใบส่งของ', short: 'ส่งของ', extra: 'วันที่ส่งของ',
-        st: { pending: 'รอออกใบเสร็จ', finish: 'ส่งต่อไปใบเสร็จแล้ว' }, open: 'pending',
+        st: { pending: 'รอออกใบเสร็จ', finish: 'Finish' }, open: 'pending',
         next: { label: 'ออกใบเสร็จ/ใบกำกับภาษี', done: 'ส่งต่อไปใบเสร็จแล้ว' } },
   RC: { name: 'ใบเสร็จรับเงิน/ใบกำกับภาษี', short: 'ใบเสร็จ/กำกับภาษี', extra: null,
         st: { pending: 'รอออกใบเสร็จ', finish: 'เสร็จแล้ว (ชำระเงินแล้ว)', cancel: 'ยกเลิก' }, open: 'pending', cancel: true,
@@ -285,7 +320,14 @@ function seed() {
   };
 }
 let db;
-function load() { try { db = JSON.parse(localStorage.getItem(KEY)); } catch (e) {} if (!db || !db.docs) db = seed(); }
+const SEED_CAT = { P001: 'แผงโซลาร์เซลล์', P002: 'อินเวอร์เตอร์', P003: 'อินเวอร์เตอร์', P004: 'แบตเตอรี่', P005: 'อุปกรณ์ติดตั้ง', P006: 'อุปกรณ์ติดตั้ง', P007: 'งานบริการ', P008: 'งานบริการ' };
+function load() {
+  try { db = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+  if (!db || !db.docs) db = seed();
+  db.products.forEach(p => { if (!p.cat) p.cat = SEED_CAT[p.id] || 'อื่นๆ'; });
+}
+const cats = () => [...new Set(db.products.map(p => p.cat))].sort((a, b) => a.localeCompare(b, 'th'));
+const catSelect = (id, val) => `<select id="${id}" aria-label="หมวดหมู่"><option value="">ทุกหมวดหมู่</option>${cats().map(c => `<option ${c === val ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select>`;
 function save() { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) {} }
 
 /* ---------- Helpers ---------- */
@@ -518,6 +560,7 @@ function viewNew() {
     <div class="card"><div class="head"><h2>รายการสินค้า / บริการ</h2>
         <select id="vat" style="width:auto" aria-label="รูปแบบ VAT"><option value="ex">ราคาไม่รวม VAT (+7%)</option><option value="in">ราคารวม VAT แล้ว</option><option value="none">ไม่มี VAT</option></select></div>
       <div class="addline">
+        <label class="f">หมวดหมู่ ${catSelect('pc', pickCat)}</label>
         <label class="f picker">ค้นหาสินค้าจากฐานข้อมูล <input id="ps" placeholder="พิมพ์ชื่อหรือรหัสสินค้า" autocomplete="off"><div class="menu" id="pm" hidden></div></label>
         <label class="f">จำนวน <input id="pq" type="number" min="0" step="any" value="1" inputmode="decimal"></label>
         <button class="btn primary" id="padd" type="button">+ เพิ่มรายการ</button>
@@ -566,18 +609,22 @@ function drawCust() {
   };
   inp.onfocus = show; inp.oninput = show; inp.onblur = () => setTimeout(() => menu.hidden = true, 120);
 }
+let pickCat = '';
 function setupProductPicker() {
   const inp = $('#ps'), menu = $('#pm'); let chosen = null;
   const show = () => {
     const q = inp.value.trim().toLowerCase(); chosen = null;
-    const res = db.products.filter(p => !q || (p.name + p.code).toLowerCase().includes(q)).slice(0, 8);
-    menu.innerHTML = res.map(p => `<button type="button" class="opt" data-id="${p.id}"><span>${esc(p.name)}<div class="muted sm">${esc(p.code)} · ${esc(p.unit)}</div></span><span class="num">฿${money(p.price)}</span></button>`).join('')
+    const res = db.products.filter(p => (!pickCat || p.cat === pickCat) && (!q || (p.name + p.code + p.cat).toLowerCase().includes(q)))
+      .sort((a, b) => a.cat.localeCompare(b.cat, 'th')).slice(0, 12);
+    let last = '';
+    menu.innerHTML = res.map(p => (p.cat !== last ? `<div class="grp">${esc(last = p.cat)}</div>` : '') + `<button type="button" class="opt" data-id="${p.id}"><span>${esc(p.name)}<div class="muted sm">${esc(p.code)} · ${esc(p.unit)}</div></span><span class="num">฿${money(p.price)}</span></button>`).join('')
       + `<button type="button" class="opt add" data-new="1">+ ${q && !res.length ? `เพิ่ม “${esc(inp.value.trim())}” เป็นสินค้าใหม่` : 'เพิ่มสินค้าใหม่เข้าฐานข้อมูล'}</button>`;
     menu.hidden = false;
     $$('[data-id]', menu).forEach(b => b.onmousedown = e => { e.preventDefault(); chosen = db.products.find(p => p.id === b.dataset.id); inp.value = chosen.name; menu.hidden = true; $('#pq').focus(); $('#pq').select(); });
-    $('[data-new]', menu).onmousedown = e => { e.preventDefault(); menu.hidden = true; productDialog(null, inp.value.trim(), p => { addLine(p); inp.value = ''; }); };
+    $('[data-new]', menu).onmousedown = e => { e.preventDefault(); menu.hidden = true; productDialog(null, inp.value.trim(), p => { addLine(p); inp.value = ''; $('#pc').outerHTML = catSelect('pc', pickCat); $('#pc').onchange = () => { pickCat = $('#pc').value; inp.focus(); }; }, pickCat); };
   };
   inp.onfocus = show; inp.oninput = show; inp.onblur = () => setTimeout(() => menu.hidden = true, 120);
+  $('#pc').onchange = () => { pickCat = $('#pc').value; inp.focus(); };
   const add = () => {
     const v = inp.value.trim().toLowerCase();
     if (!chosen) chosen = db.products.find(p => p.name.toLowerCase() === v || p.code.toLowerCase() === v);
@@ -650,23 +697,27 @@ function customerDialog(c, name, done) {
 }
 
 /* ---------- Products ---------- */
-let prodSearch = '';
+let prodSearch = '', prodCat = '';
 function viewProducts() {
   const q = prodSearch.toLowerCase();
-  const list = db.products.filter(p => !q || (p.name + p.code).toLowerCase().includes(q));
+  const list = db.products.filter(p => (!prodCat || p.cat === prodCat) && (!q || (p.name + p.code).toLowerCase().includes(q)))
+    .sort((a, b) => a.cat.localeCompare(b.cat, 'th') || a.code.localeCompare(b.code));
   $('#main').innerHTML = `<div class="view">
     <div class="head"><div><h1>ฐานข้อมูลสินค้า / บริการ</h1><p>${db.products.length} รายการ · สินค้าที่เพิ่มจากหน้าใบเสนอราคาจะถูกบันทึกที่นี่ด้วย</p></div><button class="btn primary" id="add" type="button">+ เพิ่มสินค้า</button></div>
+    <div class="seg">${[['', 'ทั้งหมด'], ...cats().map(c => [c, c])].map(([k, n]) => `<button data-cat="${esc(k)}" aria-pressed="${prodCat === k}" type="button">${esc(n)} <span class="muted">${k ? db.products.filter(p => p.cat === k).length : db.products.length}</span></button>`).join('')}</div>
     <div class="card"><input id="s" type="search" placeholder="ค้นหาชื่อหรือรหัสสินค้า" value="${esc(prodSearch)}">
-      <div class="tablewrap"><table><thead><tr><th>รหัส</th><th>ชื่อสินค้า</th><th>หน่วย</th><th class="num">ราคา/หน่วย</th></tr></thead>
-      <tbody>${list.map(p => `<tr class="click" data-id="${p.id}" tabindex="0"><td><span class="tag">${esc(p.code)}</span></td><td>${esc(p.name)}</td><td>${esc(p.unit)}</td><td class="num">${money(p.price)}</td></tr>`).join('') || `<tr><td colspan="4" class="empty">ไม่พบสินค้า</td></tr>`}</tbody></table></div></div></div>`;
+      <div class="tablewrap"><table><thead><tr><th>รหัส</th><th>ชื่อสินค้า</th><th class="hide-sm">หมวดหมู่</th><th>หน่วย</th><th class="num">ราคา/หน่วย</th></tr></thead>
+      <tbody>${list.map(p => `<tr class="click" data-id="${p.id}" tabindex="0"><td><span class="tag">${esc(p.code)}</span></td><td>${esc(p.name)}</td><td class="hide-sm muted">${esc(p.cat)}</td><td>${esc(p.unit)}</td><td class="num">${money(p.price)}</td></tr>`).join('') || `<tr><td colspan="5" class="empty">ไม่พบสินค้า</td></tr>`}</tbody></table></div></div></div>`;
+  $$('[data-cat]').forEach(b => b.onclick = () => { prodCat = b.dataset.cat; viewProducts(); });
   $('#add').onclick = () => productDialog(null, '', viewProducts);
   $('#s').oninput = e => { prodSearch = e.target.value; const p = e.target.selectionStart; viewProducts(); $('#s').focus(); $('#s').setSelectionRange(p, p); };
   $$('tr[data-id]').forEach(tr => { tr.onclick = () => productDialog(db.products.find(p => p.id === tr.dataset.id), '', viewProducts); tr.onkeydown = e => e.key === 'Enter' && tr.onclick(); });
 }
-function productDialog(p, name, done) {
-  const v = p || { code: '', name, unit: 'ชิ้น', price: '' };
+function productDialog(p, name, done, cat = '') {
+  const v = p || { code: '', name, unit: 'ชิ้น', price: '', cat: cat || prodCat };
   openDialog(`<h2>${p ? 'แก้ไขสินค้า' : 'เพิ่มสินค้าใหม่เข้าฐานข้อมูล'}</h2>
     <label class="f">ชื่อสินค้า / บริการ * <input name="name" required value="${esc(v.name)}"></label>
+    <label class="f">หมวดหมู่ * <input name="cat" required list="catlist" value="${esc(v.cat)}" placeholder="เลือกหรือพิมพ์หมวดหมู่ใหม่"><datalist id="catlist">${cats().map(c => `<option value="${esc(c)}">`).join('')}</datalist></label>
     <div class="grid"><label class="f">รหัสสินค้า <input name="code" value="${esc(v.code)}" placeholder="เว้นว่างให้ระบบตั้งให้"></label>
       <label class="f">หน่วย * <input name="unit" required value="${esc(v.unit)}"></label>
       <label class="f">ราคา/หน่วย (บาท) * <input name="price" type="number" min="0" step="0.01" required value="${v.price}" inputmode="decimal"></label></div>`,
@@ -693,21 +744,30 @@ function openDialog(html, onSave) {
 }
 
 /* ---------- Theme ---------- */
-const PALETTES = { ocean: ['น้ำเงินโอเชียน', 'ocean'], forest: ['เขียวมรกต', 'forest'], sunset: ['ส้มซันเซ็ต', 'sunset'], plum: ['ม่วงพลัม', 'plum'] };
-const pref = { palette: 'ocean', mode: 'system' };
+const SKINS = {
+  modern:  { name: 'โมเดิร์น', desc: 'ไล่สีฟ้า การ์ดมน · สว่าง/มืดตามเครื่อง', bg: 'linear-gradient(160deg,#dbe7ff,#f5f6fa 60%)', card: '#ffffff', acc: 'linear-gradient(135deg,#2563eb,#06b6d4)' },
+  minimal: { name: 'มินิมอล', desc: 'ขาว-ดำ เรียบ คมชัด ไม่มีลูกเล่น', bg: '#fafafa', card: '#ffffff', acc: '#111111' },
+  aurora:  { name: 'ออโรรา', desc: 'พื้นหลังมืด แสงเหนือ การ์ดกระจกโปร่ง', bg: 'radial-gradient(circle at 0 0,#7c3aed,transparent 60%),radial-gradient(circle at 100% 20%,#06b6d4,transparent 60%),#0d0b1f', card: 'rgba(255,255,255,.14)', acc: 'linear-gradient(135deg,#7c3aed,#06b6d4)' },
+  nature:  { name: 'ธรรมชาติ', desc: 'โทนเขียวใบไม้ มุมโค้งมาก นุ่มนวล', bg: 'linear-gradient(160deg,#dfe9d4,#edf2e9)', card: '#fbfdf8', acc: 'linear-gradient(135deg,#2f6b3f,#7fa64a)' },
+  sunset:  { name: 'ซันเซ็ต', desc: 'โทนส้มอบอุ่น ฟอนต์ Kanit', bg: 'linear-gradient(180deg,#ffd2b3,#fff5ee)', card: '#ffffff', acc: 'linear-gradient(135deg,#d9480f,#f59f00)' }
+};
+const pref = { skin: 'modern', mode: 'system' };
 function applyTheme() {
-  document.documentElement.dataset.palette = pref.palette;
-  if (pref.mode === 'system') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = pref.mode;
+  if (!SKINS[pref.skin]) pref.skin = 'modern';
+  document.documentElement.dataset.skin = pref.skin;
+  if (pref.skin !== 'modern' || pref.mode === 'system') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = pref.mode;
   try { localStorage.setItem('qs-theme', JSON.stringify(pref)); } catch (e) {}
 }
 function viewSettings() {
   $('#main').innerHTML = `<div class="view">
-    <div class="head"><div><h1>ธีม</h1><p>เลือกสีหลักและโหมดการแสดงผล</p></div></div>
-    <div class="card"><h2>สีธีม</h2><div class="swatches">${Object.entries(PALETTES).map(([k, [n, v]]) => `<button class="sw" data-pal="${k}" aria-pressed="${pref.palette === k}" type="button"><i style="background:linear-gradient(135deg,var(--${v}-l),var(--${v}-2))"></i>${n}</button>`).join('')}</div></div>
-    <div class="card"><h2>โหมดแสดงผล</h2><div><div class="seg">${[['system', 'ตามเครื่อง'], ['light', 'สว่าง'], ['dark', 'มืด']].map(([k, n]) => `<button data-m="${k}" aria-pressed="${pref.mode === k}" type="button">${n}</button>`).join('')}</div></div></div>
+    <div class="head"><div><h1>ธีม</h1><p>เปลี่ยนหน้าตาทั้งระบบ ทั้งพื้นหลัง สี ฟอนต์ และรูปทรง</p></div></div>
+    <div class="skins">${Object.entries(SKINS).map(([k, v]) => `<button class="skin" data-skin-pick="${k}" aria-pressed="${pref.skin === k}" type="button">
+      <span class="prev" style="background:${v.bg}"><span class="pc" style="background:${v.card}"><i style="background:${v.acc}"></i><u></u><u></u></span></span>
+      <b>${v.name}</b><span class="muted sm">${v.desc}</span></button>`).join('')}</div>
+    ${pref.skin === 'modern' ? `<div class="card"><h2>โหมดแสดงผล (เฉพาะธีมโมเดิร์น)</h2><div><div class="seg">${[['system', 'ตามเครื่อง'], ['light', 'สว่าง'], ['dark', 'มืด']].map(([k, n]) => `<button data-m="${k}" aria-pressed="${pref.mode === k}" type="button">${n}</button>`).join('')}</div></div></div>` : ''}
     <div class="card"><h2>ข้อมูลทดสอบ</h2><p class="muted sm" style="margin:0">ลูกค้า สินค้า และเอกสารเป็นข้อมูลจำลอง เก็บไว้ในเบราว์เซอร์เครื่องนี้เท่านั้น ยังไม่เชื่อม Google Sheet</p>
       <div><button class="btn" id="reset" type="button">รีเซ็ตกลับเป็นข้อมูลตัวอย่าง</button></div></div></div>`;
-  $$('[data-pal]').forEach(b => b.onclick = () => { pref.palette = b.dataset.pal; applyTheme(); viewSettings(); });
+  $$('[data-skin-pick]').forEach(b => b.onclick = () => { pref.skin = b.dataset.skinPick; applyTheme(); viewSettings(); });
   $$('[data-m]').forEach(b => b.onclick = () => { pref.mode = b.dataset.m; applyTheme(); viewSettings(); });
   $('#reset').onclick = () => {
     if ($('#reset').dataset.confirm) { db = seed(); save(); draft = null; toast('รีเซ็ตข้อมูลตัวอย่างแล้ว'); go('list', 'QT'); }
