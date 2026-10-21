@@ -380,6 +380,48 @@
     @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } }
   }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+  /* ---------- Clean navigation (v2): one row of underline tabs for stages, main sections as a quiet nav ---------- */
+  .sections { gap: 4px; padding-top: 12px; }
+  .sec { background: none; border-color: transparent; box-shadow: none; color: var(--muted); padding: 8px 14px; }
+  .sec:hover { color: var(--fg); background: var(--surface-2); }
+  .sec[aria-current="page"] { background: var(--accent-soft); color: var(--accent); box-shadow: none; }
+  .pipe { display: flex; gap: 0; padding: 10px 0 0; overflow: visible; border-bottom: 1px solid var(--line); grid-template-columns: none; }
+  .stage, .stage:hover { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; background: none; border: 0; border-radius: 0; box-shadow: none; transform: none;
+    padding: 12px 6px; color: var(--muted); position: relative; text-align: center; }
+  .stage b { font-size: .95rem; font-weight: 600; white-space: nowrap; }
+  .stage::before { display: none; }
+  .stage::after, .stage:not(:last-child)::after { content: ""; position: absolute; left: 12%; right: 12%; bottom: -1px; height: 3px; border-radius: 3px 3px 0 0; background: var(--grad);
+    transform: scaleX(0); transition: transform .3s cubic-bezier(.2,.8,.2,1); top: auto; color: transparent; font-size: 0; }
+  .stage[aria-current="page"], .stage[aria-current="page"]:hover { color: var(--fg); background: none; box-shadow: none; animation: none; }
+  .stage[aria-current="page"]::after { transform: scaleX(1); }
+  .stage .cnt { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; display: inline-grid; place-items: center; font-size: .72rem; font-weight: 700;
+    background: color-mix(in srgb, var(--warn) 16%, transparent); color: var(--warn); }
+  .stage .cnt[hidden] { display: none; }
+  .stage[aria-current="page"] .cnt { background: var(--accent-soft); color: var(--accent); }
+  .stats { gap: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow-sm); -webkit-backdrop-filter: var(--glass); backdrop-filter: var(--glass); overflow: hidden; }
+  .stat, .stat.glow { background: none; border: 0; border-radius: 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .stat + .stat { border-left: 1px solid var(--line); }
+  .stat.glow::after { display: none; }
+  .stat b { font-size: 1.25rem; }
+  @media (max-width: 640px) {
+    .sections { position: fixed; z-index: 35; left: 0; right: 0; bottom: 0; margin: 0; gap: 0; padding: 6px max(8px, env(safe-area-inset-left, 0px)) calc(6px + env(safe-area-inset-bottom, 0px));
+      background: color-mix(in srgb, var(--surface) 88%, transparent); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); border-top: 1px solid var(--line); }
+    .sec { flex: 1; flex-direction: column; gap: 2px; padding: 6px 2px; font-size: .72rem; border: 0; border-radius: 12px; }
+    .sec svg { width: 22px; height: 22px; }
+    .sec[aria-current="page"] { background: none; color: var(--accent); }
+    body.sub .sections { display: none; }
+    .fab { bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+    body:not(.sub) .toast { bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
+    .pipe { padding-top: 4px; margin-inline: -16px; padding-inline: 8px; }
+    .stage, .stage:hover { padding: 12px 2px; gap: 4px; }
+    .stage b { font-size: .86rem; }
+    .stage::after, .stage:not(:last-child)::after { display: block; }
+    .stats { grid-template-columns: 1fr; gap: 0; }
+    .stat { padding: 11px 14px; } .stat + .stat { border-left: 0; border-top: 1px solid var(--line); }
+    .stat b { font-size: 1.05rem; } .stat span { font-size: .84rem; }
+    h1.hero { font-size: 1.5rem; } .eyebrow { display: none; }
+    .seg button { flex: 1 1 auto; padding: 7px 8px; }
+  }
 </style>
 </head>
 <body>
@@ -640,6 +682,7 @@ function syncNav() {
   $$('.sec').forEach(b => b.setAttribute('aria-current', b.dataset.sec === sec ? 'page' : 'false'));
   $$('.tool').forEach(t => t.setAttribute('aria-current', t.dataset.go === route ? 'page' : 'false'));
   $('#pipe').hidden = sec !== 'docs';
+  document.body.classList.toggle('sub', ['doc', 'new', 'tpl'].includes(route));
 }
 function renderPipe() {
   const cur = currentStage();
@@ -647,7 +690,7 @@ function renderPipe() {
     FLOW.forEach(k => {
       const b = $(`[data-stage="${k}"]`), all = db.docs.filter(d => d.type === k), open = all.filter(isOpen).length;
       cur === k ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current');
-      $('.cnt', b).innerHTML = `${all.length} ฉบับ${open ? ` · <em>รอ ${open}</em>` : ''}`;
+      $('.cnt', b).textContent = open || ''; $('.cnt', b).hidden = !open;
     });
     syncNav();
     return;
@@ -655,8 +698,7 @@ function renderPipe() {
   $('#pipe').innerHTML = FLOW.map((k, i) => {
     const all = db.docs.filter(d => d.type === k), open = all.filter(isOpen).length;
     return `<button class="stage" type="button" data-stage="${k}" style="view-transition-name:stage-${k}" ${cur === k ? 'aria-current="page"' : ''}>
-      <span class="step">ขั้นที่ ${i + 1}</span><b>${TYPES[k].short}</b>
-      <span class="cnt">${all.length} ฉบับ${open ? ` · <em>รอ ${open}</em>` : ''}</span></button>`;
+      <b>${TYPES[k].short}</b><span class="cnt" ${open ? '' : 'hidden'} title="รอดำเนินการ">${open || ''}</span></button>`;
   }).join('');
   $$('[data-stage]').forEach(b => b.onclick = () => go('list', b.dataset.stage));
   syncNav();
