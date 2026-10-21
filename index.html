@@ -235,6 +235,15 @@
   .sec svg { width: 18px; height: 18px; }
   .sec[aria-current="page"] { color: var(--accent-fg); background: var(--accent); border-color: transparent; box-shadow: 0 8px 18px -10px var(--acc-l); }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .kind { font-size: .72rem; font-weight: 600; padding: 2px 8px; border-radius: 6px; color: var(--accent); background: var(--accent-soft); white-space: nowrap; }
+  .tpls { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
+  .tplcard { display: grid; gap: 4px; justify-items: start; text-align: left; padding: 14px; border-radius: calc(var(--r) - 2px); border: 1px solid var(--line); background: var(--surface); cursor: pointer; color: var(--fg); }
+  .tplcard[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .tplcard b { font-weight: 600; }
+  .kindopt { display: flex; gap: 14px; align-items: center; text-align: left; padding: 16px; border-radius: var(--r); border: 1px solid var(--line); background: var(--surface); cursor: pointer; color: var(--fg); }
+  .kindopt:hover { border-color: var(--accent); background: var(--accent-soft); }
+  .kindopt .ic { font-size: 1.6rem; width: 48px; height: 48px; display: grid; place-items: center; border-radius: 14px; background: var(--accent-soft); flex: none; }
+  .kindopt > span:last-child { display: grid; gap: 2px; }
   .chips button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 14px; cursor: pointer; font-weight: 500; color: var(--fg); }
   .chips button[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); border-color: transparent; }
   .chips button[aria-pressed="true"] .muted { color: inherit; opacity: .8; }
@@ -257,7 +266,8 @@
     h1.hero { font-size: 1.7rem; } .head p { font-size: .85rem; } .eyebrow { margin-bottom: 2px; }
     .stats { grid-template-columns: 1fr; gap: 8px; }
     .panel { order: 0; }
-    .sections { padding-top: 10px; } .sec { flex: 1; justify-content: center; padding: 10px 6px; }
+    .sections { padding-top: 10px; gap: 4px; } .sec { flex: 1; justify-content: center; padding: 9px 2px; font-size: .8rem; flex-direction: column; gap: 2px; border-radius: 14px; }
+    .tpls { grid-template-columns: 1fr; }
     .show-sm { display: block; }
     .plist tr { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 12px 0; border-bottom: 1px solid var(--line); }
     .plist td { border: 0; padding: 0; } .plist .p-code { grid-column: 1 / -1; } .plist .p-price { grid-row: 2; grid-column: 2; font-weight: 600; }
@@ -386,6 +396,7 @@
   <button class="sec" data-go="list" data-p="QT" data-sec="docs" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h6"/></svg>เอกสาร</button>
   <button class="sec" data-go="customers" data-sec="customers" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18 14.8c2 .7 3.2 2.5 3.6 5.2"/></svg>ลูกค้า</button>
   <button class="sec" data-go="products" data-sec="products" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5z"/><path d="M3 7.5 12 12l9-4.5M12 12v9"/></svg>สินค้า</button>
+  <button class="sec" data-go="templates" data-sec="templates" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M17.5 14v7M14 17.5h7"/></svg>เทมเพลต</button>
 </nav><div class="pipe" id="pipe"></div></div>
 <main class="wrap" id="main"></main>
 
@@ -436,6 +447,17 @@ function seed() {
       { id: 'P007', code: 'SRV-INS', name: 'ค่าติดตั้งและเดินระบบ', unit: 'งาน', price: 15000 },
       { id: 'P008', code: 'SRV-PEA', name: 'ค่าดำเนินการขออนุญาต กฟภ./กฟน.', unit: 'งาน', price: 8000 }
     ],
+    templates: [
+      { id: 'T001', name: 'โซลาร์รูฟ On-grid 5kW (1 เฟส)', group: 'โซลาร์เซลล์', desc: 'บ้านพักอาศัย ค่าไฟ 2,000–3,500 บาท/เดือน',
+        remark: 'รับประกันแผง 25 ปี · อินเวอร์เตอร์ 10 ปี · งานติดตั้ง 2 ปี · ชำระมัดจำ 50% เมื่อยืนยันสั่งซื้อ',
+        lines: [{ pid: 'P001', qty: 10 }, { pid: 'P002', qty: 1 }, { pid: 'P005', qty: 10 }, { pid: 'P006', qty: 60 }, { pid: 'P007', qty: 1 }, { pid: 'P008', qty: 1 }] },
+      { id: 'T002', name: 'โซลาร์รูฟ On-grid 10kW (3 เฟส)', group: 'โซลาร์เซลล์', desc: 'ธุรกิจขนาดเล็ก / บ้านใหญ่ ใช้ไฟกลางวันสูง',
+        remark: 'รับประกันแผง 25 ปี · อินเวอร์เตอร์ 10 ปี · งานติดตั้ง 2 ปี · ชำระมัดจำ 50% เมื่อยืนยันสั่งซื้อ',
+        lines: [{ pid: 'P001', qty: 18 }, { pid: 'P003', qty: 1 }, { pid: 'P005', qty: 18 }, { pid: 'P006', qty: 100 }, { pid: 'P007', qty: 1 }, { pid: 'P008', qty: 1 }] },
+      { id: 'T003', name: 'ระบบไฮบริด 5kW + แบตเตอรี่ 10kWh', group: 'โซลาร์เซลล์', desc: 'มีไฟสำรองใช้ตอนกลางคืน / ไฟดับ',
+        remark: 'รับประกันแบตเตอรี่ 10 ปี · ชำระมัดจำ 50% เมื่อยืนยันสั่งซื้อ',
+        lines: [{ pid: 'P001', qty: 10 }, { pid: 'P002', qty: 1 }, { pid: 'P004', qty: 1 }, { pid: 'P005', qty: 10 }, { pid: 'P006', qty: 60 }, { pid: 'P007', qty: 1 }] }
+    ],
     docs: [
       { ...base, no: `QT${ym}-0001`, type: 'QT', date: d(12), extra: d(-18), custId: 'C001', project: 'ติดตั้งโซลาร์รูฟ 5kW', status: 'finish', lines: L1 },
       { ...base, no: `IV${ym}-0001`, type: 'IV', date: d(10), extra: d(-20), custId: 'C001', project: 'ติดตั้งโซลาร์รูฟ 5kW', status: 'finish', ref: `QT${ym}-0001`, lines: L1 },
@@ -453,6 +475,7 @@ const SEED_CAT = { P001: 'แผงโซลาร์เซลล์', P002: '�
 function load() {
   try { db = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
   if (!db || !db.docs) db = seed();
+  if (!db.templates) db.templates = seed().templates;
   db.products.forEach(p => { if (!p.cat) p.cat = SEED_CAT[p.id] || 'อื่นๆ'; });
 }
 const cats = () => [...new Set(db.products.map(p => p.cat))].sort((a, b) => a.localeCompare(b, 'th'));
@@ -613,7 +636,7 @@ document.addEventListener('pointerdown', e => lastClick = { x: e.clientX, y: e.c
 $$('[data-go]').forEach(b => b.onclick = () => go(b.dataset.go, b.dataset.p || null));
 function currentStage() { return route === 'list' ? param : route === 'doc' ? findDoc(param)?.type : route === 'new' ? 'QT' : null; }
 function syncNav() {
-  const sec = ['list', 'doc', 'new'].includes(route) ? 'docs' : route;
+  const sec = ['list', 'doc', 'new'].includes(route) ? 'docs' : route === 'tpl' ? 'templates' : route;
   $$('.sec').forEach(b => b.setAttribute('aria-current', b.dataset.sec === sec ? 'page' : 'false'));
   $$('.tool').forEach(t => t.setAttribute('aria-current', t.dataset.go === route ? 'page' : 'false'));
   $('#pipe').hidden = sec !== 'docs';
@@ -640,7 +663,7 @@ function renderPipe() {
 }
 function render() {
   renderPipe();
-  ({ list: viewList, doc: viewDoc, new: viewNew, customers: viewCustomers, products: viewProducts, settings: viewSettings })[route]();
+  ({ list: viewList, doc: viewDoc, new: viewNew, templates: viewTemplates, tpl: viewTpl, customers: viewCustomers, products: viewProducts, settings: viewSettings })[route]();
   afterRender();
 }
 
@@ -671,16 +694,14 @@ function viewList() {
     <div class="docs">${list.map(d => { const c = cust(d.custId) || {}; return `
       <div class="doc" data-no="${esc(d.no)}" tabindex="0" role="button">
         <div class="avatar">${esc(initials(c.name))}</div>
-        <div style="min-width:0"><div class="t"><b>${esc(c.name || '-')}</b>${pill(d)}</div>
+        <div style="min-width:0"><div class="t"><b>${esc(c.name || '-')}</b>${pill(d)}${d.kind === 'install' ? '<span class="kind">งานติดตั้ง</span>' : ''}</div>
           <div class="muted sm">${esc(d.project || '')}</div>
           <div class="code">${esc(d.no)} · ${thDate(d.date)}${d.ref ? ` · อ้างอิง ${esc(d.ref)}` : ''}</div></div>
         <div class="right"><span class="amt">฿${money(totals(d).grand)}</span></div>
         <div class="acts">${actionButtons(d)}</div>
       </div>`; }).join('') || `<div class="empty">${filt === 'open' ? 'ไม่มีเอกสารที่รอดำเนินการในขั้นนี้' : 'ไม่พบเอกสาร'}${type === 'QT' ? '<br><button class="btn ghost" id="nb2" type="button">+ สร้างใบเสนอราคาใหม่</button>' : ''}</div>`}</div>
   </div>`;
-  $('#nb')?.addEventListener('click', () => go('new', 'fresh'));
-  $('#fab')?.addEventListener('click', () => go('new', 'fresh'));
-  $('#nb2')?.addEventListener('click', () => go('new', 'fresh'));
+  ['#nb', '#fab', '#nb2'].forEach(id => $(id)?.addEventListener('click', pickKind));
   $$('[data-f]').forEach(b => b.onclick = () => { filt = b.dataset.f; smooth(() => { viewList(); afterRender(); }); });
   $('#ds').oninput = e => { search = e.target.value; const p = e.target.selectionStart; $('#main').classList.add('calm'); viewList(); afterRender(); $('#ds').focus(); $('#ds').setSelectionRange(p, p); };
   $$('.doc').forEach(el => { el.onclick = () => go('doc', el.dataset.no); el.onkeydown = e => e.key === 'Enter' && e.target === el && el.onclick(); });
@@ -708,6 +729,7 @@ function viewDoc() {
           <div class="meta"><span class="muted">เลขที่</span><b>${esc(d.no)}</b><span class="muted">วันที่</span><span>${thDate(d.date)}</span>
             ${T.extra ? `<span class="muted">${T.extra}</span><span>${thDate(d.extra)}</span>` : ''}
             ${d.ref ? `<span class="muted">อ้างอิง</span><span>${esc(d.ref)}</span>` : ''}
+            ${d.kind === 'install' ? `<span class="muted">ประเภท</span><span>งานติดตั้ง${d.tplName ? ' · ' + esc(d.tplName) : ''}</span>` : ''}
             ${d.project ? `<span class="muted">โครงการ</span><span>${esc(d.project)}</span>` : ''}</div>
         </div>
         <div class="tablewrap"><table>
@@ -754,13 +776,20 @@ function viewNew() {
   if (param && param.from) {
     const src = findDoc(param.from);
     draft = { ...JSON.parse(JSON.stringify(src)), date: today, extra: iso(new Date(Date.now() + 30 * 864e5)), ref: '' };
-  } else if (!draft || param === 'fresh') {
-    draft = { date: today, extra: iso(new Date(Date.now() + 30 * 864e5)), custId: '', project: '', vatMode: 'ex', discount: 0, remark: 'ยืนราคา 30 วัน · ชำระมัดจำ 50% เมื่อยืนยันสั่งซื้อ', lines: [] };
+  } else if (!draft || (param && param.kind)) {
+    draft = { kind: param?.kind || 'general', date: today, extra: iso(new Date(Date.now() + 30 * 864e5)), custId: '', project: '', vatMode: 'ex', discount: 0, remark: 'ยืนราคา 30 วัน · ชำระมัดจำ 50% เมื่อยืนยันสั่งซื้อ', lines: [] };
+    if (param?.tpl) applyTemplate(db.templates.find(t => t.id === param.tpl), true);
   }
-  param = null;
+  param = null; ed = draft;
+  const inst = draft.kind === 'install';
   $('#main').innerHTML = `<div class="view">
-    <div class="head"><div><button class="btn ghost" id="back" type="button">← ใบเสนอราคาทั้งหมด</button><h1>สร้างใบเสนอราคา</h1>
+    <div class="head"><div><button class="btn ghost" id="back" type="button">← ใบเสนอราคาทั้งหมด</button><h1>${inst ? 'ใบเสนอราคางานติดตั้ง' : 'ใบเสนอราคาทั่วไป'}</h1>
       <p>เลขที่จะได้ <b id="no" style="color:var(--accent)">${nextDocNo('QT', draft.date)}</b> · รันอัตโนมัติตามเดือน</p></div></div>
+    ${inst ? `<div class="card"><div class="head"><h2>เลือกเทมเพลตงาน</h2><button class="btn small" id="tplNew" type="button">+ สร้างเทมเพลต</button></div>
+      <div class="tpls">${db.templates.map(t => `<button class="tplcard" data-tpl="${t.id}" aria-pressed="${draft.tplId === t.id}" type="button">
+        <span class="kind">${esc(t.group)}</span><b>${esc(t.name)}</b><span class="muted sm">${esc(t.desc || '')}</span>
+        <span class="sm">${t.lines.length} รายการ · ประมาณ <b>฿${money(tplTotal(t))}</b></span></button>`).join('') || '<div class="empty">ยังไม่มีเทมเพลต กด “สร้างเทมเพลต”</div>'}</div>
+      <p class="muted sm" style="margin:0">เลือกแล้วรายการอุปกรณ์จะถูกเติมให้อัตโนมัติ ปรับจำนวน/ราคา หรือเพิ่มรายการต่อได้</p></div>` : ''}
     <div class="card"><h2>ลูกค้า</h2><div id="custBox"></div>
       <div class="grid">
         <label class="f">โครงการ / หัวข้องาน <input id="project" value="${esc(draft.project)}" placeholder="เช่น ติดตั้งโซลาร์รูฟ 5kW"></label>
@@ -784,6 +813,7 @@ function viewNew() {
       </div>
       <div class="words" id="words"></div>
     </div>
+    ${inst ? '<button class="btn ghost" id="asTpl" type="button" style="justify-self:start">บันทึกรายการชุดนี้เป็นเทมเพลตใหม่</button>' : ''}
     <div class="actions mbar-form"><button class="btn" id="clear" type="button">ล้างฟอร์ม</button><button class="btn primary" id="ssave" type="button">ออกใบเสนอราคา</button></div>
   </div>`;
   $('#vat').value = draft.vatMode;
@@ -791,8 +821,12 @@ function viewNew() {
   ['project', 'date', 'extra', 'remark'].forEach(id => $('#' + id).oninput = () => { syncDraft(); if (id === 'date') $('#no').textContent = nextDocNo('QT', draft.date); });
   $('#vat').onchange = () => { draft.vatMode = $('#vat').value; drawTotals(); };
   $('#disc').oninput = () => { draft.discount = +$('#disc').value || 0; drawTotals(); };
-  $('#clear').onclick = () => go('new', 'fresh');
+  $('#clear').onclick = () => go('new', { kind: draft.kind });
   $('#ssave').onclick = commit;
+  $$('[data-tpl]').forEach(b => b.onclick = () => { syncDraft(); applyTemplate(db.templates.find(t => t.id === b.dataset.tpl)); smooth(() => { viewNew(); afterRender(); }); });
+  $('#tplNew')?.addEventListener('click', () => { syncDraft(); go('tpl', { id: 'new', back: true }); });
+  $('#asTpl')?.addEventListener('click', () => { syncDraft(); if (!draft.lines.length) return toast('ยังไม่มีรายการให้บันทึก');
+    go('tpl', { id: 'new', back: true, lines: draft.lines.map(l => ({ pid: l.pid, qty: l.qty })), name: draft.project }); });
   drawCust(); drawLines(); setupProductPicker();
 }
 function syncDraft() { draft.project = $('#project').value; draft.date = $('#date').value || draft.date; draft.extra = $('#extra').value; draft.remark = $('#remark').value; }
@@ -819,6 +853,7 @@ function drawCust() {
   };
   inp.onfocus = show; inp.oninput = show; inp.onblur = () => setTimeout(() => menu.hidden = true, 120);
 }
+let ed; // the object whose lines are being edited: a quotation draft or a template
 let pickCat = '';
 function setupProductPicker() {
   const inp = $('#ps'), menu = $('#pm'); let chosen = null;
@@ -846,12 +881,12 @@ function setupProductPicker() {
 }
 function addLine(p) {
   const qty = +$('#pq').value || 1;
-  const ex = draft.lines.find(l => l.pid === p.id && l.price === p.price);
-  if (ex) ex.qty += qty; else draft.lines.push({ pid: p.id, name: p.name, unit: p.unit, qty, price: p.price });
+  const ex = ed.lines.find(l => l.pid === p.id && l.price === p.price);
+  if (ex) ex.qty += qty; else ed.lines.push({ pid: p.id, name: p.name, unit: p.unit, qty, price: p.price });
   $('#pq').value = 1; drawLines(); toast(`เพิ่ม ${p.name} แล้ว`);
 }
 function drawLines() {
-  $('#lines').innerHTML = draft.lines.map((l, i) => `<tr>
+  $('#lines').innerHTML = ed.lines.map((l, i) => `<tr>
     <td class="n"><b style="font-weight:600">${esc(l.name)}</b><div class="muted sm">${esc(l.unit)}</div></td>
     <td class="num"><input class="q num" type="number" min="0" step="any" value="${l.qty}" data-i="${i}" data-k="qty" aria-label="จำนวน"></td>
     <td class="num"><input class="p num" type="number" min="0" step="0.01" value="${l.price}" data-i="${i}" data-k="price" aria-label="ราคาต่อหน่วย"></td>
@@ -859,21 +894,109 @@ function drawLines() {
     <td><button class="icon-btn" data-del="${i}" type="button" aria-label="ลบรายการ">✕</button></td></tr>`).join('')
     || `<tr><td colspan="5"><div class="empty">ยังไม่มีรายการ · ค้นหาสินค้าด้านบนแล้วกด “เพิ่มรายการ”</div></td></tr>`;
   $$('#lines input').forEach(inp => inp.oninput = () => {
-    const l = draft.lines[inp.dataset.i]; l[inp.dataset.k] = +inp.value || 0;
+    const l = ed.lines[inp.dataset.i]; l[inp.dataset.k] = +inp.value || 0;
     inp.closest('tr').querySelector('.amt').textContent = money(l.qty * l.price); drawTotals();
   });
-  $$('[data-del]').forEach(b => b.onclick = () => { draft.lines.splice(+b.dataset.del, 1); drawLines(); });
+  $$('[data-del]').forEach(b => b.onclick = () => { ed.lines.splice(+b.dataset.del, 1); drawLines(); });
   drawTotals();
 }
-function drawTotals() { const t = totals(draft); $('#tot').innerHTML = totalsRows(draft, t); $('#words').textContent = `(${bahtText(t.grand)})`; }
+function drawTotals() { const t = totals(ed); $('#tot').innerHTML = totalsRows(ed, t); $('#words').textContent = `(${bahtText(t.grand)})`; }
 function commit() {
   syncDraft();
   if (!cust(draft.custId)) { toast('กรุณาเลือกลูกค้าจากฐานข้อมูล'); $('#cs')?.focus(); return; }
   if (!draft.lines.length) { toast('กรุณาเพิ่มรายการอย่างน้อย 1 รายการ'); $('#ps').focus(); return; }
   const doc = { ...draft, type: 'QT', no: nextDocNo('QT', draft.date), status: 'issued', discount: +draft.discount || 0 };
+  if (doc.kind !== 'install') { delete doc.tplId; delete doc.tplName; }
   db.docs.push(doc); save(); draft = null;
   toast(`ออกใบเสนอราคา ${doc.no} แล้ว`);
   go('doc', doc.no);
+}
+
+/* ---------- Quotation kinds & templates ---------- */
+function pickKind() {
+  const dlg = $('#dlg'), f = $('#dlgForm');
+  f.innerHTML = `<h2>สร้างใบเสนอราคา</h2>
+    <button class="kindopt" data-k="general" type="button"><span class="ic">📄</span><span><b>ใบเสนอราคาทั่วไป</b><span class="muted sm">ขายสินค้า/บริการ เลือกรายการเองทีละรายการ</span></span></button>
+    <button class="kindopt" data-k="install" type="button"><span class="ic">🛠️</span><span><b>งานติดตั้งระบบ / รับเหมา</b><span class="muted sm">เช่น โซลาร์เซลล์ ดึงชุดอุปกรณ์จากเทมเพลตได้ทันที</span></span></button>
+    <div class="actions"><button class="btn" value="cancel">ปิด</button></div>`;
+  f.onsubmit = null;
+  $$('[data-k]', f).forEach(b => b.onclick = () => { dlg.close(); go('new', { kind: b.dataset.k }); });
+  dlg.showModal();
+}
+const tplLine = l => { const p = db.products.find(x => x.id === l.pid); return p ? { pid: p.id, name: p.name, unit: p.unit, qty: l.qty, price: p.price } : null; };
+const tplTotal = t => t.lines.map(tplLine).filter(Boolean).reduce((s, l) => s + l.qty * l.price, 0);
+function applyTemplate(t, silent) {
+  if (!t) return;
+  draft.lines = t.lines.map(tplLine).filter(Boolean);
+  draft.tplId = t.id; draft.tplName = t.name;
+  if (!draft.project) draft.project = t.name;
+  if (t.remark) draft.remark = t.remark;
+  if (!silent) toast(`ใช้เทมเพลต “${t.name}” แล้ว · ${draft.lines.length} รายการ`);
+}
+function viewTemplates() {
+  $('#main').innerHTML = `<div class="view">
+    <div class="head"><div><h1>เทมเพลตงานติดตั้ง</h1><p>ชุดอุปกรณ์มาตรฐานสำหรับงานโซลาร์และงานรับเหมา กดใช้เพื่อสร้างใบเสนอราคาได้ทันที</p></div>
+      <button class="btn primary" id="add" type="button">+ สร้างเทมเพลต</button></div>
+    <div class="docs">${db.templates.map(t => `<div class="doc tplrow" data-id="${t.id}" tabindex="0" role="button">
+      <div class="avatar">🛠️</div>
+      <div style="min-width:0"><div class="t"><b>${esc(t.name)}</b><span class="kind">${esc(t.group)}</span></div>
+        <div class="muted sm">${esc(t.desc || '')}</div><div class="code">${t.lines.length} รายการ</div></div>
+      <div class="right"><span class="amt">฿${money(tplTotal(t))}</span><span class="muted sm">ก่อน VAT</span></div>
+      <div class="acts"><button class="btn small" data-edit="${t.id}" type="button">แก้ไข</button><button class="btn small primary" data-use="${t.id}" type="button">ใช้เทมเพลตนี้ →</button></div>
+    </div>`).join('') || '<div class="empty">ยังไม่มีเทมเพลต</div>'}</div></div>`;
+  $('#add').onclick = () => go('tpl', { id: 'new' });
+  $$('.tplrow').forEach(el => el.onclick = () => go('tpl', { id: el.dataset.id }));
+  $$('[data-edit]').forEach(b => b.onclick = e => { e.stopPropagation(); go('tpl', { id: b.dataset.edit }); });
+  $$('[data-use]').forEach(b => b.onclick = e => { e.stopPropagation(); go('new', { kind: 'install', tpl: b.dataset.use }); });
+}
+let tdraft;
+function viewTpl() {
+  const P = param || { id: 'new' }, src = db.templates.find(t => t.id === P.id);
+  tdraft = src ? { ...JSON.parse(JSON.stringify(src)) } : { id: null, name: P.name || '', group: 'โซลาร์เซลล์', desc: '', remark: '', lines: P.lines || [] };
+  tdraft.lines = tdraft.lines.map(tplLine).filter(Boolean); tdraft.vatMode = 'ex'; tdraft.discount = 0;
+  ed = tdraft;
+  const groups = [...new Set(db.templates.map(t => t.group).concat(['โซลาร์เซลล์', 'งานไฟฟ้า', 'งานรับเหมาก่อสร้าง']))];
+  $('#main').innerHTML = `<div class="view">
+    <div class="head"><div><button class="btn ghost" id="back" type="button">← ${P.back ? 'กลับไปใบเสนอราคา' : 'เทมเพลตทั้งหมด'}</button><h1>${src ? 'แก้ไขเทมเพลต' : 'สร้างเทมเพลตใหม่'}</h1></div></div>
+    <div class="card"><div class="grid">
+      <label class="f">ชื่อเทมเพลต * <input id="tn" value="${esc(tdraft.name)}" placeholder="เช่น โซลาร์รูฟ On-grid 5kW"></label>
+      <label class="f">กลุ่มงาน <input id="tg" list="tgl" value="${esc(tdraft.group)}"><datalist id="tgl">${groups.map(g => `<option value="${esc(g)}">`).join('')}</datalist></label>
+    </div>
+      <label class="f">คำอธิบาย (เหมาะกับลูกค้าแบบไหน) <input id="td" value="${esc(tdraft.desc)}"></label>
+      <label class="f">หมายเหตุ/เงื่อนไขที่จะใส่ในใบเสนอราคา <textarea id="tr">${esc(tdraft.remark)}</textarea></label></div>
+    <div class="card"><h2>ชุดอุปกรณ์และค่าแรง</h2>
+      <div class="addline">
+        <label class="f">หมวดหมู่ ${catSelect('pc', pickCat)}</label>
+        <label class="f picker">ค้นหาสินค้าจากฐานข้อมูล <input id="ps" placeholder="พิมพ์ชื่อหรือรหัสสินค้า" autocomplete="off"><div class="menu" id="pm" hidden></div></label>
+        <label class="f">จำนวน <input id="pq" type="number" min="0" step="any" value="1" inputmode="decimal"></label>
+        <button class="btn primary" id="padd" type="button">+ เพิ่มรายการ</button>
+      </div>
+      <div class="tablewrap"><table class="lines">
+        <thead><tr><th>รายการ</th><th class="num">จำนวน</th><th class="num">ราคา/หน่วย</th><th class="num">จำนวนเงิน</th><th></th></tr></thead>
+        <tbody id="lines"></tbody></table></div>
+      <div class="totals" id="tot"></div><div class="words" id="words"></div>
+      <p class="muted sm" style="margin:0">ราคาในเทมเพลตอ้างอิงจากฐานข้อมูลสินค้า เมื่อแก้ราคาสินค้า เทมเพลตจะใช้ราคาใหม่อัตโนมัติ</p></div>
+    <div class="actions mbar-form">${src ? '<button class="btn danger" id="tdel" type="button">ลบ</button>' : ''}<button class="btn primary" id="tsave" type="button">บันทึกเทมเพลต</button></div>
+  </div>`;
+  const back = () => P.back ? go('new') : go('templates');
+  $('#back').onclick = back;
+  $('#tsave').onclick = () => {
+    const name = $('#tn').value.trim();
+    if (!name) { toast('กรุณาตั้งชื่อเทมเพลต'); $('#tn').focus(); return; }
+    if (!tdraft.lines.length) { toast('กรุณาเพิ่มอุปกรณ์อย่างน้อย 1 รายการ'); $('#ps').focus(); return; }
+    const t = { id: src ? src.id : nextId(db.templates, 'T'), name, group: $('#tg').value.trim() || 'อื่นๆ', desc: $('#td').value.trim(), remark: $('#tr').value.trim(),
+      lines: tdraft.lines.map(l => ({ pid: l.pid, qty: l.qty })) };
+    if (src) Object.assign(src, t); else db.templates.push(t);
+    save(); toast(`บันทึกเทมเพลต “${name}” แล้ว`);
+    if (P.back && draft) { draft.kind = 'install'; applyTemplate(t, true); }
+    back();
+  };
+  $('#tdel')?.addEventListener('click', e => {
+    const b = e.currentTarget;
+    if (!b.dataset.confirm) { b.dataset.confirm = 1; b.textContent = 'กดอีกครั้งเพื่อลบ'; return; }
+    db.templates = db.templates.filter(t => t.id !== src.id); save(); toast('ลบเทมเพลตแล้ว'); go('templates');
+  });
+  drawLines(); setupProductPicker();
 }
 
 /* ---------- Customers ---------- */
