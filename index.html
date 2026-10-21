@@ -242,12 +242,63 @@
     .lines td { border: 0; padding: 0; } .lines td.n { grid-column: 1 / -1; } .lines .q, .lines .p { width: 100%; }
     .actions .btn { flex: 1; }
   }
-  @media (prefers-reduced-motion: no-preference) { .view { animation: rise .22s ease-out; } @keyframes rise { from { opacity: .3; transform: translateY(6px); } } }
-  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  /* ---------- Motion & atmosphere ---------- */
+  .orbs { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+  .orbs i { position: absolute; width: 46vmax; height: 46vmax; border-radius: 50%; filter: blur(80px); opacity: .35; }
+  .orbs i:nth-child(1) { background: var(--acc-l); left: -12vmax; top: -18vmax; }
+  .orbs i:nth-child(2) { background: var(--acc-2); right: -14vmax; top: 10vh; }
+  .orbs i:nth-child(3) { background: color-mix(in srgb, var(--acc-l) 50%, #ec4899); left: 30vw; bottom: -30vmax; opacity: .22; }
+  :root[data-skin="minimal"] .orbs { display: none; }
+  :root[data-skin="aurora"] .orbs i { opacity: .5; }
+  .eyebrow { display: inline-block; font-size: .75rem; font-weight: 600; letter-spacing: .08em; color: var(--accent); background: var(--accent-soft); padding: 3px 10px; border-radius: 999px; margin-bottom: 6px; }
+  h1.hero { font-size: clamp(1.9rem, 5vw, 2.8rem); line-height: 1.15; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  :root[data-skin="aurora"] h1.hero { background: linear-gradient(135deg, #e9d5ff, #67e8f9); -webkit-background-clip: text; background-clip: text; }
+  .stat { position: relative; overflow: hidden; }
+  .stat b { font-size: clamp(1.3rem, 3vw, 1.7rem); }
+  .stat.glow { border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); }
+  .stat.glow::after { content: ""; position: absolute; inset: auto -30% -60% auto; width: 160px; height: 160px; border-radius: 50%; background: var(--grad); opacity: .18; filter: blur(30px); }
+  .doc, .stage, .stat, .card { --mx: 50%; --my: 50%; }
+  .doc::before, .stage::before, .stat::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .3s;
+    background: radial-gradient(360px circle at var(--mx) var(--my), color-mix(in srgb, var(--accent) 14%, transparent), transparent 60%); }
+  .doc { position: relative; }
+  .doc:hover::before, .stage:hover::before, .stat:hover::before { opacity: 1; }
+  .btn.primary, .btn.ok { position: relative; overflow: hidden; }
+  .btn.primary::after, .btn.ok::after { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,.35) 50%, transparent 70%); transform: translateX(-120%); }
+  .btn.primary:hover::after, .btn.ok:hover::after { transform: translateX(120%); transition: transform .7s ease; }
+  .seg { position: relative; isolation: isolate; }
+  .seg .ind { position: absolute; z-index: -1; left: 0; top: 4px; bottom: 4px; border-radius: 999px; background: var(--surface); box-shadow: var(--shadow-sm), 0 0 0 1px var(--line);
+    transition: transform .35s cubic-bezier(.2,.8,.2,1), width .35s cubic-bezier(.2,.8,.2,1); }
+  .seg button { position: relative; transition: color .25s; }
+  .seg button[aria-pressed="true"] { background: none !important; box-shadow: none !important; color: var(--fg); }
+  .stage, .doc, .stat, .card, .btn, .tool, .chip, input, select, textarea { transition: transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s, border-color .25s, background-color .25s, color .25s; }
+  #main.calm * { animation: none !important; }
+  .fx { position: fixed; inset: 0; z-index: 60; pointer-events: none; }
+  .toast { animation: toastIn .35s cubic-bezier(.2,.8,.2,1); }
+  @keyframes toastIn { from { opacity: 0; transform: translate(-50%, 16px) scale(.96); } }
+  .menu:not([hidden]) { animation: pop .18s ease-out; transform-origin: top; }
+  @keyframes pop { from { opacity: 0; transform: translateY(-4px) scale(.98); } }
+  dialog[open] { animation: dlgIn .28s cubic-bezier(.2,.8,.2,1); }
+  @keyframes dlgIn { from { opacity: 0; transform: translateY(14px) scale(.97); } }
+  @media (prefers-reduced-motion: no-preference) {
+    .orbs i { animation: drift 22s ease-in-out infinite alternate; }
+    .orbs i:nth-child(2) { animation-duration: 28s; animation-delay: -8s; }
+    .orbs i:nth-child(3) { animation-duration: 34s; animation-delay: -15s; }
+    @keyframes drift { 50% { transform: translate(8vw, 6vh) scale(1.12); } 100% { transform: translate(-6vw, 10vh) scale(.92); } }
+    #main .doc, #main .stat, #main .card, #main .paper, #main .skin, #main tbody tr { animation: rise .5s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(var(--i, 0) * 45ms); }
+    @keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+    ::view-transition-old(root) { animation: vtOut .22s ease both; }
+    ::view-transition-new(root) { animation: vtIn .32s cubic-bezier(.2,.8,.2,1) both; }
+    @keyframes vtOut { to { opacity: 0; transform: translateY(-6px); } }
+    @keyframes vtIn { from { opacity: 0; transform: translateY(8px); } }
+    .stage[aria-current="page"] { animation: pulse 3s ease-in-out infinite; }
+    @keyframes pulse { 50% { box-shadow: 0 14px 34px -10px var(--acc-l); } }
+  }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
 </style>
 </head>
 <body>
 
+<div class="orbs" aria-hidden="true"><i></i><i></i><i></i></div>
 <header class="top"><div class="wrap bar-in">
   <button class="brand" data-go="list" data-p="QT" type="button"><span class="logo">QS</span><span><b>ระบบออกเอกสาร</b><small>เวอร์ชันทดสอบ · ข้อมูลจำลอง</small></span></button>
   <nav class="tools" aria-label="ฐานข้อมูลและการตั้งค่า">
@@ -268,7 +319,7 @@
 const FLOW = ['QT', 'IV', 'DO', 'RC'];
 const TYPES = {
   QT: { name: 'ใบเสนอราคา', short: 'เสนอราคา', extra: 'ยืนราคาถึง',
-        st: { issued: 'ออกใบเสนอราคาแล้ว', finish: 'ลูกค้าสั่งซื้อแล้ว' }, open: 'issued',
+        st: { issued: 'ออกใบเสนอราคาแล้ว', finish: 'Finish' }, open: 'issued',
         next: { label: 'ลูกค้าสั่งซื้อ', done: 'ขายสำเร็จ ส่งต่อไปใบแจ้งหนี้แล้ว' } },
   IV: { name: 'ใบแจ้งหนี้', short: 'แจ้งหนี้', extra: 'ครบกำหนดชำระ',
         st: { pending: 'รอส่งของ', finish: 'Finish', cancel: 'ยกเลิก' }, open: 'pending', cancel: true,
@@ -381,6 +432,7 @@ const isOpen = d => d.status === TYPES[d.type].open;
 
 /* ---------- Workflow actions ---------- */
 function advance(d) {
+  confetti(lastClick.x, lastClick.y);
   const T = TYPES[d.type];
   d.status = 'finish';
   if (T.next.final) { save(); toast(`${d.no} · ${T.next.done}`); render(); return; }
@@ -417,7 +469,51 @@ function chain(d) {
 
 /* ---------- Router ---------- */
 let route = 'list', param = 'QT';
-function go(r, p = null) { route = r; param = p; render(); window.scrollTo(0, 0); }
+function go(r, p = null) {
+  if (r === 'list') { filt = 'open'; search = ''; }
+  route = r; param = p; countUp = true;
+  const run = () => { $('#main').classList.remove('calm'); render(); window.scrollTo({ top: 0, behavior: 'instant' }); };
+  if (document.startViewTransition && !reduced()) document.startViewTransition(run); else run();
+}
+const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+let countUp = true, segPos = {};
+/* Motion helpers: stagger entrance, sliding segment indicator, animated numbers */
+function afterRender() {
+  $$('#main .doc, #main .stat, #main .card, #main .paper, #main .skin, #main tbody tr').forEach((el, i) => el.style.setProperty('--i', Math.min(i, 12)));
+  $$('.seg').forEach((seg, k) => {
+    const on = $('[aria-pressed="true"]', seg); if (!on) return;
+    let ind = $('.ind', seg); if (!ind) { ind = document.createElement('span'); ind.className = 'ind'; seg.prepend(ind); }
+    const key = route + k, prev = segPos[key], now = { x: on.offsetLeft, w: on.offsetWidth };
+    ind.style.transition = 'none';
+    ind.style.transform = `translateX(${(prev || now).x}px)`; ind.style.width = (prev || now).w + 'px';
+    requestAnimationFrame(() => requestAnimationFrame(() => { ind.style.transition = ''; ind.style.transform = `translateX(${now.x}px)`; ind.style.width = now.w + 'px'; }));
+    segPos[key] = now;
+  });
+  if (countUp && !reduced()) $$('[data-count]').forEach(el => {
+    const to = +el.dataset.count, fmt = el.dataset.fmt, t0 = performance.now();
+    const step = t => { const k = Math.min(1, (t - t0) / 700), v = to * (1 - Math.pow(1 - k, 3));
+      el.textContent = fmt === 'money' ? '฿' + money(v) : Math.round(v) + ' ฉบับ'; if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  });
+  countUp = false;
+}
+document.addEventListener('pointermove', e => {
+  const el = e.target.closest?.('.doc, .stage, .stat, .card'); if (!el) return;
+  const r = el.getBoundingClientRect(); el.style.setProperty('--mx', (e.clientX - r.left) + 'px'); el.style.setProperty('--my', (e.clientY - r.top) + 'px');
+});
+function confetti(x, y) {
+  if (reduced()) return;
+  const c = document.createElement('canvas'); c.className = 'fx'; c.width = innerWidth; c.height = innerHeight; document.body.appendChild(c);
+  const g = c.getContext('2d'), cs = getComputedStyle(document.documentElement);
+  const cols = [cs.getPropertyValue('--acc-l'), cs.getPropertyValue('--acc-2'), '#facc15', '#22c55e', '#f472b6'];
+  const ps = Array.from({ length: 90 }, () => ({ x, y, vx: (Math.random() - .5) * 12, vy: -Math.random() * 12 - 4, r: Math.random() * 6 + 3, c: cols[Math.random() * 5 | 0], a: Math.random() * 6, life: 1 }));
+  const tick = () => { g.clearRect(0, 0, c.width, c.height); let alive = 0;
+    ps.forEach(p => { p.vy += .35; p.x += p.vx; p.y += p.vy; p.a += .2; p.life -= .012; if (p.life > 0) { alive++; g.save(); g.globalAlpha = p.life; g.translate(p.x, p.y); g.rotate(p.a); g.fillStyle = p.c; g.fillRect(-p.r / 2, -p.r / 4, p.r, p.r / 2); g.restore(); } });
+    alive ? requestAnimationFrame(tick) : c.remove(); };
+  tick();
+}
+let lastClick = { x: innerWidth / 2, y: innerHeight / 2 };
+document.addEventListener('pointerdown', e => lastClick = { x: e.clientX, y: e.clientY }, true);
 $$('[data-go]').forEach(b => b.onclick = () => go(b.dataset.go, b.dataset.p || null));
 function currentStage() { return route === 'list' ? param : route === 'doc' ? findDoc(param)?.type : route === 'new' ? 'QT' : null; }
 function renderPipe() {
@@ -434,6 +530,7 @@ function renderPipe() {
 function render() {
   renderPipe();
   ({ list: viewList, doc: viewDoc, new: viewNew, customers: viewCustomers, products: viewProducts, settings: viewSettings })[route]();
+  afterRender();
 }
 
 /* ---------- Stage list ---------- */
@@ -449,12 +546,12 @@ function viewList() {
   const openDocs = all.filter(isOpen), fin = all.filter(d => d.status === 'finish');
   const filters = [['open', 'รอดำเนินการ'], ...Object.entries(T.st).filter(([k]) => k !== T.open), ['all', 'ทั้งหมด']];
   $('#main').innerHTML = `<div class="view">
-    <div class="head"><div><h1>${T.name}</h1><p>${type === 'QT' ? 'สร้างเอกสารได้ที่ขั้นนี้ขั้นเดียว แล้วกดส่งต่อไปขั้นถัดไป' : 'เอกสารในขั้นนี้มาจากขั้นก่อนหน้าอัตโนมัติ'}</p></div>
+    <div class="head"><div><span class="eyebrow">ขั้นที่ ${FLOW.indexOf(type) + 1} จาก 4</span><h1 class="hero">${T.name}</h1><p>${type === 'QT' ? 'สร้างเอกสารได้ที่ขั้นนี้ขั้นเดียว แล้วกดส่งต่อไปขั้นถัดไป' : 'เอกสารในขั้นนี้มาจากขั้นก่อนหน้าอัตโนมัติ'}</p></div>
       ${type === 'QT' ? '<button class="btn primary" id="nb" type="button">+ สร้างใบเสนอราคา</button>' : ''}</div>
     <div class="stats">
-      <div class="stat"><span>${T.st[T.open]}</span><b>${openDocs.length} ฉบับ</b></div>
-      <div class="stat"><span>มูลค่ารอดำเนินการ</span><b>฿${money(sumOf(openDocs))}</b></div>
-      <div class="stat"><span>${T.st.finish}</span><b>฿${money(sumOf(fin))}</b></div>
+      <div class="stat"><span>${T.st[T.open]}</span><b data-count="${openDocs.length}">${openDocs.length} ฉบับ</b></div>
+      <div class="stat glow"><span>มูลค่ารอดำเนินการ</span><b data-count="${sumOf(openDocs)}" data-fmt="money">฿${money(sumOf(openDocs))}</b></div>
+      <div class="stat"><span>${T.st.finish}</span><b data-count="${sumOf(fin)}" data-fmt="money">฿${money(sumOf(fin))}</b></div>
     </div>
     <div class="head">
       <div class="seg">${filters.map(([k, v]) => `<button data-f="${k}" aria-pressed="${filt === k}" type="button">${v}</button>`).join('')}</div>
@@ -472,8 +569,8 @@ function viewList() {
   </div>`;
   $('#nb')?.addEventListener('click', () => go('new', 'fresh'));
   $('#nb2')?.addEventListener('click', () => go('new', 'fresh'));
-  $$('[data-f]').forEach(b => b.onclick = () => { filt = b.dataset.f; viewList(); });
-  $('#ds').oninput = e => { search = e.target.value; const p = e.target.selectionStart; viewList(); $('#ds').focus(); $('#ds').setSelectionRange(p, p); };
+  $$('[data-f]').forEach(b => b.onclick = () => { filt = b.dataset.f; viewList(); afterRender(); });
+  $('#ds').oninput = e => { search = e.target.value; const p = e.target.selectionStart; $('#main').classList.add('calm'); viewList(); afterRender(); $('#ds').focus(); $('#ds').setSelectionRange(p, p); };
   $$('.doc').forEach(el => { el.onclick = () => go('doc', el.dataset.no); el.onkeydown = e => e.key === 'Enter' && e.target === el && el.onclick(); });
   bindActions($('#main'));
 }
