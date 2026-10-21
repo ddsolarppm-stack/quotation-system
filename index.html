@@ -4,290 +4,615 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ระบบใบเสนอราคา – ทดสอบ</title>
-<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@500;600&family=Sarabun:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Sans+Thai+Looped:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  /* Layout: one column of form sections; items table collapses to cards on phones; totals summary sticks under items */
+  /* Layout: app shell — sidebar nav on desktop, bottom tab bar on phones; content column holds list / form / document views */
   :root {
-    --bg: #eef1f5; --paper: #ffffff; --fg: #1f2733; --muted: #5d6878; --line: #d6dce5;
-    --accent: #1d5fa8; --accent-fg: #ffffff; --soft: #e6eef8; --danger: #b3261e;
-    --display: 'Prompt', 'Tahoma', sans-serif; --body: 'Sarabun', 'Tahoma', sans-serif;
+    --ocean-l: #1f5fae; --ocean-d: #7fb2f0;
+    --forest-l: #1d7a55; --forest-d: #6fd3a6;
+    --sunset-l: #c2560f; --sunset-d: #f5a462;
+    --plum-l: #7a3fa8; --plum-d: #c9a0ef;
+    --acc-l: var(--ocean-l); --acc-d: var(--ocean-d);
+
+    --bg: #f3f5f8; --surface: #ffffff; --surface-2: #f8f9fb; --fg: #1b2230; --muted: #5f6b7c; --line: #dfe3ea;
+    --accent: var(--acc-l); --accent-fg: #ffffff;
+    --accent-soft: color-mix(in srgb, var(--accent) 12%, var(--surface));
+    --ok: #1f7a4a; --warn: #a96500; --bad: #b3261e; --info: #3a5a8c;
+    --shadow: 0 1px 2px rgba(20,30,50,.06), 0 4px 16px rgba(20,30,50,.06);
+    --display: 'IBM Plex Sans Thai', 'Tahoma', sans-serif;
+    --body: 'IBM Plex Sans Thai Looped', 'IBM Plex Sans Thai', 'Tahoma', sans-serif;
   }
+  :root[data-palette="forest"] { --acc-l: var(--forest-l); --acc-d: var(--forest-d); }
+  :root[data-palette="sunset"] { --acc-l: var(--sunset-l); --acc-d: var(--sunset-d); }
+  :root[data-palette="plum"]   { --acc-l: var(--plum-l);   --acc-d: var(--plum-d); }
   @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-    --bg: #12161c; --paper: #1b2129; --fg: #e5e9ef; --muted: #9aa5b4; --line: #2f3844;
-    --accent: #6ea8ec; --accent-fg: #0d1520; --soft: #1f2d3e; --danger: #f2948d; color-scheme: dark } }
+    --bg: #11151b; --surface: #1a2028; --surface-2: #151a21; --fg: #e6eaf0; --muted: #9ba6b5; --line: #2c3540;
+    --accent: var(--acc-d); --accent-fg: #0e141b;
+    --ok: #6fd39c; --warn: #f0b860; --bad: #f19a92; --info: #9dbbe8;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.25); color-scheme: dark } }
   :root[data-theme="dark"] {
-    --bg: #12161c; --paper: #1b2129; --fg: #e5e9ef; --muted: #9aa5b4; --line: #2f3844;
-    --accent: #6ea8ec; --accent-fg: #0d1520; --soft: #1f2d3e; --danger: #f2948d; color-scheme: dark }
+    --bg: #11151b; --surface: #1a2028; --surface-2: #151a21; --fg: #e6eaf0; --muted: #9ba6b5; --line: #2c3540;
+    --accent: var(--acc-d); --accent-fg: #0e141b;
+    --ok: #6fd39c; --warn: #f0b860; --bad: #f19a92; --info: #9dbbe8;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.25); color-scheme: dark }
 
   * { box-sizing: border-box; }
-  body { margin: 0;
-    background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 16px; line-height: 1.5;
-    padding-block: 16px 40px;
-    padding-left: max(16px, env(safe-area-inset-left, 0px));
-    padding-right: max(16px, env(safe-area-inset-right, 0px));
-  }
-  .wrap { max-width: 920px; margin: 0 auto; display: grid; gap: 16px; }
-  h1, h2 { font-family: var(--display); font-weight: 600; margin: 0; text-wrap: balance; }
-  h1 { font-size: clamp(1.3rem, 4.5vw, 1.75rem); }
-  h2 { font-size: 1.05rem; }
-  .top { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
-  .clock { color: var(--muted); font-variant-numeric: tabular-nums; }
-  .badge { display: inline-block; font-size: .8rem; padding: 2px 10px; border-radius: 999px; background: var(--soft); color: var(--accent); }
-
-  .tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
-  .tabs button {
-    flex: 0 0 auto; font: 500 .95rem var(--display); padding: 8px 14px; border-radius: 8px;
-    border: 1px solid var(--line); background: var(--paper); color: var(--fg); cursor: pointer;
-  }
-  .tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
-
-  section { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
-  .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
-  label { display: grid; gap: 4px; font-size: .9rem; color: var(--muted); }
-  input, textarea, select {
-    font: inherit; color: var(--fg); background: var(--paper); border: 1px solid var(--line);
-    border-radius: 6px; padding: 8px 10px; width: 100%; min-width: 0;
-  }
-  textarea { resize: vertical; min-height: 64px; }
-  input:focus-visible, textarea:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-  .docno { font-family: var(--display); font-size: 1.15rem; color: var(--accent); font-variant-numeric: tabular-nums; }
-
-  table { width: 100%; border-collapse: collapse; }
-  th { font: 500 .85rem var(--display); color: var(--muted); text-align: left; padding: 6px; border-bottom: 1px solid var(--line); }
-  td { padding: 6px; vertical-align: top; }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.55 var(--body); }
+  h1, h2, h3 { font-family: var(--display); margin: 0; text-wrap: balance; }
+  h1 { font-size: 1.45rem; font-weight: 600; }
+  h2 { font-size: 1.05rem; font-weight: 600; }
+  button, input, select, textarea { font: inherit; color: inherit; }
   .num { text-align: right; font-variant-numeric: tabular-nums; }
-  td.amount { padding-top: 14px; white-space: nowrap; }
-  .del { border: 0; background: none; color: var(--danger); font-size: 1.2rem; cursor: pointer; padding: 6px 8px; }
-  .btn { font: 500 .95rem var(--display); padding: 10px 16px; border-radius: 8px; cursor: pointer; border: 1px solid var(--accent); }
-  .btn.primary { background: var(--accent); color: var(--accent-fg); }
-  .btn.ghost { background: transparent; color: var(--accent); }
 
-  .totals { display: grid; gap: 6px; margin-left: auto; width: 100%; max-width: 360px; }
-  .totals div { display: flex; justify-content: space-between; gap: 12px; font-variant-numeric: tabular-nums; }
-  .totals .grand { font: 600 1.15rem var(--display); border-top: 1px solid var(--line); padding-top: 8px; }
-  .totals input { width: 110px; text-align: right; padding: 4px 8px; }
-  .words { text-align: right; color: var(--muted); font-size: .95rem; }
-  .actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
-  .note { font-size: .85rem; color: var(--muted); }
-  .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-    background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 8px; max-width: calc(100% - 32px); }
-
-  /* Phones: item rows become stacked cards */
-  @media (max-width: 640px) {
-    thead { display: none; }
-    tbody tr { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px 0; border-bottom: 1px solid var(--line); }
-    td { padding: 0; }
-    td.desc { grid-column: 1 / -1; }
-    td[data-label]::before { content: attr(data-label); display: block; font-size: .8rem; color: var(--muted); }
-    td.amount { padding-top: 0; text-align: left; }
-    td.rm { text-align: right; }
+  .app { display: grid; grid-template-columns: 232px 1fr; min-height: 100%; }
+  .side {
+    background: var(--surface); border-right: 1px solid var(--line); padding: 20px 12px;
+    padding-left: max(12px, env(safe-area-inset-left, 0px));
+    display: flex; flex-direction: column; gap: 4px; position: sticky; top: 0; height: 100vh;
   }
-  @media (prefers-reduced-motion: no-preference) { .tabs button { transition: background .15s; } }
+  .brand { display: flex; align-items: center; gap: 10px; padding: 0 8px 18px; }
+  .logo { width: 34px; height: 34px; border-radius: 9px; background: var(--accent); color: var(--accent-fg);
+    display: grid; place-items: center; font: 600 1rem var(--display); }
+  .brand b { font-family: var(--display); display: block; line-height: 1.2; }
+  .brand small { color: var(--muted); font-size: .75rem; }
+  .nav { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 12px; border-radius: 8px; border: 0;
+    background: none; cursor: pointer; text-align: left; color: var(--muted); font-family: var(--display); font-weight: 500; }
+  .nav svg { width: 18px; height: 18px; flex: none; }
+  .nav:hover { background: var(--surface-2); color: var(--fg); }
+  .nav[aria-current="page"] { background: var(--accent-soft); color: var(--accent); }
+  .side .spacer { flex: 1; }
+  .newbtn { margin-bottom: 10px; justify-content: center; }
+
+  main { min-width: 0; padding-block: 24px 48px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .view { max-width: 1040px; margin: 0 auto; display: grid; gap: 16px; }
+  .head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+  .head p { margin: 2px 0 0; color: var(--muted); }
+
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); padding: 18px; display: grid; gap: 14px; min-width: 0; }
+  .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+  label.f { display: grid; gap: 4px; font-size: .85rem; color: var(--muted); }
+  input, select, textarea { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; width: 100%; min-width: 0; }
+  textarea { resize: vertical; min-height: 60px; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .btn { display: inline-flex; align-items: center; gap: 6px; border-radius: 8px; padding: 9px 16px; cursor: pointer;
+    font-family: var(--display); font-weight: 500; border: 1px solid var(--line); background: var(--surface); }
+  .btn:hover { border-color: var(--accent); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+  .btn.small { padding: 5px 10px; font-size: .85rem; }
+  .btn.link { border: 0; background: none; color: var(--accent); padding: 4px 0; }
+  .btn svg { width: 16px; height: 16px; }
+  .icon-btn { border: 0; background: none; cursor: pointer; color: var(--muted); padding: 6px; border-radius: 6px; }
+  .icon-btn:hover { color: var(--bad); background: var(--surface-2); }
+
+  .chips { display: flex; gap: 6px; overflow-x: auto; }
+  .chip { flex: none; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 12px; cursor: pointer; font-size: .85rem; }
+  .chip[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+
+  .pill { display: inline-flex; align-items: center; gap: 6px; font-size: .78rem; padding: 2px 10px; border-radius: 999px; white-space: nowrap;
+    background: color-mix(in srgb, currentColor 12%, transparent); }
+  .pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .st-draft { color: var(--muted); } .st-wait { color: var(--warn); } .st-ok { color: var(--ok); } .st-cancel { color: var(--bad); } .st-done { color: var(--info); }
+  .tag { font: 500 .72rem var(--display); letter-spacing: .04em; color: var(--accent); background: var(--accent-soft); padding: 1px 7px; border-radius: 5px; }
+
+  .tablewrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th { font: 500 .8rem var(--display); color: var(--muted); text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  td { padding: 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  tr.click { cursor: pointer; } tr.click:hover td { background: var(--surface-2); }
+  .sub { color: var(--muted); font-size: .82rem; }
+  .empty { text-align: center; color: var(--muted); padding: 28px 12px; }
+
+  .stats { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+  .stat b { display: block; font: 600 1.3rem var(--display); font-variant-numeric: tabular-nums; }
+  .stat span { color: var(--muted); font-size: .82rem; }
+
+  /* Pickers */
+  .picker { position: relative; }
+  .menu { position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + 4px); background: var(--surface); border: 1px solid var(--line);
+    border-radius: 10px; box-shadow: var(--shadow); max-height: 280px; overflow-y: auto; padding: 4px; }
+  .opt { display: flex; justify-content: space-between; gap: 10px; width: 100%; text-align: left; padding: 8px 10px; border: 0; background: none; border-radius: 7px; cursor: pointer; }
+  .opt:hover, .opt.hl { background: var(--accent-soft); }
+  .opt.add { color: var(--accent); font-weight: 500; }
+  .selected-cust { display: grid; gap: 2px; padding: 12px 14px; border-radius: 10px; background: var(--accent-soft); }
+  .selected-cust b { font-family: var(--display); }
+  .addline { display: grid; grid-template-columns: 1fr 90px auto; gap: 8px; align-items: end; }
+  .lines input { padding: 6px 8px; }
+  .lines .q { width: 80px; } .lines .p { width: 120px; }
+  .totals { display: grid; gap: 6px; width: 100%; max-width: 360px; margin-left: auto; }
+  .totals div { display: flex; justify-content: space-between; gap: 12px; font-variant-numeric: tabular-nums; }
+  .totals .grand { border-top: 1px solid var(--line); padding-top: 8px; font: 600 1.15rem var(--display); color: var(--accent); }
+  .words { text-align: right; color: var(--muted); font-size: .9rem; }
+  .bar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+
+  /* Document paper */
+  .paper { background: #ffffff; color: #1b2230; border-radius: 6px; box-shadow: var(--shadow); padding: clamp(18px, 4vw, 44px); display: grid; gap: 22px; max-width: 820px; width: 100%; margin: 0 auto; border-top: 6px solid var(--acc-l); }
+  .paper .row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; }
+  .paper h2 { color: var(--acc-l); font-size: 1.4rem; }
+  .paper .muted { color: #5f6b7c; font-size: .85rem; }
+  .paper table th { color: #5f6b7c; border-color: #dfe3ea; }
+  .paper table td { border-color: #eceff3; }
+  .paper .meta { display: grid; grid-template-columns: auto auto; gap: 2px 14px; font-size: .9rem; align-content: start; }
+  .paper .grand { color: var(--acc-l); }
+  .paper .totals div { color: #1b2230; }
+  .signs { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 24px; padding-top: 24px; }
+  .signs div { border-top: 1px dashed #b8c0cc; padding-top: 6px; text-align: center; font-size: .85rem; color: #5f6b7c; }
+
+  /* Theme swatches */
+  .swatches { display: flex; flex-wrap: wrap; gap: 10px; }
+  .sw { display: flex; align-items: center; gap: 8px; padding: 8px 14px 8px 8px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; }
+  .sw i { width: 26px; height: 26px; border-radius: 7px; display: block; }
+  .sw[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+
+  dialog { border: 1px solid var(--line); border-radius: 14px; padding: 0; background: var(--surface); color: var(--fg); width: min(520px, calc(100% - 32px)); box-shadow: var(--shadow); }
+  dialog::backdrop { background: rgba(10, 15, 25, .45); }
+  dialog form { padding: 20px; display: grid; gap: 12px; }
+  .toast { position: fixed; z-index: 50; left: 50%; transform: translateX(-50%); bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+    background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 10px; max-width: calc(100% - 32px); box-shadow: var(--shadow); }
+
+  @media (min-width: 861px) { .toast { bottom: 24px; } .only-mobile { display: none !important; } }
+  @media (max-width: 860px) {
+    .app { grid-template-columns: 1fr; }
+    .side { position: fixed; z-index: 30; inset: auto 0 0 0; height: auto; flex-direction: row; justify-content: space-around; padding: 6px 4px;
+      padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px)); border-right: 0; border-top: 1px solid var(--line); }
+    .brand, .side .spacer, .newbtn { display: none; }
+    .nav { flex-direction: column; gap: 2px; font-size: .72rem; padding: 6px 4px; text-align: center; width: auto; flex: 1; }
+    main { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
+    .hide-sm { display: none; }
+    .addline { grid-template-columns: 1fr 70px; } .addline .btn { grid-column: 1 / -1; justify-content: center; }
+    .lines thead { display: none; }
+    .lines tr { display: grid; grid-template-columns: 1fr 1fr auto; gap: 6px 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+    .lines td { border: 0; padding: 0; }
+    .lines td.n { grid-column: 1 / -1; }
+    .lines .q, .lines .p { width: 100%; }
+  }
+  @media (prefers-reduced-motion: no-preference) { .view { animation: in .18s ease-out; } @keyframes in { from { opacity: .4; transform: translateY(4px); } } }
 </style>
 </head>
 <body>
 
-<div class="wrap">
-  <div class="top">
-    <h1>ระบบออกเอกสาร <span class="badge">ทดสอบ</span></h1>
-    <div class="clock" id="clock"></div>
-  </div>
-
-  <div class="tabs" role="tablist" id="tabs"></div>
-
-  <section aria-label="ข้อมูลเอกสาร">
-    <div class="top">
-      <h2 id="docTitle">ใบเสนอราคา</h2>
-      <div>เลขที่ <span class="docno" id="docNo"></span></div>
-    </div>
-    <div class="grid">
-      <label>วันที่เอกสาร <input type="date" id="docDate"></label>
-      <label id="extraWrap"><span id="extraLabel">ยืนราคาถึงวันที่</span> <input type="date" id="extraDate"></label>
-      <label>อ้างอิง <input id="ref" placeholder="เช่น เลขที่ใบเสนอราคา"></label>
-    </div>
-  </section>
-
-  <section aria-label="ข้อมูลลูกค้า">
-    <h2>ลูกค้า</h2>
-    <div class="grid">
-      <label>ชื่อลูกค้า / บริษัท <input id="custName" value="บริษัท ตัวอย่าง จำกัด"></label>
-      <label>เลขประจำตัวผู้เสียภาษี (13 หลัก) <input id="taxId" inputmode="numeric" maxlength="13" value="0105561234567"></label>
-      <label>สาขา <input id="branch" value="สำนักงานใหญ่"></label>
-    </div>
-    <label>ที่อยู่ <textarea id="address">99/1 ถนนตัวอย่าง แขวงลาดยาว เขตจตุจักร กรุงเทพฯ 10900</textarea></label>
-  </section>
-
-  <section aria-label="รายการสินค้า">
-    <h2>รายการ</h2>
-    <div style="overflow-x:auto">
-      <table>
-        <thead><tr>
-          <th style="width:40%">รายละเอียด</th><th class="num">จำนวน</th><th>หน่วย</th>
-          <th class="num">ราคา/หน่วย</th><th class="num">จำนวนเงิน</th><th></th>
-        </tr></thead>
-        <tbody id="items"></tbody>
-      </table>
-    </div>
-    <div><button class="btn ghost" id="addRow" type="button">+ เพิ่มรายการ</button></div>
-
-    <div class="totals">
-      <div><span>รวมเป็นเงิน</span><span id="subtotal"></span></div>
-      <div><span>ส่วนลด</span><input id="discount" type="number" min="0" step="0.01" value="0" inputmode="decimal"></div>
-      <div><span>ยอดหลังหักส่วนลด</span><span id="afterDisc"></span></div>
-      <div><span>ภาษีมูลค่าเพิ่ม 7%</span><span id="vat"></span></div>
-      <div class="grand"><span>จำนวนเงินรวมทั้งสิ้น</span><span id="grand"></span></div>
-    </div>
-    <div class="words" id="words"></div>
-  </section>
-
-  <section aria-label="หมายเหตุ">
-    <label>หมายเหตุ <textarea id="remark">ชำระเงินภายใน 30 วันนับจากวันที่ในเอกสาร</textarea></label>
-    <div class="actions">
-      <button class="btn ghost" id="reset" type="button">ล้างฟอร์ม</button>
-      <button class="btn primary" id="save" type="button">บันทึกเอกสาร</button>
-    </div>
-    <p class="note">ข้อมูลในฟอร์มเป็นตัวอย่าง หน้านี้ยังไม่ได้เชื่อมกับ Google Sheet เลขที่เอกสารจึงเป็นการจำลอง</p>
-  </section>
+<div class="app">
+  <nav class="side" aria-label="เมนูหลัก">
+    <div class="brand"><div class="logo">QS</div><div><b>ระบบออกเอกสาร</b><small>เวอร์ชันทดสอบ</small></div></div>
+    <button class="btn primary newbtn" data-go="new">+ สร้างเอกสาร</button>
+    <button class="nav" data-go="docs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h6"/></svg>เอกสาร</button>
+    <button class="nav only-mobile" data-go="new"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>สร้าง</button>
+    <button class="nav" data-go="customers"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18 14.8c2 .7 3.2 2.5 3.6 5.2"/></svg>ลูกค้า</button>
+    <button class="nav" data-go="products"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5z"/><path d="M3 7.5 12 12l9-4.5M12 12v9"/></svg>สินค้า</button>
+    <div class="spacer"></div>
+    <button class="nav" data-go="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg>ธีม</button>
+  </nav>
+  <main id="main"></main>
 </div>
+
+<dialog id="dlg"><form method="dialog" id="dlgForm"></form></dialog>
 <div class="toast" id="toast" hidden></div>
 
 <script>
-  const DOCS = [
-    { key: 'QT', name: 'ใบเสนอราคา', extra: 'ยืนราคาถึงวันที่' },
-    { key: 'IV', name: 'ใบแจ้งหนี้', extra: 'ครบกำหนดชำระ' },
-    { key: 'DO', name: 'ใบส่งของ', extra: 'วันที่ส่งของ' },
-    { key: 'RC', name: 'ใบเสร็จรับเงิน / ใบกำกับภาษี', extra: null }
-  ];
-  // Simulated running numbers per type; the real ones will come from Google Sheet
-  const counters = { QT: 1, IV: 1, DO: 1, RC: 1 };
-  let current = DOCS[0];
-  const $ = id => document.getElementById(id);
-  const money = n => n.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const iso = d => d.toISOString().slice(0, 10);
+/* ---------- Mock database (stored in this browser only; Google Sheet later) ---------- */
+const KEY = 'qs-demo-v1';
+const TYPES = {
+  QT: { name: 'ใบเสนอราคา', extra: 'ยืนราคาถึง' },
+  IV: { name: 'ใบแจ้งหนี้', extra: 'ครบกำหนดชำระ' },
+  DO: { name: 'ใบส่งของ', extra: 'วันที่ส่งของ' },
+  RC: { name: 'ใบเสร็จรับเงิน/ใบกำกับภาษี', extra: null }
+};
+const STATUS = { draft: ['ร่าง', 'st-draft'], wait: ['รอตอบรับ', 'st-wait'], ok: ['อนุมัติแล้ว', 'st-ok'], done: ['ออกเอกสารต่อแล้ว', 'st-done'], cancel: ['ยกเลิก', 'st-cancel'] };
+const COMPANY = { name: 'บริษัท ดีดี โซลาร์ จำกัด (ตัวอย่าง)', addr: '123 ถนนพหลโยธิน แขวงจตุจักร เขตจตุจักร กรุงเทพฯ 10900', tax: '0105500000000', phone: '02-000-0000' };
 
-  function docNumber(type) {
-    const d = new Date();
-    const yy = String(d.getFullYear() + 543).slice(-2);
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    return `${type}${yy}${mm}-${String(counters[type]).padStart(4, '0')}`;
-  }
-
-  function renderTabs() {
-    $('tabs').innerHTML = '';
-    DOCS.forEach(doc => {
-      const b = document.createElement('button');
-      b.type = 'button'; b.role = 'tab'; b.textContent = doc.name;
-      b.setAttribute('aria-selected', doc === current);
-      b.onclick = () => { current = doc; renderTabs(); renderHeader(); };
-      $('tabs').appendChild(b);
-    });
-  }
-
-  function renderHeader() {
-    $('docTitle').textContent = current.name;
-    $('docNo').textContent = docNumber(current.key);
-    $('extraWrap').hidden = !current.extra;
-    if (current.extra) $('extraLabel').textContent = current.extra;
-  }
-
-  let rowId = 0;
-  function addRow(item = { desc: '', qty: 1, unit: 'ชิ้น', price: 0 }) {
-    const id = ++rowId;
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td class="desc" data-label="รายละเอียด"><input id="d${id}" class="f-desc"></td>
-      <td data-label="จำนวน"><input id="q${id}" class="f-qty num" type="number" min="0" step="any" inputmode="decimal"></td>
-      <td data-label="หน่วย"><input id="u${id}" class="f-unit"></td>
-      <td data-label="ราคา/หน่วย"><input id="p${id}" class="f-price num" type="number" min="0" step="0.01" inputmode="decimal"></td>
-      <td class="amount num" data-label="จำนวนเงิน"><span class="f-amt"></span></td>
-      <td class="rm"><button class="del" type="button" aria-label="ลบรายการ">×</button></td>`;
-    tr.querySelector('.f-desc').value = item.desc;
-    tr.querySelector('.f-qty').value = item.qty;
-    tr.querySelector('.f-unit').value = item.unit;
-    tr.querySelector('.f-price').value = item.price;
-    tr.querySelector('.del').onclick = () => { tr.remove(); calc(); };
-    tr.addEventListener('input', calc);
-    $('items').appendChild(tr);
-    calc();
-  }
-
-  function calc() {
-    let sub = 0;
-    $('items').querySelectorAll('tr').forEach(tr => {
-      const amt = (+tr.querySelector('.f-qty').value || 0) * (+tr.querySelector('.f-price').value || 0);
-      tr.querySelector('.f-amt').textContent = money(amt);
-      sub += amt;
-    });
-    const after = Math.max(0, sub - (+$('discount').value || 0));
-    const vat = Math.round(after * 7) / 100;
-    const grand = after + vat;
-    $('subtotal').textContent = money(sub);
-    $('afterDisc').textContent = money(after);
-    $('vat').textContent = money(vat);
-    $('grand').textContent = money(grand);
-    $('words').textContent = '(' + bahtText(grand) + ')';
-  }
-
-  // Thai baht text, e.g. 1,021.50 -> หนึ่งพันยี่สิบเอ็ดบาทห้าสิบสตางค์
-  function thaiNum(num, hasHigher) {
-    const digits = ['', 'หนึ่ง', 'สอง', 'สาม', 'สี่', 'ห้า', 'หก', 'เจ็ด', 'แปด', 'เก้า'];
-    const pos = ['', 'สิบ', 'ร้อย', 'พัน', 'หมื่น', 'แสน'];
-    if (num >= 1e6) return thaiNum(Math.floor(num / 1e6), hasHigher) + 'ล้าน' + thaiNum(num % 1e6, true);
-    const s = String(num); let out = '';
-    for (let i = 0; i < s.length; i++) {
-      const d = +s[i], p = s.length - i - 1;
-      if (!d) continue;
-      if (p === 1 && d === 1) out += 'สิบ';
-      else if (p === 1 && d === 2) out += 'ยี่สิบ';
-      else if (p === 0 && d === 1 && (s.length > 1 || hasHigher)) out += 'เอ็ด';
-      else out += digits[d] + pos[p];
-    }
-    return out;
-  }
-  function bahtText(n) {
-    const total = Math.round(n * 100);
-    const baht = Math.floor(total / 100), sat = total % 100;
-    if (!baht && !sat) return 'ศูนย์บาทถ้วน';
-    return (baht ? thaiNum(baht) + 'บาท' : '') + (sat ? thaiNum(sat) + 'สตางค์' : 'ถ้วน');
-  }
-
-  function toast(msg) {
-    $('toast').textContent = msg; $('toast').hidden = false;
-    clearTimeout(toast.t); toast.t = setTimeout(() => $('toast').hidden = true, 3000);
-  }
-
-  function resetForm() {
-    $('items').innerHTML = '';
-    addRow();
-    ['ref', 'custName', 'taxId', 'branch', 'address', 'remark'].forEach(id => $(id).value = '');
-    $('discount').value = 0; calc();
-  }
-
-  $('addRow').onclick = () => addRow();
-  $('discount').addEventListener('input', calc);
-  $('reset').onclick = resetForm;
-  $('save').onclick = () => {
-    const tax = $('taxId').value.trim();
-    if (!$('custName').value.trim()) return toast('กรุณากรอกชื่อลูกค้า');
-    if (tax && !/^\d{13}$/.test(tax)) return toast('เลขประจำตัวผู้เสียภาษีต้องเป็นตัวเลข 13 หลัก');
-    const no = $('docNo').textContent;
-    counters[current.key]++;
-    renderHeader();
-    toast(`บันทึก ${current.name} เลขที่ ${no} แล้ว (จำลอง)`);
+function seed() {
+  const d = (off) => iso(new Date(Date.now() - off * 864e5));
+  const ym = yymm(new Date());
+  return {
+    customers: [
+      { id: 'C001', name: 'บริษัท สยามพลังงาน จำกัด', tax: '0105561234567', branch: 'สำนักงานใหญ่', addr: '99/1 ถนนวิภาวดีรังสิต แขวงลาดยาว เขตจตุจักร กรุงเทพฯ 10900', contact: 'คุณสมชาย', phone: '081-234-5678' },
+      { id: 'C002', name: 'หจก. เชียงใหม่ฟาร์ม', tax: '0503558765432', branch: 'สำนักงานใหญ่', addr: '45 หมู่ 3 ต.แม่เหียะ อ.เมือง จ.เชียงใหม่ 50100', contact: 'คุณมาลี', phone: '089-111-2233' },
+      { id: 'C003', name: 'โรงเรียนอนุบาลบ้านสวน', tax: '0994000123456', branch: '00001', addr: '12 ถนนสุขุมวิท ต.บ้านสวน อ.เมือง จ.ชลบุรี 20000', contact: 'ครูวิไล', phone: '038-123-456' },
+      { id: 'C004', name: 'คุณประเสริฐ ใจดี', tax: '3100500123456', branch: '-', addr: '88/8 หมู่บ้านลดาวัลย์ ถ.รามอินทรา กรุงเทพฯ 10230', contact: '', phone: '086-555-7788' }
+    ],
+    products: [
+      { id: 'P001', code: 'PV-550', name: 'แผงโซลาร์เซลล์ 550W Mono Half-cell', unit: 'แผง', price: 4500 },
+      { id: 'P002', code: 'INV-5K', name: 'อินเวอร์เตอร์ On-grid 5kW', unit: 'เครื่อง', price: 28500 },
+      { id: 'P003', code: 'INV-10K', name: 'อินเวอร์เตอร์ On-grid 10kW 3 เฟส', unit: 'เครื่อง', price: 52000 },
+      { id: 'P004', code: 'BAT-10', name: 'แบตเตอรี่ลิเธียม 10kWh', unit: 'ชุด', price: 89000 },
+      { id: 'P005', code: 'MNT-RF', name: 'ชุดรางยึดแผงบนหลังคาเมทัลชีท', unit: 'ชุด', price: 650 },
+      { id: 'P006', code: 'CBL-PV6', name: 'สาย PV1-F 6 sq.mm.', unit: 'เมตร', price: 38 },
+      { id: 'P007', code: 'SRV-INS', name: 'ค่าติดตั้งและเดินระบบ', unit: 'งาน', price: 15000 },
+      { id: 'P008', code: 'SRV-PEA', name: 'ค่าดำเนินการขออนุญาต กฟภ./กฟน.', unit: 'งาน', price: 8000 }
+    ],
+    docs: [
+      { no: `QT${ym}-0001`, type: 'QT', date: d(9), extra: d(-21), custId: 'C001', project: 'ติดตั้งโซลาร์รูฟ 5kW', status: 'ok', vatMode: 'ex', discount: 0, remark: '',
+        lines: [{ pid: 'P001', name: 'แผงโซลาร์เซลล์ 550W Mono Half-cell', unit: 'แผง', qty: 10, price: 4500 }, { pid: 'P002', name: 'อินเวอร์เตอร์ On-grid 5kW', unit: 'เครื่อง', qty: 1, price: 28500 }, { pid: 'P007', name: 'ค่าติดตั้งและเดินระบบ', unit: 'งาน', qty: 1, price: 15000 }] },
+      { no: `QT${ym}-0002`, type: 'QT', date: d(4), extra: d(-26), custId: 'C002', project: 'ระบบโซลาร์ปั๊มน้ำ', status: 'wait', vatMode: 'ex', discount: 2000, remark: '',
+        lines: [{ pid: 'P001', name: 'แผงโซลาร์เซลล์ 550W Mono Half-cell', unit: 'แผง', qty: 18, price: 4500 }, { pid: 'P003', name: 'อินเวอร์เตอร์ On-grid 10kW 3 เฟส', unit: 'เครื่อง', qty: 1, price: 52000 }] },
+      { no: `IV${ym}-0001`, type: 'IV', date: d(2), extra: d(-28), custId: 'C001', project: 'ติดตั้งโซลาร์รูฟ 5kW', status: 'wait', vatMode: 'ex', discount: 0, remark: '', ref: `QT${ym}-0001`,
+        lines: [{ pid: 'P001', name: 'แผงโซลาร์เซลล์ 550W Mono Half-cell', unit: 'แผง', qty: 10, price: 4500 }, { pid: 'P002', name: 'อินเวอร์เตอร์ On-grid 5kW', unit: 'เครื่อง', qty: 1, price: 28500 }, { pid: 'P007', name: 'ค่าติดตั้งและเดินระบบ', unit: 'งาน', qty: 1, price: 15000 }] }
+    ]
   };
+}
+let db;
+function load() { try { db = JSON.parse(localStorage.getItem(KEY)); } catch (e) {} if (!db || !db.customers) db = seed(); }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) {} }
 
-  function tick() {
-    $('clock').textContent = new Date().toLocaleString('th-TH', { dateStyle: 'full', timeStyle: 'medium' });
+/* ---------- Helpers ---------- */
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const money = n => (+n || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+function iso(d) { return new Date(d.getTime() - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10); }
+function yymm(d) { return String(d.getFullYear() + 543).slice(-2) + String(d.getMonth() + 1).padStart(2, '0'); }
+const thDate = s => s ? new Date(s + 'T00:00:00').toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' }) : '-';
+const cust = id => db.customers.find(c => c.id === id);
+const nextId = (arr, p) => p + String(arr.reduce((m, x) => Math.max(m, +x.id.slice(1)), 0) + 1).padStart(3, '0');
+
+function nextDocNo(type, dateStr) {
+  const prefix = type + yymm(new Date(dateStr + 'T00:00:00')) + '-';
+  const max = db.docs.filter(d => d.no.startsWith(prefix)).reduce((m, d) => Math.max(m, +d.no.slice(prefix.length)), 0);
+  return prefix + String(max + 1).padStart(4, '0');
+}
+function totals(doc) {
+  const sum = doc.lines.reduce((s, l) => s + (+l.qty || 0) * (+l.price || 0), 0);
+  const after = Math.max(0, sum - (+doc.discount || 0));
+  let base = after, vat = 0;
+  if (doc.vatMode === 'ex') vat = Math.round(after * 7) / 100;
+  if (doc.vatMode === 'in') { base = Math.round(after / 1.07 * 100) / 100; vat = Math.round((after - base) * 100) / 100; }
+  return { sum, after, base, vat, grand: doc.vatMode === 'ex' ? after + vat : after };
+}
+function thaiNum(num, hasHigher) {
+  const dg = ['', 'หนึ่ง', 'สอง', 'สาม', 'สี่', 'ห้า', 'หก', 'เจ็ด', 'แปด', 'เก้า'], ps = ['', 'สิบ', 'ร้อย', 'พัน', 'หมื่น', 'แสน'];
+  if (num >= 1e6) return thaiNum(Math.floor(num / 1e6), hasHigher) + 'ล้าน' + thaiNum(num % 1e6, true);
+  const s = String(num); let o = '';
+  for (let i = 0; i < s.length; i++) {
+    const d = +s[i], p = s.length - i - 1;
+    if (!d) continue;
+    if (p === 1 && d === 1) o += 'สิบ';
+    else if (p === 1 && d === 2) o += 'ยี่สิบ';
+    else if (p === 0 && d === 1 && (s.length > 1 || hasHigher)) o += 'เอ็ด';
+    else o += dg[d] + ps[p];
   }
+  return o;
+}
+function bahtText(n) {
+  const t = Math.round(n * 100), b = Math.floor(t / 100), s = t % 100;
+  if (!b && !s) return 'ศูนย์บาทถ้วน';
+  return (b ? thaiNum(b) + 'บาท' : '') + (s ? thaiNum(s) + 'สตางค์' : 'ถ้วน');
+}
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 2800); }
+const pill = s => `<span class="pill ${STATUS[s][1]}">${STATUS[s][0]}</span>`;
 
-  const today = new Date();
-  $('docDate').value = iso(today);
-  $('extraDate').value = iso(new Date(today.getTime() + 30 * 864e5));
-  renderTabs(); renderHeader();
-  addRow({ desc: 'แผงโซลาร์เซลล์ 550W Mono', qty: 10, unit: 'แผง', price: 4500 });
-  addRow({ desc: 'อินเวอร์เตอร์ 5kW', qty: 1, unit: 'เครื่อง', price: 28500 });
-  addRow({ desc: 'ค่าติดตั้งและเดินระบบ', qty: 1, unit: 'งาน', price: 15000 });
-  tick(); setInterval(tick, 1000);
+/* ---------- Router ---------- */
+let route = 'docs', param = null;
+function go(r, p = null) { route = r; param = p; render(); window.scrollTo(0, 0); }
+document.querySelectorAll('[data-go]').forEach(b => b.onclick = () => go(b.dataset.go));
+function render() {
+  document.querySelectorAll('.nav').forEach(n => n.setAttribute('aria-current', n.dataset.go === route || (route === 'doc' && n.dataset.go === 'docs') ? 'page' : 'false'));
+  ({ docs: viewDocs, doc: viewDoc, new: viewNew, customers: viewCustomers, products: viewProducts, settings: viewSettings })[route]();
+}
+
+/* ---------- Documents list ---------- */
+let docFilter = 'all', docSearch = '';
+function viewDocs() {
+  const list = db.docs.filter(d => (docFilter === 'all' || d.type === docFilter) &&
+    (!docSearch || (d.no + ' ' + (cust(d.custId)?.name || '') + ' ' + (d.project || '')).toLowerCase().includes(docSearch.toLowerCase())))
+    .sort((a, b) => b.date.localeCompare(a.date) || b.no.localeCompare(a.no));
+  const qt = db.docs.filter(d => d.type === 'QT');
+  const sumOf = arr => arr.reduce((s, d) => s + totals(d).grand, 0);
+  $('#main').innerHTML = `<div class="view">
+    <div class="head"><div><h1>เอกสารทั้งหมด</h1><p>${db.docs.length} ฉบับ · กดที่รายการเพื่อดูเอกสาร</p></div>
+      <button class="btn primary" id="nb">+ สร้างเอกสาร</button></div>
+    <div class="stats">
+      <div class="stat"><span>ใบเสนอราคารอตอบรับ</span><b>${qt.filter(d => d.status === 'wait').length} ฉบับ</b></div>
+      <div class="stat"><span>มูลค่ารอตอบรับ</span><b>${money(sumOf(qt.filter(d => d.status === 'wait')))}</b></div>
+      <div class="stat"><span>อนุมัติแล้ว</span><b>${money(sumOf(qt.filter(d => d.status === 'ok' || d.status === 'done')))}</b></div>
+    </div>
+    <div class="card">
+      <div class="head">
+        <div class="chips">${[['all', 'ทั้งหมด'], ...Object.entries(TYPES).map(([k, v]) => [k, v.name])].map(([k, v]) => `<button class="chip" data-f="${k}" aria-pressed="${docFilter === k}">${v}</button>`).join('')}</div>
+        <input id="ds" type="search" placeholder="ค้นหาเลขที่ ลูกค้า โครงการ" value="${esc(docSearch)}" style="max-width:280px">
+      </div>
+      <div class="tablewrap"><table>
+        <thead><tr><th>เลขที่</th><th>ลูกค้า</th><th class="hide-sm">วันที่</th><th class="num">ยอดรวม</th><th>สถานะ</th></tr></thead>
+        <tbody>${list.map(d => `<tr class="click" data-no="${esc(d.no)}" tabindex="0">
+          <td><span class="tag">${d.type}</span> <b>${esc(d.no)}</b><div class="sub">${esc(TYPES[d.type].name)}</div></td>
+          <td>${esc(cust(d.custId)?.name || '-')}<div class="sub">${esc(d.project || '')}</div></td>
+          <td class="hide-sm">${thDate(d.date)}</td>
+          <td class="num">${money(totals(d).grand)}</td><td>${pill(d.status)}</td></tr>`).join('') ||
+          `<tr><td colspan="5" class="empty">ยังไม่มีเอกสาร กด “สร้างเอกสาร” เพื่อเริ่มฉบับแรก</td></tr>`}</tbody>
+      </table></div>
+    </div></div>`;
+  $('#nb').onclick = () => go('new');
+  document.querySelectorAll('[data-f]').forEach(b => b.onclick = () => { docFilter = b.dataset.f; viewDocs(); });
+  $('#ds').oninput = e => { docSearch = e.target.value; const p = e.target.selectionStart; viewDocs(); const i = $('#ds'); i.focus(); i.setSelectionRange(p, p); };
+  document.querySelectorAll('tr[data-no]').forEach(tr => { tr.onclick = () => go('doc', tr.dataset.no); tr.onkeydown = e => e.key === 'Enter' && tr.onclick(); });
+}
+
+/* ---------- Single document ---------- */
+function viewDoc() {
+  const d = db.docs.find(x => x.no === param); if (!d) return go('docs');
+  const c = cust(d.custId) || {}, t = totals(d), T = TYPES[d.type];
+  const nextType = { QT: 'IV', IV: 'RC' }[d.type];
+  $('#main').innerHTML = `<div class="view">
+    <div class="head">
+      <div><button class="btn link" id="back">← กลับไปรายการเอกสาร</button><h1>${esc(d.no)}</h1></div>
+      <div class="bar">
+        <select id="st" aria-label="สถานะ" style="width:auto">${Object.entries(STATUS).map(([k, v]) => `<option value="${k}" ${k === d.status ? 'selected' : ''}>${v[0]}</option>`).join('')}</select>
+        ${nextType ? `<button class="btn" id="conv">สร้าง${TYPES[nextType].name}จากฉบับนี้</button>` : ''}
+        <button class="btn primary" id="dup">คัดลอกเป็นฉบับใหม่</button>
+      </div>
+    </div>
+    <article class="paper">
+      <div class="row">
+        <div><b style="font-family:var(--display);font-size:1.05rem">${esc(COMPANY.name)}</b>
+          <div class="muted">${esc(COMPANY.addr)}<br>เลขประจำตัวผู้เสียภาษี ${COMPANY.tax} · โทร ${COMPANY.phone}</div></div>
+        <div style="text-align:right"><h2>${T.name}</h2><div class="muted">ต้นฉบับ</div></div>
+      </div>
+      <div class="row">
+        <div style="max-width:420px"><div class="muted">ลูกค้า</div><b>${esc(c.name)}</b>
+          <div style="font-size:.9rem">${esc(c.addr)}<br>เลขประจำตัวผู้เสียภาษี ${esc(c.tax)} (${esc(c.branch)})${c.contact ? `<br>ผู้ติดต่อ ${esc(c.contact)} ${esc(c.phone)}` : ''}</div></div>
+        <div class="meta"><span class="muted">เลขที่</span><b>${esc(d.no)}</b><span class="muted">วันที่</span><span>${thDate(d.date)}</span>
+          ${T.extra ? `<span class="muted">${T.extra}</span><span>${thDate(d.extra)}</span>` : ''}
+          ${d.ref ? `<span class="muted">อ้างอิง</span><span>${esc(d.ref)}</span>` : ''}
+          ${d.project ? `<span class="muted">โครงการ</span><span>${esc(d.project)}</span>` : ''}</div>
+      </div>
+      <div class="tablewrap"><table>
+        <thead><tr><th>#</th><th>รายการ</th><th class="num">จำนวน</th><th>หน่วย</th><th class="num">ราคา/หน่วย</th><th class="num">จำนวนเงิน</th></tr></thead>
+        <tbody>${d.lines.map((l, i) => `<tr><td>${i + 1}</td><td>${esc(l.name)}</td><td class="num">${l.qty}</td><td>${esc(l.unit)}</td><td class="num">${money(l.price)}</td><td class="num">${money(l.qty * l.price)}</td></tr>`).join('')}</tbody>
+      </table></div>
+      <div class="row" style="align-items:flex-start">
+        <div style="flex:1 1 240px"><div class="muted">จำนวนเงินตัวอักษร</div><b>(${bahtText(t.grand)})</b>${d.remark ? `<div class="muted" style="margin-top:8px">หมายเหตุ: ${esc(d.remark)}</div>` : ''}</div>
+        ${totalsHtml(d, t)}
+      </div>
+      <div class="signs"><div>ผู้เสนอราคา / ผู้มีอำนาจลงนาม</div><div>ลูกค้า / ผู้อนุมัติ</div></div>
+    </article></div>`;
+  $('#back').onclick = () => go('docs');
+  $('#st').onchange = e => { d.status = e.target.value; save(); toast('อัปเดตสถานะแล้ว'); };
+  $('#dup').onclick = () => go('new', { from: d.no, type: d.type });
+  if (nextType) $('#conv').onclick = () => go('new', { from: d.no, type: nextType, ref: true });
+}
+function totalsHtml(d, t) {
+  return `<div class="totals">
+    <div><span>รวมเป็นเงิน</span><span>${money(t.sum)}</span></div>
+    ${+d.discount ? `<div><span>ส่วนลด</span><span>-${money(d.discount)}</span></div>` : ''}
+    ${d.vatMode === 'none' ? '' : `<div><span>${d.vatMode === 'in' ? 'มูลค่าก่อนภาษี' : 'ยอดหลังหักส่วนลด'}</span><span>${money(d.vatMode === 'in' ? t.base : t.after)}</span></div>
+    <div><span>ภาษีมูลค่าเพิ่ม 7%</span><span>${money(t.vat)}</span></div>`}
+    <div class="grand"><span>จำนวนเงินรวมทั้งสิ้น</span><span>${money(t.grand)}</span></div></div>`;
+}
+
+/* ---------- New document form ---------- */
+let draft;
+function viewNew() {
+  const today = iso(new Date());
+  if (param && param.from) {
+    const src = db.docs.find(x => x.no === param.from);
+    draft = { ...JSON.parse(JSON.stringify(src)), type: param.type, date: today, extra: iso(new Date(Date.now() + 30 * 864e5)), status: 'draft', ref: param.ref ? src.no : '' };
+  } else if (!draft || param === 'fresh') {
+    draft = { type: 'QT', date: today, extra: iso(new Date(Date.now() + 30 * 864e5)), custId: '', project: '', ref: '', vatMode: 'ex', discount: 0, remark: 'ยืนราคา 30 วัน · ชำระมัดจำ 50% เมื่อยืนยันสั่งซื้อ', lines: [], status: 'draft' };
+  }
+  param = null;
+  const T = TYPES[draft.type];
+  $('#main').innerHTML = `<div class="view">
+    <div class="head"><div><h1>สร้างเอกสารใหม่</h1><p>เลขที่จะได้ <b id="no" style="color:var(--accent)">${nextDocNo(draft.type, draft.date)}</b> (รันอัตโนมัติตามประเภทและเดือน)</p></div></div>
+    <div class="chips">${Object.entries(TYPES).map(([k, v]) => `<button class="chip" data-t="${k}" aria-pressed="${draft.type === k}">${v.name}</button>`).join('')}</div>
+
+    <div class="card"><h2>ลูกค้า</h2>
+      <div id="custBox"></div>
+      <div class="grid">
+        <label class="f">โครงการ / หัวข้องาน <input id="project" value="${esc(draft.project)}" placeholder="เช่น ติดตั้งโซลาร์รูฟ 5kW"></label>
+        <label class="f">วันที่เอกสาร <input id="date" type="date" value="${draft.date}"></label>
+        ${T.extra ? `<label class="f">${T.extra} <input id="extra" type="date" value="${draft.extra}"></label>` : ''}
+        <label class="f">อ้างอิงเอกสาร <input id="ref" value="${esc(draft.ref || '')}" placeholder="ไม่บังคับ"></label>
+      </div>
+    </div>
+
+    <div class="card"><div class="head"><h2>รายการสินค้า / บริการ</h2>
+        <label class="f" style="flex-direction:row;display:flex;align-items:center;gap:8px">ราคา
+          <select id="vat" style="width:auto"><option value="ex">ไม่รวม VAT (บวกเพิ่ม 7%)</option><option value="in">รวม VAT แล้ว</option><option value="none">ไม่มี VAT</option></select></label></div>
+      <div class="addline">
+        <label class="f picker">ค้นหาสินค้าจากฐานข้อมูล <input id="ps" placeholder="พิมพ์ชื่อหรือรหัสสินค้า" autocomplete="off"><div class="menu" id="pm" hidden></div></label>
+        <label class="f">จำนวน <input id="pq" type="number" min="0" step="any" value="1" inputmode="decimal"></label>
+        <button class="btn primary" id="padd" type="button">+ เพิ่ม</button>
+      </div>
+      <div class="tablewrap"><table class="lines">
+        <thead><tr><th>รายการ</th><th class="num">จำนวน</th><th class="num">ราคา/หน่วย</th><th class="num">จำนวนเงิน</th><th></th></tr></thead>
+        <tbody id="lines"></tbody></table></div>
+      <div class="grid" style="align-items:start">
+        <label class="f">หมายเหตุ <textarea id="remark">${esc(draft.remark)}</textarea></label>
+        <div><div class="totals" id="tot"></div><label class="f" style="max-width:360px;margin:8px 0 0 auto">ส่วนลดท้ายบิล (บาท) <input id="disc" type="number" min="0" step="0.01" value="${draft.discount}" inputmode="decimal"></label></div>
+      </div>
+      <div class="words" id="words"></div>
+    </div>
+    <div class="bar"><button class="btn" id="clear">ล้างฟอร์ม</button><button class="btn" id="sdraft">บันทึกร่าง</button><button class="btn primary" id="ssave">บันทึกและออกเอกสาร</button></div>
+  </div>`;
+  $('#vat').value = draft.vatMode;
+  document.querySelectorAll('[data-t]').forEach(b => b.onclick = () => { syncDraft(); draft.type = b.dataset.t; viewNew(); });
+  ['project', 'date', 'extra', 'ref', 'remark'].forEach(id => { const el = $('#' + id); if (el) el.oninput = () => { syncDraft(); if (id === 'date') $('#no').textContent = nextDocNo(draft.type, draft.date); }; });
+  $('#vat').onchange = () => { draft.vatMode = $('#vat').value; drawLines(); };
+  $('#disc').oninput = () => { draft.discount = +$('#disc').value || 0; drawTotals(); };
+  $('#clear').onclick = () => go('new', 'fresh');
+  $('#sdraft').onclick = () => commit('draft');
+  $('#ssave').onclick = () => commit(draft.type === 'QT' ? 'wait' : draft.type === 'RC' ? 'ok' : 'wait');
+  drawCust(); drawLines(); setupProductPicker();
+}
+function syncDraft() {
+  draft.project = $('#project').value; draft.date = $('#date').value || draft.date; draft.ref = $('#ref').value; draft.remark = $('#remark').value;
+  if ($('#extra')) draft.extra = $('#extra').value;
+}
+function drawCust() {
+  const c = cust(draft.custId), box = $('#custBox');
+  if (c) {
+    box.innerHTML = `<div class="selected-cust"><div class="head"><b>${esc(c.name)}</b><button class="btn small" id="cchg" type="button">เปลี่ยนลูกค้า</button></div>
+      <span class="sub">${esc(c.addr)}</span><span class="sub">เลขผู้เสียภาษี ${esc(c.tax)} · ${esc(c.branch)}${c.contact ? ' · ' + esc(c.contact) : ''} ${esc(c.phone)}</span></div>`;
+    $('#cchg').onclick = () => { draft.custId = ''; drawCust(); $('#cs').focus(); };
+    return;
+  }
+  box.innerHTML = `<label class="f picker">เลือกลูกค้าจากฐานข้อมูล (ต้องเป็นลูกค้าที่มีอยู่แล้ว)
+      <input id="cs" placeholder="พิมพ์ชื่อลูกค้า หรือเลขผู้เสียภาษี" autocomplete="off"><div class="menu" id="cm" hidden></div></label>`;
+  const inp = $('#cs'), menu = $('#cm');
+  const show = () => {
+    const q = inp.value.trim().toLowerCase();
+    const res = db.customers.filter(c => !q || (c.name + c.tax + c.contact).toLowerCase().includes(q)).slice(0, 8);
+    menu.innerHTML = res.map(c => `<button type="button" class="opt" data-id="${c.id}"><span>${esc(c.name)}<div class="sub">${esc(c.tax)}</div></span><span class="sub">${c.id}</span></button>`).join('')
+      + `<button type="button" class="opt add" data-new="1">${res.length ? '' : 'ไม่พบลูกค้าในฐานข้อมูล · '}+ เพิ่มลูกค้าใหม่เข้าฐานข้อมูล</button>`;
+    menu.hidden = false;
+    menu.querySelectorAll('[data-id]').forEach(b => b.onmousedown = e => { e.preventDefault(); draft.custId = b.dataset.id; drawCust(); });
+    $('[data-new]', menu).onmousedown = e => { e.preventDefault(); customerDialog(null, inp.value, c => { draft.custId = c.id; drawCust(); }); };
+  };
+  inp.onfocus = show; inp.oninput = show; inp.onblur = () => setTimeout(() => menu.hidden = true, 120);
+}
+function setupProductPicker() {
+  const inp = $('#ps'), menu = $('#pm'); let chosen = null;
+  const show = () => {
+    const q = inp.value.trim().toLowerCase(); chosen = null;
+    const res = db.products.filter(p => !q || (p.name + p.code).toLowerCase().includes(q)).slice(0, 8);
+    menu.innerHTML = res.map(p => `<button type="button" class="opt" data-id="${p.id}"><span>${esc(p.name)}<div class="sub">${esc(p.code)} · ${esc(p.unit)}</div></span><span class="num">${money(p.price)}</span></button>`).join('')
+      + `<button type="button" class="opt add" data-new="1">+ ${q && !res.length ? `เพิ่ม “${esc(inp.value.trim())}” เป็นสินค้าใหม่` : 'เพิ่มสินค้าใหม่เข้าฐานข้อมูล'}</button>`;
+    menu.hidden = false;
+    menu.querySelectorAll('[data-id]').forEach(b => b.onmousedown = e => { e.preventDefault(); chosen = db.products.find(p => p.id === b.dataset.id); inp.value = chosen.name; menu.hidden = true; $('#pq').focus(); $('#pq').select(); });
+    $('[data-new]', menu).onmousedown = e => { e.preventDefault(); menu.hidden = true; productDialog(null, inp.value.trim(), p => { addLine(p); inp.value = ''; }); };
+  };
+  inp.onfocus = show; inp.oninput = show; inp.onblur = () => setTimeout(() => menu.hidden = true, 120);
+  const add = () => {
+    if (!chosen) chosen = db.products.find(p => p.name === inp.value.trim() || p.code.toLowerCase() === inp.value.trim().toLowerCase());
+    if (!chosen) { toast('เลือกสินค้าจากรายการก่อน หรือกด “เพิ่มสินค้าใหม่”'); inp.focus(); return; }
+    addLine(chosen); chosen = null; inp.value = ''; inp.focus();
+  };
+  $('#padd').onclick = add;
+  $('#pq').onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); add(); } };
+}
+function addLine(p) {
+  const qty = +$('#pq').value || 1;
+  const ex = draft.lines.find(l => l.pid === p.id && l.price === p.price);
+  if (ex) ex.qty += qty; else draft.lines.push({ pid: p.id, name: p.name, unit: p.unit, qty, price: p.price });
+  $('#pq').value = 1; drawLines(); toast(`เพิ่ม ${p.name} แล้ว`);
+}
+function drawLines() {
+  $('#lines').innerHTML = draft.lines.map((l, i) => `<tr>
+    <td class="n"><b>${esc(l.name)}</b><div class="sub">${esc(l.unit)}</div></td>
+    <td class="num"><input class="q num" type="number" min="0" step="any" value="${l.qty}" data-i="${i}" data-k="qty" aria-label="จำนวน"></td>
+    <td class="num"><input class="p num" type="number" min="0" step="0.01" value="${l.price}" data-i="${i}" data-k="price" aria-label="ราคาต่อหน่วย"></td>
+    <td class="num amt">${money(l.qty * l.price)}</td>
+    <td><button class="icon-btn" data-del="${i}" type="button" aria-label="ลบรายการ">✕</button></td></tr>`).join('')
+    || `<tr><td colspan="5" class="empty">ยังไม่มีรายการ ค้นหาสินค้าด้านบนแล้วกด “เพิ่ม”</td></tr>`;
+  document.querySelectorAll('#lines input').forEach(inp => inp.oninput = () => {
+    draft.lines[inp.dataset.i][inp.dataset.k] = +inp.value || 0;
+    const l = draft.lines[inp.dataset.i]; inp.closest('tr').querySelector('.amt').textContent = money(l.qty * l.price); drawTotals();
+  });
+  document.querySelectorAll('[data-del]').forEach(b => b.onclick = () => { draft.lines.splice(+b.dataset.del, 1); drawLines(); });
+  drawTotals();
+}
+function drawTotals() { const t = totals(draft); $('#tot').innerHTML = totalsHtml(draft, t).replace(/^<div class="totals">|<\/div>$/g, ''); $('#words').textContent = `(${bahtText(t.grand)})`; }
+function commit(status) {
+  syncDraft();
+  if (!cust(draft.custId)) { toast('กรุณาเลือกลูกค้าจากฐานข้อมูล'); $('#cs')?.focus(); return; }
+  if (!draft.lines.length) { toast('กรุณาเพิ่มรายการสินค้าอย่างน้อย 1 รายการ'); $('#ps').focus(); return; }
+  const doc = { ...draft, no: nextDocNo(draft.type, draft.date), status, discount: +draft.discount || 0 };
+  if (doc.ref) { const src = db.docs.find(x => x.no === doc.ref); if (src && src.status !== 'cancel') src.status = 'done'; }
+  db.docs.push(doc); save(); draft = null;
+  toast(`บันทึก ${TYPES[doc.type].name} เลขที่ ${doc.no} แล้ว`);
+  go('doc', doc.no);
+}
+
+/* ---------- Customers ---------- */
+let custSearch = '';
+function viewCustomers() {
+  const q = custSearch.toLowerCase();
+  const list = db.customers.filter(c => !q || (c.name + c.tax + c.contact + c.phone).toLowerCase().includes(q));
+  $('#main').innerHTML = `<div class="view">
+    <div class="head"><div><h1>ฐานข้อมูลลูกค้า</h1><p>${db.customers.length} ราย · ออกเอกสารได้เฉพาะลูกค้าในรายการนี้</p></div><button class="btn primary" id="add">+ เพิ่มลูกค้า</button></div>
+    <div class="card"><input id="s" type="search" placeholder="ค้นหาชื่อ เลขผู้เสียภาษี ผู้ติดต่อ" value="${esc(custSearch)}">
+      <div class="tablewrap"><table><thead><tr><th>รหัส</th><th>ชื่อลูกค้า</th><th class="hide-sm">เลขผู้เสียภาษี</th><th class="hide-sm">ติดต่อ</th><th class="num">เอกสาร</th></tr></thead>
+      <tbody>${list.map(c => `<tr class="click" data-id="${c.id}" tabindex="0"><td class="sub">${c.id}</td><td><b>${esc(c.name)}</b><div class="sub">${esc(c.addr)}</div></td>
+        <td class="hide-sm">${esc(c.tax)}<div class="sub">${esc(c.branch)}</div></td><td class="hide-sm">${esc(c.contact)}<div class="sub">${esc(c.phone)}</div></td>
+        <td class="num">${db.docs.filter(d => d.custId === c.id).length}</td></tr>`).join('') || `<tr><td colspan="5" class="empty">ไม่พบลูกค้า</td></tr>`}</tbody></table></div></div></div>`;
+  $('#add').onclick = () => customerDialog(null, '', viewCustomers);
+  $('#s').oninput = e => { custSearch = e.target.value; const p = e.target.selectionStart; viewCustomers(); $('#s').focus(); $('#s').setSelectionRange(p, p); };
+  document.querySelectorAll('tr[data-id]').forEach(tr => { tr.onclick = () => customerDialog(cust(tr.dataset.id), '', viewCustomers); tr.onkeydown = e => e.key === 'Enter' && tr.onclick(); });
+}
+function customerDialog(c, name, done) {
+  const v = c || { name, tax: '', branch: 'สำนักงานใหญ่', addr: '', contact: '', phone: '' };
+  openDialog(`<h2>${c ? 'แก้ไขลูกค้า ' + c.id : 'เพิ่มลูกค้าใหม่'}</h2>
+    <label class="f">ชื่อลูกค้า / บริษัท * <input name="name" required value="${esc(v.name)}"></label>
+    <div class="grid"><label class="f">เลขประจำตัวผู้เสียภาษี (13 หลัก) <input name="tax" inputmode="numeric" maxlength="13" pattern="\\d{13}" value="${esc(v.tax)}"></label>
+      <label class="f">สาขา <input name="branch" value="${esc(v.branch)}"></label></div>
+    <label class="f">ที่อยู่ <textarea name="addr">${esc(v.addr)}</textarea></label>
+    <div class="grid"><label class="f">ผู้ติดต่อ <input name="contact" value="${esc(v.contact)}"></label><label class="f">โทรศัพท์ <input name="phone" inputmode="tel" value="${esc(v.phone)}"></label></div>`,
+    data => {
+      if (c) Object.assign(c, data); else { c = { id: nextId(db.customers, 'C'), ...data }; db.customers.push(c); }
+      save(); toast(`บันทึกลูกค้า ${c.name} ลงฐานข้อมูลแล้ว`); done(c);
+    });
+}
+
+/* ---------- Products ---------- */
+let prodSearch = '';
+function viewProducts() {
+  const q = prodSearch.toLowerCase();
+  const list = db.products.filter(p => !q || (p.name + p.code).toLowerCase().includes(q));
+  $('#main').innerHTML = `<div class="view">
+    <div class="head"><div><h1>ฐานข้อมูลสินค้า / บริการ</h1><p>${db.products.length} รายการ · สินค้าที่เพิ่มจากหน้าสร้างเอกสารจะมาอยู่ที่นี่ด้วย</p></div><button class="btn primary" id="add">+ เพิ่มสินค้า</button></div>
+    <div class="card"><input id="s" type="search" placeholder="ค้นหาชื่อหรือรหัสสินค้า" value="${esc(prodSearch)}">
+      <div class="tablewrap"><table><thead><tr><th>รหัสสินค้า</th><th>ชื่อสินค้า</th><th>หน่วย</th><th class="num">ราคา/หน่วย</th></tr></thead>
+      <tbody>${list.map(p => `<tr class="click" data-id="${p.id}" tabindex="0"><td><span class="tag">${esc(p.code)}</span></td><td>${esc(p.name)}</td><td>${esc(p.unit)}</td><td class="num">${money(p.price)}</td></tr>`).join('') || `<tr><td colspan="4" class="empty">ไม่พบสินค้า</td></tr>`}</tbody></table></div></div></div>`;
+  $('#add').onclick = () => productDialog(null, '', viewProducts);
+  $('#s').oninput = e => { prodSearch = e.target.value; const p = e.target.selectionStart; viewProducts(); $('#s').focus(); $('#s').setSelectionRange(p, p); };
+  document.querySelectorAll('tr[data-id]').forEach(tr => { tr.onclick = () => productDialog(db.products.find(p => p.id === tr.dataset.id), '', viewProducts); tr.onkeydown = e => e.key === 'Enter' && tr.onclick(); });
+}
+function productDialog(p, name, done) {
+  const v = p || { code: '', name, unit: 'ชิ้น', price: '' };
+  openDialog(`<h2>${p ? 'แก้ไขสินค้า' : 'เพิ่มสินค้าใหม่เข้าฐานข้อมูล'}</h2>
+    <label class="f">ชื่อสินค้า / บริการ * <input name="name" required value="${esc(v.name)}"></label>
+    <div class="grid"><label class="f">รหัสสินค้า <input name="code" value="${esc(v.code)}" placeholder="เว้นว่างให้ระบบตั้งให้"></label>
+      <label class="f">หน่วย * <input name="unit" required value="${esc(v.unit)}"></label>
+      <label class="f">ราคา/หน่วย (บาท) * <input name="price" type="number" min="0" step="0.01" required value="${v.price}" inputmode="decimal"></label></div>`,
+    data => {
+      data.price = +data.price || 0;
+      if (p) Object.assign(p, data);
+      else { p = { id: nextId(db.products, 'P'), ...data }; if (!p.code) p.code = 'SKU-' + p.id.slice(1); db.products.push(p); }
+      save(); toast(`บันทึกสินค้า ${p.name} ลงฐานข้อมูลแล้ว`); done(p);
+    });
+}
+
+/* ---------- Dialog ---------- */
+function openDialog(html, onSave) {
+  const dlg = $('#dlg'), f = $('#dlgForm');
+  f.innerHTML = html + `<div class="bar"><button class="btn" value="cancel" formnovalidate>ยกเลิก</button><button class="btn primary" value="ok">บันทึกลงฐานข้อมูล</button></div>`;
+  f.onsubmit = e => {
+    if (e.submitter?.value !== 'ok') return;
+    e.preventDefault();
+    if (!f.reportValidity()) return;
+    const data = Object.fromEntries(new FormData(f)); Object.keys(data).forEach(k => data[k] = String(data[k]).trim());
+    dlg.close(); onSave(data);
+  };
+  dlg.showModal(); f.querySelector('input')?.focus();
+}
+
+/* ---------- Theme settings ---------- */
+const PALETTES = { ocean: ['น้ำเงินมหาสมุทร', '--ocean-l'], forest: ['เขียวป่า', '--forest-l'], sunset: ['ส้มอาทิตย์', '--sunset-l'], plum: ['ม่วงพลัม', '--plum-l'] };
+const pref = { palette: 'ocean', mode: 'system' };
+function applyTheme() {
+  document.documentElement.dataset.palette = pref.palette;
+  if (pref.mode === 'system') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = pref.mode;
+  try { localStorage.setItem('qs-theme', JSON.stringify(pref)); } catch (e) {}
+}
+function viewSettings() {
+  $('#main').innerHTML = `<div class="view">
+    <div class="head"><div><h1>ธีมและการตั้งค่า</h1><p>เลือกสีหลักและโหมดการแสดงผล</p></div></div>
+    <div class="card"><h2>สีธีม</h2><div class="swatches">${Object.entries(PALETTES).map(([k, [n, v]]) => `<button class="sw" data-p="${k}" aria-pressed="${pref.palette === k}"><i style="background:var(${v})"></i>${n}</button>`).join('')}</div></div>
+    <div class="card"><h2>โหมดแสดงผล</h2><div class="chips">${[['system', 'ตามเครื่อง'], ['light', 'สว่าง'], ['dark', 'มืด']].map(([k, n]) => `<button class="chip" data-m="${k}" aria-pressed="${pref.mode === k}">${n}</button>`).join('')}</div></div>
+    <div class="card"><h2>ข้อมูลทดสอบ</h2><p class="sub" style="margin:0">ลูกค้า สินค้า และเอกสารในหน้านี้เป็นข้อมูลจำลอง เก็บไว้ในเบราว์เซอร์เครื่องนี้เท่านั้น ยังไม่เชื่อม Google Sheet</p>
+      <div><button class="btn" id="reset">รีเซ็ตกลับเป็นข้อมูลตัวอย่าง</button></div></div></div>`;
+  document.querySelectorAll('[data-p]').forEach(b => b.onclick = () => { pref.palette = b.dataset.p; applyTheme(); viewSettings(); });
+  document.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { pref.mode = b.dataset.m; applyTheme(); viewSettings(); });
+  $('#reset').onclick = () => {
+    if ($('#reset').dataset.confirm) { db = seed(); save(); draft = null; toast('รีเซ็ตข้อมูลตัวอย่างแล้ว'); go('docs'); }
+    else { $('#reset').dataset.confirm = 1; $('#reset').textContent = 'กดอีกครั้งเพื่อยืนยันการรีเซ็ต'; }
+  };
+}
+
+/* ---------- Boot ---------- */
+try { Object.assign(pref, JSON.parse(localStorage.getItem('qs-theme')) || {}); } catch (e) {}
+applyTheme(); load(); render();
 </script>
 </body>
 </html>
