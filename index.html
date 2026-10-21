@@ -271,7 +271,13 @@
   .seg button { position: relative; transition: color .25s; }
   .seg button[aria-pressed="true"] { background: none !important; box-shadow: none !important; color: var(--fg); }
   .stage, .doc, .stat, .card, .btn, .tool, .chip, input, select, textarea { transition: transform .25s cubic-bezier(.2,.8,.2,1), box-shadow .25s, border-color .25s, background-color .25s, color .25s; }
-  #main.calm * { animation: none !important; }
+  .stage[aria-current="page"]::after { color: rgba(255,255,255,.8); }
+  .choices { display: grid; gap: 8px; }
+  .choice { display: flex; gap: 10px; align-items: flex-start; padding: 12px; border: 1px solid var(--line); border-radius: 12px; cursor: pointer; }
+  .choice:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+  .choice input { width: auto; margin-top: 4px; accent-color: var(--accent); }
+  .choice > span { display: grid; gap: 2px; }
+  .btn.solid-danger { background: var(--bad); border-color: var(--bad); color: #fff; }
   .fx { position: fixed; inset: 0; z-index: 60; pointer-events: none; }
   .toast { animation: toastIn .35s cubic-bezier(.2,.8,.2,1); }
   @keyframes toastIn { from { opacity: 0; transform: translate(-50%, 16px) scale(.96); } }
@@ -284,14 +290,16 @@
     .orbs i:nth-child(2) { animation-duration: 28s; animation-delay: -8s; }
     .orbs i:nth-child(3) { animation-duration: 34s; animation-delay: -15s; }
     @keyframes drift { 50% { transform: translate(8vw, 6vh) scale(1.12); } 100% { transform: translate(-6vw, 10vh) scale(.92); } }
-    #main .doc, #main .stat, #main .card, #main .paper, #main .skin, #main tbody tr { animation: rise .5s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(var(--i, 0) * 45ms); }
-    @keyframes rise { from { opacity: 0; transform: translateY(14px); } }
-    ::view-transition-old(root) { animation: vtOut .22s ease both; }
-    ::view-transition-new(root) { animation: vtIn .32s cubic-bezier(.2,.8,.2,1) both; }
-    @keyframes vtOut { to { opacity: 0; transform: translateY(-6px); } }
-    @keyframes vtIn { from { opacity: 0; transform: translateY(8px); } }
-    .stage[aria-current="page"] { animation: pulse 3s ease-in-out infinite; }
-    @keyframes pulse { 50% { box-shadow: 0 14px 34px -10px var(--acc-l); } }
+    /* Page changes: old and new content cross-fade at the same time, so the screen is never blank */
+    #main { view-transition-name: page; }
+    ::view-transition-group(root) { animation: none; }
+    ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
+    ::view-transition-group(page) { animation-duration: .38s; animation-timing-function: cubic-bezier(.2,.8,.2,1); }
+    ::view-transition-old(page) { animation: .2s ease-out both fadeOut; }
+    ::view-transition-new(page) { animation: .38s cubic-bezier(.2,.8,.2,1) both fadeUp; }
+    ::view-transition-old(*), ::view-transition-new(*) { mix-blend-mode: normal; }
+    @keyframes fadeOut { to { opacity: 0; } }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } }
   }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
 </style>
@@ -319,13 +327,13 @@
 const FLOW = ['QT', 'IV', 'DO', 'RC'];
 const TYPES = {
   QT: { name: 'ใบเสนอราคา', short: 'เสนอราคา', extra: 'ยืนราคาถึง',
-        st: { issued: 'ออกใบเสนอราคาแล้ว', finish: 'Finish' }, open: 'issued',
+        st: { issued: 'ออกใบเสนอราคาแล้ว', finish: 'Finish', cancel: 'ยกเลิก' }, open: 'issued', cancel: true,
         next: { label: 'ลูกค้าสั่งซื้อ', done: 'ขายสำเร็จ ส่งต่อไปใบแจ้งหนี้แล้ว' } },
   IV: { name: 'ใบแจ้งหนี้', short: 'แจ้งหนี้', extra: 'ครบกำหนดชำระ',
         st: { pending: 'รอส่งของ', finish: 'Finish', cancel: 'ยกเลิก' }, open: 'pending', cancel: true,
         next: { label: 'ไปขั้นส่งของ', done: 'ส่งต่อไปใบส่งของแล้ว' } },
   DO: { name: 'ใบส่งของ', short: 'ส่งของ', extra: 'วันที่ส่งของ',
-        st: { pending: 'รอออกใบเสร็จ', finish: 'Finish' }, open: 'pending',
+        st: { pending: 'รอออกใบเสร็จ', finish: 'Finish', cancel: 'ยกเลิก' }, open: 'pending', cancel: true,
         next: { label: 'ออกใบเสร็จ/ใบกำกับภาษี', done: 'ส่งต่อไปใบเสร็จแล้ว' } },
   RC: { name: 'ใบเสร็จรับเงิน/ใบกำกับภาษี', short: 'ใบเสร็จ/กำกับภาษี', extra: null,
         st: { pending: 'รอออกใบเสร็จ', finish: 'เสร็จแล้ว (ชำระเงินแล้ว)', cancel: 'ยกเลิก' }, open: 'pending', cancel: true,
@@ -443,9 +451,26 @@ function advance(d) {
   toast(`สร้าง${TYPES[nt].name} ${nd.no} แล้ว`);
   go('doc', nd.no);
 }
-function cancelDoc(d, btn) {
-  if (!btn.dataset.confirm) { btn.dataset.confirm = 1; btn.textContent = 'กดอีกครั้งเพื่อยืนยันยกเลิก'; return; }
-  d.status = 'cancel'; save(); toast(`ยกเลิก ${d.no} แล้ว`); render();
+/* Cancel rules: only an open (latest) document can be cancelled.
+   'back'  = void this document only; the previous stage reopens so a corrected one can be issued (new number).
+   'all'   = the customer called off the job; every document in the chain is voided. */
+function cancelDoc(d) {
+  const prev = d.ref && findDoc(d.ref);
+  const prevName = prev ? TYPES[prev.type].name : '';
+  openDialog(`<h2>ยกเลิก ${esc(d.no)}</h2>
+    <p class="muted sm" style="margin:0">เอกสารที่ยกเลิกจะยังเก็บเลขที่เดิมไว้เป็นประวัติ ไม่ถูกลบ</p>
+    ${prev ? `<div class="choices">
+      <label class="choice"><input type="radio" name="mode" value="back" checked><span><b>ยกเลิกเฉพาะฉบับนี้ (แนะนำ)</b>
+        <span class="muted sm">${prevName} ${esc(prev.no)} จะกลับไป “รอดำเนินการ” เพื่อออก${TYPES[d.type].name}ฉบับใหม่ที่ถูกต้อง</span></span></label>
+      <label class="choice"><input type="radio" name="mode" value="all"><span><b>ยกเลิกทั้งชุด</b>
+        <span class="muted sm">ลูกค้ายกเลิกงาน เอกสารทุกฉบับในชุดนี้จะถูกยกเลิก</span></span></label></div>` : '<input type="hidden" name="mode" value="all">'}
+    <label class="f">เหตุผลที่ยกเลิก * <input name="reason" required placeholder="เช่น ที่อยู่ลูกค้าผิด, ลูกค้ายกเลิกงาน"></label>`,
+    data => {
+      d.status = 'cancel'; d.cancelReason = data.reason;
+      if (data.mode === 'back' && prev) { prev.status = TYPES[prev.type].open; toast(`ยกเลิก ${d.no} แล้ว · ${prev.no} กลับไปรอดำเนินการ`); }
+      else { chain(d).forEach(x => { x.status = 'cancel'; x.cancelReason = x.cancelReason || data.reason; }); toast(`ยกเลิกทั้งชุดแล้ว`); }
+      save(); go(route, param);
+    }, 'ยืนยันยกเลิก', 'danger');
 }
 function actionButtons(d) {
   if (!isOpen(d)) return '';
@@ -457,13 +482,13 @@ function bindActions(root = document) {
   $$('[data-act]', root).forEach(b => b.onclick = e => {
     e.stopPropagation();
     const d = findDoc(b.dataset.no);
-    b.dataset.act === 'next' ? advance(d) : cancelDoc(d, b);
+    b.dataset.act === 'next' ? advance(d) : cancelDoc(d);
   });
 }
 function chain(d) {
   let first = d; while (first.ref && findDoc(first.ref)) first = findDoc(first.ref);
   const out = [first]; let cur = first, nx;
-  while ((nx = db.docs.find(x => x.ref === cur.no))) { out.push(nx); cur = nx; }
+  while ((nx = db.docs.filter(x => x.ref === cur.no).sort((a, b) => (a.status === 'cancel') - (b.status === 'cancel') || b.no.localeCompare(a.no))[0])) { out.push(nx); cur = nx; }
   return out;
 }
 
@@ -473,8 +498,9 @@ function go(r, p = null) {
   if (r === 'list') { filt = 'open'; search = ''; }
   route = r; param = p; countUp = true;
   const run = () => { $('#main').classList.remove('calm'); render(); window.scrollTo({ top: 0, behavior: 'instant' }); };
-  if (document.startViewTransition && !reduced()) document.startViewTransition(run); else run();
+  smooth(run);
 }
+const smooth = fn => document.startViewTransition && !reduced() ? document.startViewTransition(fn) : fn();
 const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 let countUp = true, segPos = {};
 /* Motion helpers: stagger entrance, sliding segment indicator, animated numbers */
@@ -518,9 +544,18 @@ $$('[data-go]').forEach(b => b.onclick = () => go(b.dataset.go, b.dataset.p || n
 function currentStage() { return route === 'list' ? param : route === 'doc' ? findDoc(param)?.type : route === 'new' ? 'QT' : null; }
 function renderPipe() {
   const cur = currentStage();
+  if ($('#pipe').children.length) {
+    FLOW.forEach(k => {
+      const b = $(`[data-stage="${k}"]`), all = db.docs.filter(d => d.type === k), open = all.filter(isOpen).length;
+      cur === k ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current');
+      $('.cnt', b).innerHTML = `${all.length} ฉบับ${open ? ` · <em>รอ ${open}</em>` : ''}`;
+    });
+    $$('.tool').forEach(t => t.setAttribute('aria-current', t.dataset.go === route ? 'page' : 'false'));
+    return;
+  }
   $('#pipe').innerHTML = FLOW.map((k, i) => {
     const all = db.docs.filter(d => d.type === k), open = all.filter(isOpen).length;
-    return `<button class="stage" type="button" data-stage="${k}" ${cur === k ? 'aria-current="page"' : ''}>
+    return `<button class="stage" type="button" data-stage="${k}" style="view-transition-name:stage-${k}" ${cur === k ? 'aria-current="page"' : ''}>
       <span class="step">ขั้นที่ ${i + 1}</span><b>${TYPES[k].short}</b>
       <span class="cnt">${all.length} ฉบับ${open ? ` · <em>รอ ${open}</em>` : ''}</span></button>`;
   }).join('');
@@ -569,7 +604,7 @@ function viewList() {
   </div>`;
   $('#nb')?.addEventListener('click', () => go('new', 'fresh'));
   $('#nb2')?.addEventListener('click', () => go('new', 'fresh'));
-  $$('[data-f]').forEach(b => b.onclick = () => { filt = b.dataset.f; viewList(); afterRender(); });
+  $$('[data-f]').forEach(b => b.onclick = () => { filt = b.dataset.f; smooth(() => { viewList(); afterRender(); }); });
   $('#ds').oninput = e => { search = e.target.value; const p = e.target.selectionStart; $('#main').classList.add('calm'); viewList(); afterRender(); $('#ds').focus(); $('#ds').setSelectionRange(p, p); };
   $$('.doc').forEach(el => { el.onclick = () => go('doc', el.dataset.no); el.onkeydown = e => e.key === 'Enter' && e.target === el && el.onclick(); });
   bindActions($('#main'));
@@ -612,7 +647,7 @@ function viewDoc() {
         <div class="card"><div class="head"><h2>สถานะ</h2>${pill(d)}</div>
           ${isOpen(d) ? `<div class="actions" style="justify-content:stretch">${actionButtons(d)}</div>
             <p class="muted sm" style="margin:0">${d.type === 'RC' ? 'กดยืนยันเมื่อได้รับชำระเงินครบแล้ว' : `กดแล้วระบบจะสร้าง${TYPES[FLOW[FLOW.indexOf(d.type) + 1]].name}ให้อัตโนมัติ`}</p>` :
-            `<p class="muted sm" style="margin:0">${d.status === 'cancel' ? 'เอกสารนี้ถูกยกเลิกแล้ว' : T.next.done}</p>`}
+            `<p class="muted sm" style="margin:0">${d.status === 'cancel' ? 'เอกสารนี้ถูกยกเลิกแล้ว' + (d.cancelReason ? ' · เหตุผล: ' + esc(d.cancelReason) : '') : T.next.done}</p>`}
           ${d.type === 'QT' ? '<button class="btn small" id="dup" type="button">คัดลอกเป็นใบเสนอราคาใหม่</button>' : ''}
         </div>
         <div class="card"><h2>เส้นทางเอกสาร</h2><ol class="timeline">${steps.map(s => {
@@ -805,7 +840,7 @@ function viewProducts() {
     <div class="card"><input id="s" type="search" placeholder="ค้นหาชื่อหรือรหัสสินค้า" value="${esc(prodSearch)}">
       <div class="tablewrap"><table><thead><tr><th>รหัส</th><th>ชื่อสินค้า</th><th class="hide-sm">หมวดหมู่</th><th>หน่วย</th><th class="num">ราคา/หน่วย</th></tr></thead>
       <tbody>${list.map(p => `<tr class="click" data-id="${p.id}" tabindex="0"><td><span class="tag">${esc(p.code)}</span></td><td>${esc(p.name)}</td><td class="hide-sm muted">${esc(p.cat)}</td><td>${esc(p.unit)}</td><td class="num">${money(p.price)}</td></tr>`).join('') || `<tr><td colspan="5" class="empty">ไม่พบสินค้า</td></tr>`}</tbody></table></div></div></div>`;
-  $$('[data-cat]').forEach(b => b.onclick = () => { prodCat = b.dataset.cat; viewProducts(); });
+  $$('[data-cat]').forEach(b => b.onclick = () => { prodCat = b.dataset.cat; smooth(() => { viewProducts(); afterRender(); }); });
   $('#add').onclick = () => productDialog(null, '', viewProducts);
   $('#s').oninput = e => { prodSearch = e.target.value; const p = e.target.selectionStart; viewProducts(); $('#s').focus(); $('#s').setSelectionRange(p, p); };
   $$('tr[data-id]').forEach(tr => { tr.onclick = () => productDialog(db.products.find(p => p.id === tr.dataset.id), '', viewProducts); tr.onkeydown = e => e.key === 'Enter' && tr.onclick(); });
@@ -827,9 +862,9 @@ function productDialog(p, name, done, cat = '') {
 }
 
 /* ---------- Dialog ---------- */
-function openDialog(html, onSave) {
+function openDialog(html, onSave, okLabel = 'บันทึกลงฐานข้อมูล', okClass = 'primary') {
   const dlg = $('#dlg'), f = $('#dlgForm');
-  f.innerHTML = html + `<div class="actions"><button class="btn" value="cancel" formnovalidate>ยกเลิก</button><button class="btn primary" value="ok">บันทึกลงฐานข้อมูล</button></div>`;
+  f.innerHTML = html + `<div class="actions"><button class="btn" value="cancel" formnovalidate>ปิด</button><button class="btn ${okClass === 'danger' ? 'solid-danger' : 'primary'}" value="ok">${okLabel}</button></div>`;
   f.onsubmit = e => {
     if (e.submitter?.value !== 'ok') return;
     e.preventDefault();
