@@ -1048,8 +1048,15 @@ async function exportPdf(d, mode) {
     return;
   }
   if (!file) return;
+  const dl = window.claude?.use ? await window.claude.use('downloads') : null;
+  if (dl) {
+    try { await dl.save({ filename: file.name, data: file }); note(`บันทึก ${file.name} แล้ว`); }
+    catch (e) { note(e.code === 'declined' ? 'ยกเลิกการบันทึกไฟล์' : e.code === 'rate_limited' ? 'มีหน้าต่างบันทึกไฟล์เปิดอยู่ ลองใหม่อีกครั้ง' : 'บันทึกไฟล์ในหน้านี้ไม่ได้'); }
+    return;
+  }
+  // Outside the claude.ai viewer (e.g. Apps Script) a normal browser download works
   const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
-  note(`สร้าง ${file.name} แล้ว · ถ้าไฟล์ไม่ถูกดาวน์โหลด แสดงว่าหน้าทดสอบนี้บล็อกการดาวน์โหลด จะใช้ได้ในเวอร์ชันจริง`);
+  note(`ดาวน์โหลด ${file.name} แล้ว`);
 }
 function printDoc(d) {
   window.print();
