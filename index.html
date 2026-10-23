@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ระบบใบเสนอราคา – ทดสอบ</title>
-<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Bai+Jamjuree:wght@400;500;600;700&family=Kanit:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Bai+Jamjuree:wght@400;500;600;700&family=Kanit:wght@400;500;600&family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
 <style>
   /* Layout: top app bar + 4-stage pipeline stepper (QT → IV → DO → RC); each stage lists document cards; detail = paper + action/timeline panel */
   /* Each skin restyles the whole page: background, surfaces, corner radius, typeface, glass, accent.
@@ -196,14 +196,6 @@
   .timeline li.cancel::after { background: var(--bad); border-color: var(--bad); }
   .timeline a { color: inherit; text-decoration: none; font-weight: 600; cursor: pointer; }
   .timeline a:hover { color: var(--accent); }
-  .paper { background: #ffffff; color: #121826; border-radius: 14px; box-shadow: var(--shadow); padding: clamp(18px, 4vw, 44px); display: grid; gap: 22px; position: relative; overflow: hidden; }
-  .paper::before { content: ""; position: absolute; inset: 0 0 auto; height: 6px; background: var(--grad); }
-  .paper .row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; }
-  .paper h2 { font-size: 1.45rem; font-weight: 700; color: var(--acc-l); }
-  .paper .muted { color: #667085; }
-  .paper th { color: #667085; border-color: #e6e8ef; } .paper td { border-color: #eef0f4; }
-  .paper .meta { display: grid; grid-template-columns: auto auto; gap: 2px 14px; font-size: .9rem; align-content: start; }
-  .paper .totals div { color: #121826; } .paper .totals .grand span:last-child { color: var(--acc-l); } .paper .totals .grand { border-color: #e6e8ef; }
   .stamp { position: absolute; right: 28px; top: 90px; transform: rotate(-12deg); border: 3px solid currentColor; border-radius: 10px; padding: 4px 14px; font-weight: 700; font-size: 1.1rem; opacity: .75; pointer-events: none; }
   .stamp.finish { color: #12805c; } .stamp.cancel { color: #c0362c; }
   .signs { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 24px; padding-top: 28px; }
@@ -250,16 +242,11 @@
   .sharegrid { display: grid; gap: 8px; grid-template-columns: 1fr 1fr; }
   .sharegrid .line { grid-column: 1 / -1; background: #06c755; border-color: #06c755; color: #fff; }
   .sharegrid .btn:disabled { opacity: .6; cursor: progress; }
-  .paper .lumprow td { border-top: 2px solid #e6e8ef; padding-top: 12px; }
-  .paper.capture { box-shadow: none; border-radius: 0; border-top: 6px solid var(--acc-l); }
-  .paper.capture::before { display: none; }
-  .paper.capture .stamp { opacity: .9; }
   @media print {
     @page { size: A4; margin: 10mm; }
     body { background: #fff !important; }
     .orbs, header.top, .sections, .pipe, .panel, .mbar, .fab, .head, .toast { display: none !important; }
     .detail { display: block; } main { padding: 0 !important; }
-    .paper { box-shadow: none; border-radius: 0; padding: 0; } .paper::before { display: none; }
   }
   .kind { font-size: .72rem; font-weight: 600; padding: 2px 8px; border-radius: 6px; color: var(--accent); background: var(--accent-soft); white-space: nowrap; }
   .tpls { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); }
@@ -319,20 +306,6 @@
     .mbar .btn.danger { flex: 0 0 auto; }
     .panel .actions { display: none; }
     .toast { bottom: calc(90px + env(safe-area-inset-bottom, 0px)); }
-    .paper { padding: 18px 16px 22px; gap: 16px; border-radius: 12px; }
-    .paper h2 { font-size: 1.2rem; }
-    .paper .row > div[style*="text-align:right"] { text-align: left !important; }
-    .paper thead { display: none; }
-    .paper tbody tr { display: grid; grid-template-columns: 22px 1fr auto; gap: 2px 8px; padding: 10px 0; border-bottom: 1px solid #eef0f4; }
-    .paper tbody td { border: 0; padding: 0; }
-    .paper .c-no { grid-row: span 2; color: #667085; } .paper .c-name { font-weight: 600; } .paper .c-amt { grid-column: 3; grid-row: 1; font-weight: 600; }
-    .paper .c-qty, .paper .c-unit, .paper .c-price { grid-column: 2; color: #667085; font-size: .85rem; text-align: left; display: inline; }
-        .paper .c-qty, .paper .c-unit { display: none; }
-    .paper:not(.capture) .c-price::before { content: attr(data-q) " × "; }
-    .paper .lump tr:not(.lumprow) { grid-template-columns: 22px 1fr auto; }
-    .paper .lump .c-qty2 { grid-column: 3; grid-row: 1; color: #667085; } .paper .lump .c-unit2 { display: none; } .paper .lump .c-qty2::after { content: " " attr(data-u); }
-    .paper .lumprow { grid-template-columns: 1fr auto !important; } .paper .lumprow td:first-child { display: none; }
-    .paper .totals { max-width: none; }
     .signs { padding-top: 12px; }
     .lines td[colspan] { grid-column: 1 / -1; }
     .timeline li { padding-bottom: 12px; }
@@ -447,6 +420,73 @@
     h1.hero { font-size: 1.5rem; } .eyebrow { display: none; }
     .seg button { flex: 1 1 auto; padding: 7px 8px; }
   }
+
+  /* ---------- A4 document form (fixed light palette, matches the company's paper form) ---------- */
+  .a4wrap { width: 100%; overflow: hidden; position: relative; }
+  .paper.a4 { width: 794px; min-height: 1123px; padding: 34px 40px 30px; background: #fff; color: #111; font: 11.5px/1.45 'Sarabun', 'Anuphan', 'Tahoma', sans-serif;
+    transform-origin: top left; box-shadow: var(--shadow); border-radius: 4px; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+  .paper.capture { transform: none !important; box-shadow: none; border-radius: 0; }
+  .a4 .ph { display: grid; grid-template-columns: 112px 1fr auto; gap: 14px; align-items: start; margin-bottom: 14px; }
+  .a4 .logo4 { width: 112px; height: 92px; display: grid; place-items: center; }
+  .a4 .logo4 img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .a4 .logo4 span { width: 78px; height: 78px; border-radius: 14px; background: var(--dc); color: #fff; font: 700 30px/78px 'Anuphan', sans-serif; text-align: center; }
+  .a4 .co b { font-size: 14px; display: block; margin-bottom: 2px; } .a4 .co div { font-size: 11px; } .a4 .link { color: #2563eb; }
+  .a4 .ttl { border: 1px solid var(--dc); padding: 10px 24px; text-align: center; font-size: 15px; line-height: 1.35; margin-top: 4px; white-space: nowrap; }
+  .a4 table { width: 100%; border-collapse: collapse; font-size: inherit; }
+  .a4 .sum { table-layout: fixed; }
+  .a4 th, .a4 td { color: #111; }
+  .a4 .info { border: 1px solid #333; margin-bottom: 6px; }
+  .a4 .info th { text-align: left; font-weight: 700; padding: 3px 8px; white-space: nowrap; width: 1%; vertical-align: top; }
+  .a4 .info td { padding: 3px 8px; vertical-align: top; border: 0; }
+  .a4 .items { border: 1px solid #333; }
+  .a4 .items th { border: 1px solid #333; font-weight: 400; padding: 4px; text-align: center; line-height: 1.25; }
+  .a4 .items td { border: 0; border-left: 1px solid #333; border-right: 1px solid #333; padding: 2px 6px; vertical-align: top; }
+  .a4 .items .c { text-align: center; } .a4 .items .r { text-align: right; font-variant-numeric: tabular-nums; } .a4 .items .mid { vertical-align: middle; }
+  .a4 .items .ind { padding-left: 18px; }
+  .a4 .sysrow td { background: var(--dc); text-align: center; font-weight: 700; border: 1px solid #333; padding: 4px; }
+  .a4 .secrow td { background: var(--dc); border: 1px solid #333; padding: 2px 6px; }
+  .a4 .lumprow td { border-bottom: 1px solid #333; padding: 4px 6px; font-weight: 700; }
+  .a4 .sechead-gap td { height: 4px; }
+  .a4 .filler td { height: var(--fill, 20px); }
+  .a4 .sum { border: 1px solid #333; border-top: 0; }
+  .a4 .sum th { text-align: right; font-weight: 400; padding: 2px 8px; border-left: 1px solid #333; border-bottom: 1px solid #333; width: 27%; white-space: nowrap; }
+  .a4 .sum td { text-align: right; padding: 2px 8px; border-bottom: 1px solid #333; border-left: 1px solid #333; width: 17%; font-variant-numeric: tabular-nums; }
+  .a4 .sum td.warr { text-align: left; vertical-align: top; width: auto; border-left: 0; border-bottom: 0; }
+  .a4 .sum .warr div { padding-left: 12px; }
+  .a4 .sum tr.g th, .a4 .sum tr.g td { font-weight: 700; }
+  .a4 .sum td.words { text-align: center; font-weight: 700; border-left: 0; border-top: 1px solid #333; }
+  .a4 .two { display: grid; grid-template-columns: 1fr 1fr; margin-top: 16px; }
+  .a4 .bar { background: var(--dc); font-weight: 700; padding: 2px 4px; margin-bottom: 3px; }
+  .a4 .ln, .a4 .bank div { font-size: 10.5px; }
+  .a4 .pay { display: grid; grid-template-columns: 1fr 64px 92px; gap: 6px; font-size: 10.5px; } .a4 .pay span:nth-child(2), .a4 .pay b { text-align: right; }
+  .a4 .bankbar { margin-top: 18px; }
+  .a4 .sig { display: grid; grid-template-columns: 1fr 1fr; gap: 90px; margin-top: auto; padding-top: 26px; }
+  .a4 .sig > div:last-child .who { text-align: center; }
+  .a4 .sig .line { border-bottom: 1px solid #333; height: 46px; }
+  .a4 .sig .dt { display: flex; gap: 70px; padding-top: 2px; }
+  .a4 .stamp { top: 116px; right: 44px; font-size: 13px; padding: 2px 10px; }
+  .paper.capture .stamp:not(.cancel) { display: none; }
+  .a4.tight { font-size: 10.5px; line-height: 1.3; }
+  .a4.tight .items td { padding: 0 6px; } .a4.tight .info td, .a4.tight .info th { padding: 2px 8px; }
+  .a4.tight .two { margin-top: 10px; } .a4.tight .bankbar { margin-top: 10px; } .a4.tight .sig { padding-top: 14px; } .a4.tight .sig .line { height: 34px; }
+  /* Section editor in the form */
+  .lines tr.sechead td { background: var(--accent-soft); padding: 8px 10px; }
+  .sh { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .sh .sn { width: 24px; height: 24px; border-radius: 8px; display: grid; place-items: center; background: var(--accent); color: var(--accent-fg); font-weight: 700; font-size: .8rem; flex: none; }
+  .sh .secname { flex: 1 1 160px; min-width: 0; padding: 6px 10px; font-weight: 600; }
+  .sh .lot { display: inline-flex; align-items: center; gap: 6px; font-size: .84rem; color: var(--muted); white-space: nowrap; }
+  .sh .lot input { width: auto; accent-color: var(--accent); }
+  .addline.withsec { grid-template-columns: 150px 170px 1fr 90px auto; }
+  .payrow { display: grid; grid-template-columns: 1fr 84px auto 32px; gap: 8px; align-items: center; }
+  .paysum { font-size: .84rem; color: var(--ok); text-align: right; } .paysum.bad { color: var(--bad); }
+  .logoprev { width: 120px; height: 90px; border: 1px dashed var(--line); border-radius: 12px; display: grid; place-items: center; overflow: hidden; background: #fff; }
+  .logoprev img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  @media print { .a4wrap { height: auto !important; overflow: visible; } .paper.a4 { transform: none !important; box-shadow: none; border-radius: 0; } }
+  @media (max-width: 640px) {
+    .addline.withsec { grid-template-columns: 1fr 80px; } .addline.withsec > label:nth-child(2) { grid-column: 1 / -1; }
+    .lines tr.sechead { display: block; } .lines tr.sechead td { display: block; border-radius: 10px; }
+    .payrow { grid-template-columns: 1fr 70px auto 32px; }
+  }
 </style>
 </head>
 <body>
@@ -455,7 +495,7 @@
 <header class="top"><div class="wrap bar-in">
   <button class="brand" data-go="list" data-p="QT" type="button"><span class="logo">QS</span><span><b>ระบบออกเอกสาร</b><small>เวอร์ชันทดสอบ · ข้อมูลจำลอง</small></span></button>
   <nav class="tools" aria-label="ฐานข้อมูลและการตั้งค่า">
-    <button class="tool" data-go="settings" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/></svg><span>ธีม</span></button>
+    <button class="tool" data-go="settings" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>ตั้งค่า</span></button>
   </nav>
 </div></header>
 
@@ -490,53 +530,88 @@ const TYPES = {
         st: { pending: 'รอออกใบเสร็จ', finish: 'เสร็จแล้ว (ชำระเงินแล้ว)', cancel: 'ยกเลิก' }, open: 'pending', cancel: true,
         next: { label: 'ยืนยันชำระเงิน', done: 'ยืนยันชำระเงินแล้ว', final: true } }
 };
-const COMPANY = { name: 'บริษัท ดีดี โซลาร์ จำกัด (ตัวอย่าง)', addr: '123 ถนนพหลโยธิน แขวงจตุจักร เขตจตุจักร กรุงเทพฯ 10900', tax: '0105500000000', phone: '02-000-0000' };
+const TITLES = { QT: ['ใบเสนอราคา', 'Quotation'], IV: ['ใบแจ้งหนี้', 'Invoice'], DO: ['ใบส่งของ', 'Delivery Note'], RC: ['ใบเสร็จรับเงิน / ใบกำกับภาษี', 'Receipt / Tax Invoice'] };
+function defaultSettings() {
+  return {
+    name: 'บริษัท ตัวอย่าง จำกัด', addr: '99/9 ถนนตัวอย่าง แขวงตัวอย่าง เขตตัวอย่าง กรุงเทพฯ 10900', tax: '0105500000000', phone: '02-000-0000', email: 'info@example.com', logo: '',
+    bank: 'ธนาคารตัวอย่าง บัญชีออมทรัพย์ สาขาตัวอย่าง', bankAcctName: 'บริษัท ตัวอย่าง จำกัด', bankAcctNo: '000-0-00000-0',
+    color: '#f9a825',
+    prefix: { QT: 'QT', QTI: 'QTPV', IV: 'INV', DO: 'DO', RC: 'RE' },
+    remark: '- กำหนดยืนราคา 15 วัน',
+    warranty: '',
+    payGeneral: [{ text: 'หลังจากส่งมอบสินค้า', pct: 100 }],
+    payInstall: [{ text: 'มัดจำเพื่อเตรียมอุปกรณ์เข้าติดตั้ง', pct: 50 }, { text: 'หลังจากติดตั้งแล้วเสร็จ/ส่งมอบงาน', pct: 50 }]
+  };
+}
 
 /* ---------- Mock database (this browser only; Google Sheet later) ---------- */
-const KEY = 'qs-demo-v2';
+const KEY = 'qs-demo-v3';
 function seed() {
-  const d = off => iso(new Date(Date.now() - off * 864e5)), ym = yymm(new Date());
-  const L1 = [{ pid: 'P001', name: 'แผงโซลาร์เซลล์ 550W Mono Half-cell', unit: 'แผง', qty: 10, price: 4500 }, { pid: 'P002', name: 'อินเวอร์เตอร์ On-grid 5kW', unit: 'เครื่อง', qty: 1, price: 28500 }, { pid: 'P007', name: 'ค่าติดตั้งและเดินระบบ', unit: 'งาน', qty: 1, price: 15000 }];
-  const L2 = [{ pid: 'P001', name: 'แผงโซลาร์เซลล์ 550W Mono Half-cell', unit: 'แผง', qty: 18, price: 4500 }, { pid: 'P003', name: 'อินเวอร์เตอร์ On-grid 10kW 3 เฟส', unit: 'เครื่อง', qty: 1, price: 52000 }, { pid: 'P005', name: 'ชุดรางยึดแผงบนหลังคาเมทัลชีท', unit: 'ชุด', qty: 18, price: 650 }];
-  const L3 = [{ pid: 'P004', name: 'แบตเตอรี่ลิเธียม 10kWh', unit: 'ชุด', qty: 1, price: 89000 }, { pid: 'P007', name: 'ค่าติดตั้งและเดินระบบ', unit: 'งาน', qty: 1, price: 15000 }];
-  const base = { vatMode: 'ex', discount: 0, remark: 'ยืนราคา 30 วัน · ชำระมัดจำ 50% เมื่อยืนยันสั่งซื้อ' };
+  const d = off => iso(new Date(Date.now() - off * 864e5)), now = new Date();
+  const ym = now.getFullYear() + String(now.getMonth() + 1).padStart(2, '0');
+  const products = [
+    { id: 'P001', code: 'PV-550', name: 'แผงโซลาร์เซลล์ 550W Mono Half-cell', cat: 'แผงโซลาร์เซลล์', unit: 'EA', price: 4500 },
+    { id: 'P002', code: 'INV-5K', name: 'อินเวอร์เตอร์ On-grid 5kW 1 เฟส', cat: 'อินเวอร์เตอร์', unit: 'EA', price: 28500 },
+    { id: 'P003', code: 'INV-10K', name: 'อินเวอร์เตอร์ On-grid 10kW 3 เฟส', cat: 'อินเวอร์เตอร์', unit: 'EA', price: 52000 },
+    { id: 'P004', code: 'BAT-10', name: 'แบตเตอรี่ลิเธียม 10kWh', cat: 'แบตเตอรี่', unit: 'EA', price: 89000 },
+    { id: 'P005', code: 'CMB-1P', name: 'AC-DC Combiner Box (1P)', cat: 'อุปกรณ์ไฟฟ้า', unit: 'EA', price: 3500 },
+    { id: 'P006', code: 'MTR-1P', name: 'Smart Power Sensor 1P', cat: 'อุปกรณ์ไฟฟ้า', unit: 'EA', price: 2800 },
+    { id: 'P007', code: 'MNT-HK', name: 'Tile Roof Hook', cat: 'อุปกรณ์ติดตั้ง', unit: 'EA', price: 120 },
+    { id: 'P008', code: 'MNT-EC', name: 'End Clamp', cat: 'อุปกรณ์ติดตั้ง', unit: 'EA', price: 35 },
+    { id: 'P009', code: 'MNT-MC', name: 'Mid Clamp', cat: 'อุปกรณ์ติดตั้ง', unit: 'EA', price: 35 },
+    { id: 'P010', code: 'MNT-RL', name: 'Rail 4.8m', cat: 'อุปกรณ์ติดตั้ง', unit: 'EA', price: 950 },
+    { id: 'P011', code: 'CBL-AC', name: 'AC Cable THW 6 sq.mm.', cat: 'สายไฟและอุปกรณ์', unit: 'M', price: 45 },
+    { id: 'P012', code: 'CBL-DC', name: 'DC Cable PV1-F 6 sq.mm.', cat: 'สายไฟและอุปกรณ์', unit: 'M', price: 38 },
+    { id: 'P013', code: 'CON-MC4', name: 'MC4 Connector', cat: 'สายไฟและอุปกรณ์', unit: 'PAIR', price: 60 },
+    { id: 'P014', code: 'SRV-INS', name: 'ค่าติดตั้งและเดินระบบ', cat: 'งานบริการ', unit: 'LOT', price: 15000 },
+    { id: 'P015', code: 'SRV-PEA', name: 'ค่าดำเนินการขออนุญาต กฟภ./กฟน.', cat: 'งานบริการ', unit: 'LOT', price: 8000 },
+    { id: 'P016', code: 'RCK-B50', name: 'PV-ezRack B50', cat: 'อุปกรณ์ติดตั้ง', unit: 'PCS', price: 380 }
+  ];
+  const SEC = [{ name: 'Main Equipment', lot: false }, { name: 'Mounting', lot: true }, { name: 'Accessories', lot: true }, { name: 'Installation', lot: true }];
+  const warrantySolar = '- Inverter รับประกัน 10 ปี\n- PV Solar Cell รับประกัน 10/25 ปี\n- Mounting รับประกัน 10 ปี\n- งานติดตั้งรับประกัน 1 ปี';
+  const remarkSolar = '- กำหนดยืนราคา 15 วัน\n- รับประกันและดูแลระบบนาน 1 ปี โดยล้างแผงปีละ 1 ครั้ง\n- รวมการขออนุญาตไฟฟ้า และสมัครเข้าโครงการโซลาร์ภาคประชาชน\n- ไม่รวมค่าเปลี่ยนมิเตอร์จากการไฟฟ้า ถ้าต้องเปลี่ยน';
+  const templates = [
+    { id: 'T001', name: 'โซลาร์รูฟ On-grid 5kW (1 เฟส)', group: 'โซลาร์เซลล์', desc: 'บ้านพักอาศัย ค่าไฟ 2,000–3,500 บาท/เดือน',
+      system: 'Solar system Capacity 5.5 kWp (String)', lumpTitle: 'Solar Roof top system Installation', warranty: warrantySolar, remark: remarkSolar, sections: SEC,
+      lines: [{ pid: 'P001', qty: 10, sec: 0 }, { pid: 'P002', qty: 1, sec: 0 }, { pid: 'P005', qty: 1, sec: 0 }, { pid: 'P007', qty: 16, sec: 1 }, { pid: 'P008', qty: 8, sec: 1 }, { pid: 'P009', qty: 16, sec: 1 }, { pid: 'P010', qty: 6, sec: 1 },
+        { pid: 'P006', qty: 1, sec: 2 }, { pid: 'P011', qty: 30, sec: 2 }, { pid: 'P012', qty: 60, sec: 2 }, { pid: 'P013', qty: 4, sec: 2 }, { pid: 'P014', qty: 1, sec: 3 }, { pid: 'P015', qty: 1, sec: 3 }] },
+    { id: 'T002', name: 'โซลาร์รูฟ On-grid 10kW (3 เฟส)', group: 'โซลาร์เซลล์', desc: 'ธุรกิจขนาดเล็ก / บ้านใหญ่ ใช้ไฟกลางวันสูง',
+      system: 'Solar system Capacity 9.9 kWp (String)', lumpTitle: 'Solar Roof top system Installation', warranty: warrantySolar, remark: remarkSolar, sections: SEC,
+      lines: [{ pid: 'P001', qty: 18, sec: 0 }, { pid: 'P003', qty: 1, sec: 0 }, { pid: 'P005', qty: 1, sec: 0 }, { pid: 'P007', qty: 28, sec: 1 }, { pid: 'P008', qty: 12, sec: 1 }, { pid: 'P009', qty: 30, sec: 1 }, { pid: 'P010', qty: 10, sec: 1 },
+        { pid: 'P011', qty: 40, sec: 2 }, { pid: 'P012', qty: 100, sec: 2 }, { pid: 'P013', qty: 6, sec: 2 }, { pid: 'P014', qty: 1, sec: 3 }, { pid: 'P015', qty: 1, sec: 3 }] },
+    { id: 'T003', name: 'ระบบไฮบริด 5kW + แบตเตอรี่ 10kWh', group: 'โซลาร์เซลล์', desc: 'มีไฟสำรองใช้ตอนกลางคืน / ไฟดับ',
+      system: 'Hybrid Solar system 5.5 kWp + Battery 10 kWh', lumpTitle: 'Hybrid Solar system Installation', warranty: warrantySolar + '\n- Battery รับประกัน 10 ปี', remark: remarkSolar,
+      sections: [...SEC.slice(0, 3), { name: 'Additional', lot: true }, SEC[3]],
+      lines: [{ pid: 'P001', qty: 10, sec: 0 }, { pid: 'P002', qty: 1, sec: 0 }, { pid: 'P007', qty: 16, sec: 1 }, { pid: 'P008', qty: 8, sec: 1 }, { pid: 'P009', qty: 16, sec: 1 }, { pid: 'P010', qty: 6, sec: 1 },
+        { pid: 'P011', qty: 30, sec: 2 }, { pid: 'P012', qty: 60, sec: 2 }, { pid: 'P013', qty: 4, sec: 2 }, { pid: 'P004', qty: 1, sec: 3 }, { pid: 'P014', qty: 1, sec: 4 }] }
+  ];
+  const linesOf = t => t.lines.map(l => { const p = products.find(x => x.id === l.pid); return { pid: p.id, name: p.name, unit: p.unit, qty: l.qty, price: p.price, sec: l.sec }; });
+  const S = defaultSettings();
+  const fromTpl = (t, extra) => ({ kind: 'install', tplId: t.id, tplName: t.name, system: t.system, lumpTitle: t.lumpTitle, sections: JSON.parse(JSON.stringify(t.sections)),
+    lines: linesOf(t), warranty: t.warranty, remark: t.remark, pay: S.payInstall, vatMode: 'ex', priceMode: 'lump', ...extra });
+  const gen = extra => ({ kind: 'general', sections: [], warranty: '', remark: S.remark, pay: S.payGeneral, vatMode: 'ex', discount: 0, ...extra });
+  const job1 = { custId: 'C001', project: 'ติดตั้งโซลาร์รูฟ 5kW', discount: 5000 };
+  const job2 = { custId: 'C002', project: 'แร็คยึดแผงโซลาร์ 440 ชุด', lines: [{ pid: 'P016', name: 'PV-ezRack B50', unit: 'PCS', qty: 440, price: 380 }] };
   return {
+    settings: S,
     customers: [
       { id: 'C001', name: 'บริษัท สยามพลังงาน จำกัด', tax: '0105561234567', branch: 'สำนักงานใหญ่', addr: '99/1 ถนนวิภาวดีรังสิต แขวงลาดยาว เขตจตุจักร กรุงเทพฯ 10900', contact: 'คุณสมชาย', phone: '081-234-5678' },
       { id: 'C002', name: 'หจก. เชียงใหม่ฟาร์ม', tax: '0503558765432', branch: 'สำนักงานใหญ่', addr: '45 หมู่ 3 ต.แม่เหียะ อ.เมือง จ.เชียงใหม่ 50100', contact: 'คุณมาลี', phone: '089-111-2233' },
       { id: 'C003', name: 'โรงเรียนอนุบาลบ้านสวน', tax: '0994000123456', branch: '00001', addr: '12 ถนนสุขุมวิท ต.บ้านสวน อ.เมือง จ.ชลบุรี 20000', contact: 'ครูวิไล', phone: '038-123-456' },
       { id: 'C004', name: 'คุณประเสริฐ ใจดี', tax: '3100500123456', branch: '-', addr: '88/8 หมู่บ้านลดาวัลย์ ถ.รามอินทรา กรุงเทพฯ 10230', contact: '', phone: '086-555-7788' }
     ],
-    products: [
-      { id: 'P001', code: 'PV-550', name: 'แผงโซลาร์เซลล์ 550W Mono Half-cell', unit: 'แผง', price: 4500 },
-      { id: 'P002', code: 'INV-5K', name: 'อินเวอร์เตอร์ On-grid 5kW', unit: 'เครื่อง', price: 28500 },
-      { id: 'P003', code: 'INV-10K', name: 'อินเวอร์เตอร์ On-grid 10kW 3 เฟส', unit: 'เครื่อง', price: 52000 },
-      { id: 'P004', code: 'BAT-10', name: 'แบตเตอรี่ลิเธียม 10kWh', unit: 'ชุด', price: 89000 },
-      { id: 'P005', code: 'MNT-RF', name: 'ชุดรางยึดแผงบนหลังคาเมทัลชีท', unit: 'ชุด', price: 650 },
-      { id: 'P006', code: 'CBL-PV6', name: 'สาย PV1-F 6 sq.mm.', unit: 'เมตร', price: 38 },
-      { id: 'P007', code: 'SRV-INS', name: 'ค่าติดตั้งและเดินระบบ', unit: 'งาน', price: 15000 },
-      { id: 'P008', code: 'SRV-PEA', name: 'ค่าดำเนินการขออนุญาต กฟภ./กฟน.', unit: 'งาน', price: 8000 }
-    ],
-    templates: [
-      { id: 'T001', name: 'โซลาร์รูฟ On-grid 5kW (1 เฟส)', group: 'โซลาร์เซลล์', desc: 'บ้านพักอาศัย ค่าไฟ 2,000–3,500 บาท/เดือน',
-        remark: 'รับประกันแผง 25 ปี · อินเวอร์เตอร์ 10 ปี · งานติดตั้ง 2 ปี · ชำระมัดจำ 50% เมื่อยืนยันสั่งซื้อ',
-        lines: [{ pid: 'P001', qty: 10 }, { pid: 'P002', qty: 1 }, { pid: 'P005', qty: 10 }, { pid: 'P006', qty: 60 }, { pid: 'P007', qty: 1 }, { pid: 'P008', qty: 1 }] },
-      { id: 'T002', name: 'โซลาร์รูฟ On-grid 10kW (3 เฟส)', group: 'โซลาร์เซลล์', desc: 'ธุรกิจขนาดเล็ก / บ้านใหญ่ ใช้ไฟกลางวันสูง',
-        remark: 'รับประกันแผง 25 ปี · อินเวอร์เตอร์ 10 ปี · งานติดตั้ง 2 ปี · ชำระมัดจำ 50% เมื่อยืนยันสั่งซื้อ',
-        lines: [{ pid: 'P001', qty: 18 }, { pid: 'P003', qty: 1 }, { pid: 'P005', qty: 18 }, { pid: 'P006', qty: 100 }, { pid: 'P007', qty: 1 }, { pid: 'P008', qty: 1 }] },
-      { id: 'T003', name: 'ระบบไฮบริด 5kW + แบตเตอรี่ 10kWh', group: 'โซลาร์เซลล์', desc: 'มีไฟสำรองใช้ตอนกลางคืน / ไฟดับ',
-        remark: 'รับประกันแบตเตอรี่ 10 ปี · ชำระมัดจำ 50% เมื่อยืนยันสั่งซื้อ',
-        lines: [{ pid: 'P001', qty: 10 }, { pid: 'P002', qty: 1 }, { pid: 'P004', qty: 1 }, { pid: 'P005', qty: 10 }, { pid: 'P006', qty: 60 }, { pid: 'P007', qty: 1 }] }
-    ],
+    products,
+    templates,
     docs: [
-      { ...base, no: `QT${ym}-0001`, type: 'QT', date: d(12), extra: d(-18), custId: 'C001', project: 'ติดตั้งโซลาร์รูฟ 5kW', status: 'finish', lines: L1 },
-      { ...base, no: `IV${ym}-0001`, type: 'IV', date: d(10), extra: d(-20), custId: 'C001', project: 'ติดตั้งโซลาร์รูฟ 5kW', status: 'finish', ref: `QT${ym}-0001`, lines: L1 },
-      { ...base, no: `DO${ym}-0001`, type: 'DO', date: d(6), extra: d(6), custId: 'C001', project: 'ติดตั้งโซลาร์รูฟ 5kW', status: 'finish', ref: `IV${ym}-0001`, lines: L1 },
-      { ...base, no: `RC${ym}-0001`, type: 'RC', date: d(1), custId: 'C001', project: 'ติดตั้งโซลาร์รูฟ 5kW', status: 'pending', ref: `DO${ym}-0001`, lines: L1 },
-      { ...base, no: `QT${ym}-0002`, type: 'QT', date: d(8), extra: d(-22), custId: 'C002', project: 'ระบบโซลาร์ปั๊มน้ำ 10kW', status: 'finish', discount: 5000, lines: L2 },
-      { ...base, no: `IV${ym}-0002`, type: 'IV', date: d(3), extra: d(-27), custId: 'C002', project: 'ระบบโซลาร์ปั๊มน้ำ 10kW', status: 'pending', discount: 5000, ref: `QT${ym}-0002`, lines: L2 },
-      { ...base, no: `QT${ym}-0003`, type: 'QT', date: d(2), extra: d(-28), custId: 'C003', project: 'ระบบสำรองไฟห้องเรียน', status: 'issued', lines: L3 },
-      { ...base, no: `QT${ym}-0004`, type: 'QT', date: d(0), extra: d(-30), custId: 'C004', project: 'โซลาร์รูฟบ้านพักอาศัย', status: 'issued', lines: L1.map(l => ({ ...l })) }
+      { ...fromTpl(templates[0], job1), no: `QTPV${ym}-1`, type: 'QT', date: d(12), extra: d(-3), status: 'finish' },
+      { ...fromTpl(templates[0], job1), no: `INV${ym}-1`, type: 'IV', date: d(10), extra: d(-20), status: 'finish', ref: `QTPV${ym}-1` },
+      { ...fromTpl(templates[0], job1), no: `DO${ym}-1`, type: 'DO', date: d(6), extra: d(6), status: 'finish', ref: `INV${ym}-1` },
+      { ...fromTpl(templates[0], job1), no: `RE${ym}-1`, type: 'RC', date: d(1), status: 'pending', ref: `DO${ym}-1` },
+      { ...gen(job2), no: `QT${ym}-1`, type: 'QT', date: d(8), extra: d(-7), status: 'finish' },
+      { ...gen(job2), no: `INV${ym}-2`, type: 'IV', date: d(3), extra: d(-27), status: 'pending', ref: `QT${ym}-1` },
+      { ...fromTpl(templates[2], { custId: 'C003', project: 'ระบบไฮบริดสำรองไฟห้องเรียน', discount: 0, priceMode: 'breakdown' }), no: `QTPV${ym}-2`, type: 'QT', date: d(2), extra: d(-13), status: 'issued' },
+      { ...gen({ custId: 'C004', project: 'แผงโซลาร์สำหรับติดตั้งเอง', lines: [{ pid: 'P001', name: 'แผงโซลาร์เซลล์ 550W Mono Half-cell', unit: 'EA', qty: 10, price: 4500 }, { pid: 'P002', name: 'อินเวอร์เตอร์ On-grid 5kW 1 เฟส', unit: 'EA', qty: 1, price: 28500 }] }),
+        no: `QT${ym}-2`, type: 'QT', date: d(0), extra: d(-15), status: 'issued' }
     ]
   };
 }
@@ -546,6 +621,7 @@ function load() {
   try { db = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
   if (!db || !db.docs) db = seed();
   if (!db.templates) db.templates = seed().templates;
+  db.settings = { ...defaultSettings(), ...(db.settings || {}) };
   db.products.forEach(p => { if (!p.cat) p.cat = SEED_CAT[p.id] || 'อื่นๆ'; });
 }
 const cats = () => [...new Set(db.products.map(p => p.cat))].sort((a, b) => a.localeCompare(b, 'th'));
@@ -565,11 +641,16 @@ const findDoc = no => db.docs.find(d => d.no === no);
 const nextId = (arr, p) => p + String(arr.reduce((m, x) => Math.max(m, +x.id.slice(1)), 0) + 1).padStart(3, '0');
 const initials = s => (s || '?').replace(/^(บริษัท|หจก\.|คุณ|โรงเรียน)\s*/, '').trim().charAt(0);
 
-function nextDocNo(type, dateStr) {
-  const prefix = type + yymm(new Date(dateStr + 'T00:00:00')) + '-';
-  const max = db.docs.filter(d => d.no.startsWith(prefix)).reduce((m, d) => Math.max(m, +d.no.slice(prefix.length)), 0);
-  return prefix + String(max + 1).padStart(4, '0');
+/* Numbering follows the paper forms: <prefix><YYYY><MM>-<running no.>, e.g. QT202304-13, QTPV202305-19, INV202305-1 */
+function docPrefix(type, kind) { const P = db.settings.prefix; return type === 'QT' && kind === 'install' ? P.QTI : P[type]; }
+function nextDocNo(type, dateStr, kind) {
+  const d = new Date(dateStr + 'T00:00:00');
+  const prefix = docPrefix(type, kind) + d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + '-';
+  const max = db.docs.filter(x => x.no.startsWith(prefix)).reduce((m, x) => Math.max(m, +x.no.slice(prefix.length) || 0), 0);
+  return prefix + (max + 1);
 }
+const fmtDate = s => { if (!s) return '-'; const [y, m, d] = s.split('-'); return `${d}/${m}/${y}`; };
+const fmtQty = q => (+q).toLocaleString('en-US', { maximumFractionDigits: 2 });
 function totals(doc) {
   const sum = doc.lines.reduce((s, l) => s + (+l.qty || 0) * (+l.price || 0), 0);
   const after = Math.max(0, sum - (+doc.discount || 0));
@@ -608,7 +689,7 @@ function advance(d) {
   d.status = 'finish';
   if (T.next.final) { save(); toast(`${d.no} · ${T.next.done}`); render(); return; }
   const nt = FLOW[FLOW.indexOf(d.type) + 1], today = iso(new Date());
-  const nd = { ...JSON.parse(JSON.stringify(d)), type: nt, no: nextDocNo(nt, today), date: today, ref: d.no, status: TYPES[nt].open,
+  const nd = { ...JSON.parse(JSON.stringify(d)), type: nt, no: nextDocNo(nt, today, d.kind), date: today, ref: d.no, status: TYPES[nt].open,
     extra: nt === 'DO' ? today : iso(new Date(Date.now() + 30 * 864e5)) };
   db.docs.push(nd); save();
   toast(`สร้าง${TYPES[nt].name} ${nd.no} แล้ว`);
@@ -697,6 +778,7 @@ function afterRender() {
     requestAnimationFrame(step);
   });
   countUp = false;
+  fitPaper();
 }
 document.addEventListener('pointermove', e => {
   const el = e.target.closest?.('.doc, .stage, .stat, .card'); if (!el) return;
@@ -807,35 +889,7 @@ function viewDoc() {
   $('#main').innerHTML = `<div class="view">
     <div class="head"><div><button class="btn ghost" id="back" type="button">← ${T.name}ทั้งหมด</button><h1>${esc(d.no)}</h1></div></div>
     <div class="detail">
-      <article class="paper">
-        ${d.status === 'finish' || d.status === 'cancel' ? `<div class="stamp ${d.status}">${d.status === 'cancel' ? 'ยกเลิก' : d.type === 'RC' ? 'ชำระแล้ว' : d.type === 'QT' ? 'สั่งซื้อแล้ว' : 'ดำเนินการแล้ว'}</div>` : ''}
-        <div class="row">
-          <div><b style="font-size:1.05rem">${esc(COMPANY.name)}</b>
-            <div class="muted sm">${esc(COMPANY.addr)}<br>เลขประจำตัวผู้เสียภาษี ${COMPANY.tax} · โทร ${COMPANY.phone}</div></div>
-          <div style="text-align:right"><h2>${T.name}</h2><div class="muted sm">ต้นฉบับ</div></div>
-        </div>
-        <div class="row">
-          <div style="max-width:420px"><div class="muted sm">ลูกค้า</div><b>${esc(c.name)}</b>
-            <div class="sm">${esc(c.addr)}<br>เลขประจำตัวผู้เสียภาษี ${esc(c.tax)} (${esc(c.branch)})${c.contact || c.phone ? `<br>ผู้ติดต่อ ${esc(c.contact)} ${esc(c.phone)}` : ''}</div></div>
-          <div class="meta"><span class="muted">เลขที่</span><b>${esc(d.no)}</b><span class="muted">วันที่</span><span>${thDate(d.date)}</span>
-            ${T.extra ? `<span class="muted">${T.extra}</span><span>${thDate(d.extra)}</span>` : ''}
-            ${d.ref ? `<span class="muted">อ้างอิง</span><span>${esc(d.ref)}</span>` : ''}
-            ${d.kind === 'install' ? `<span class="muted">ประเภท</span><span>งานติดตั้ง${d.tplName ? ' · ' + esc(d.tplName) : ''}</span>` : ''}
-            ${d.project ? `<span class="muted">โครงการ</span><span>${esc(d.project)}</span>` : ''}</div>
-        </div>
-        <div class="tablewrap"><table>
-          ${lump ? `<thead><tr><th>#</th><th>รายการอุปกรณ์และงานติดตั้ง</th><th class="num">จำนวน</th><th>หน่วย</th></tr></thead>
-          <tbody class="lump">${d.lines.map((l, i) => `<tr><td class="c-no">${i + 1}</td><td class="c-name">${esc(l.name)}</td><td class="num c-qty2" data-u="${esc(l.unit)}">${l.qty}</td><td class="c-unit2">${esc(l.unit)}</td></tr>`).join('')}
-            <tr class="lumprow"><td></td><td colspan="2"><b>ราคาเหมารวมทั้งระบบ (อุปกรณ์ + ติดตั้ง)</b></td><td class="num"><b>${money(t.sum)}</b></td></tr></tbody>` :
-          `<thead><tr><th>#</th><th>รายการ</th><th class="num">จำนวน</th><th>หน่วย</th><th class="num">ราคา/หน่วย</th><th class="num">จำนวนเงิน</th></tr></thead>
-          <tbody>${d.lines.map((l, i) => `<tr><td class="c-no">${i + 1}</td><td class="c-name">${esc(l.name)}</td><td class="num c-qty">${l.qty}</td><td class="c-unit">${esc(l.unit)}</td><td class="num c-price" data-q="${l.qty} ${esc(l.unit)}">${money(l.price)}</td><td class="num c-amt">${money(l.qty * l.price)}</td></tr>`).join('')}</tbody>`}
-        </table></div>
-        <div class="row" style="align-items:flex-start">
-          <div style="flex:1 1 240px"><div class="muted sm">จำนวนเงินตัวอักษร</div><b>(${bahtText(t.grand)})</b>${d.remark ? `<div class="muted sm" style="margin-top:8px">หมายเหตุ: ${esc(d.remark)}</div>` : ''}</div>
-          <div class="totals">${totalsRows(d, t)}</div>
-        </div>
-        <div class="signs"><div>ผู้มีอำนาจลงนาม</div><div>${d.type === 'DO' ? 'ผู้รับของ' : d.type === 'RC' ? 'ผู้รับเงิน' : 'ลูกค้า / ผู้อนุมัติ'}</div></div>
-      </article>
+      ${paperHtml(d)}
       ${isOpen(d) ? `<div class="mbar">${actionButtons(d)}</div>` : ''}
       <aside class="panel">
         <div class="card"><div class="head"><h2>สถานะ</h2>${pill(d)}</div>
@@ -868,7 +922,77 @@ function viewDoc() {
   $('#line').onclick = () => exportPdf(d, 'line');
   $$('[data-open]').forEach(a => a.onclick = () => go('doc', a.dataset.open));
   bindActions($('#main'));
+  fitPaper();
 }
+/* The A4 paper form. Every document type uses the same form; only the title box changes. */
+function paperHtml(d) {
+  const S = db.settings, c = cust(d.custId) || {}, t = totals(d), [th, en] = TITLES[d.type], T = TYPES[d.type];
+  const lump = d.kind === 'install' && d.priceMode === 'lump';
+  const secs = d.kind === 'install' && d.sections?.length ? d.sections : null;
+  const cell = v => lump ? '' : money(v);
+  let rows = '', count = 0;
+  if (d.kind === 'install' && d.system) { rows += `<tr class="sysrow"><td colspan="6">${esc(d.system)}</td></tr>`; count++; }
+  if (lump) { rows += `<tr class="lumprow"><td></td><td>${esc(d.lumpTitle || 'ค่าอุปกรณ์และติดตั้งครบชุด')}</td><td class="c">1</td><td class="c">LOT</td><td class="r">${money(t.sum)}</td><td class="r">${money(t.sum)}</td></tr>`; count++; }
+  if (secs) secs.forEach((sec, si) => {
+    const ls = d.lines.filter(l => (l.sec ?? 0) === si); if (!ls.length) return;
+    rows += `<tr class="secrow"><td class="c">${si + 1}</td><td colspan="5">${esc(sec.name)}</td></tr>`; count++;
+    if (sec.lot) {
+      const sum = ls.reduce((a, l) => a + l.qty * l.price, 0), n = ls.length;
+      ls.forEach((l, i) => { rows += `<tr><td></td><td class="ind">${esc(l.name)}</td>${i ? '' : `<td class="c mid" rowspan="${n}">1</td><td class="c mid" rowspan="${n}">LOT</td><td class="r mid" rowspan="${n}">${cell(sum)}</td><td class="r mid" rowspan="${n}">${cell(sum)}</td>`}</tr>`; count++; });
+    } else ls.forEach(l => { rows += `<tr><td></td><td class="ind">${esc(l.name)}</td><td class="c">${fmtQty(l.qty)}</td><td class="c">${esc(l.unit)}</td><td class="r">${cell(l.price)}</td><td class="r">${cell(l.qty * l.price)}</td></tr>`; count++; });
+  });
+  else d.lines.forEach((l, i) => { rows += `<tr><td class="c">${i + 1}</td><td>${esc(l.name)}</td><td class="c">${fmtQty(l.qty)}</td><td class="c">${esc(l.unit)}</td><td class="r">${cell(l.price)}</td><td class="r">${cell(l.qty * l.price)}</td></tr>`; count++; });
+  const fill = Math.max(16, (secs ? 40 : 380) - count * 19);
+  const warr = (d.warranty || '').split('\n').filter(x => x.trim());
+  const rem = (d.remark || '').split('\n').filter(x => x.trim());
+  const pay = d.pay || [];
+  const vatLabel = d.vatMode === 'in' ? 'ภาษีมูลค่าเพิ่ม 7% (รวมในราคาแล้ว)' : 'จำนวนภาษีมูลค่าเพิ่ม 7%';
+  const right = d.type === 'DO' ? 'ผู้รับสินค้า / Receiver' : 'Customer';
+  const stamp = d.status === 'finish' || d.status === 'cancel' ? `<div class="stamp ${d.status}">${d.status === 'cancel' ? 'ยกเลิก' : d.type === 'RC' ? 'ชำระแล้ว' : d.type === 'QT' ? 'สั่งซื้อแล้ว' : 'ดำเนินการแล้ว'}</div>` : '';
+  return `<div class="a4wrap"><article class="paper a4" style="--dc:${esc(S.color)}">${stamp}
+    <header class="ph">
+      <div class="logo4">${S.logo ? `<img src="${S.logo}" alt="">` : `<span>${esc(initials(S.name))}</span>`}</div>
+      <div class="co"><b>${esc(S.name)}</b><div>${esc(S.addr)}</div><div>เลขประจำตัวผู้เสียภาษี ${esc(S.tax)}</div><div>เบอร์โทร ${esc(S.phone)}</div>${S.email ? `<div>E-mail : <span class="link">${esc(S.email)}</span></div>` : ''}</div>
+      <div class="ttl"><div>${th}</div><div>${en}</div></div>
+    </header>
+    <table class="info">
+      <tr><th>ชื่อลูกค้า / Customer</th><td>${esc(c.name || '-')}</td><th>เลขที่ / No.</th><td>${esc(d.no)}</td></tr>
+      <tr><th>ที่อยู่ / Address</th><td>${esc(c.addr || '')}</td><th>วันที่ / Date</th><td>${fmtDate(d.date)}</td></tr>
+      <tr><th>โทรศัพท์ / Tel.</th><td>${esc(c.phone || '-')}</td><th>${T.extra ? esc(T.extra) : ''}</th><td>${T.extra ? fmtDate(d.extra) : ''}</td></tr>
+      <tr><th>เลขประจำตัวผู้เสียภาษี</th><td>${esc(c.tax || '-')}${c.branch && c.branch !== '-' ? ` (${esc(c.branch)})` : ''}</td><th>อ้างอิง</th><td>${esc(d.ref || d.project || '')}</td></tr>
+    </table>
+    <table class="items"><colgroup><col style="width:6%"><col><col style="width:9%"><col style="width:9%"><col style="width:13%"><col style="width:14%"></colgroup>
+      <thead><tr><th>No.</th><th>รายการ<br>Order</th><th>จำนวน<br>Qty</th><th>หน่วย<br>Unit</th><th>ราคา/หน่วย<br>Price/Unit</th><th>รวม<br>Total</th></tr></thead>
+      <tbody>${rows}<tr class="filler" style="--fill:${fill}px"><td></td><td></td><td></td><td></td><td></td><td></td></tr></tbody></table>
+    <table class="sum"><colgroup><col style="width:56%"><col style="width:27%"><col style="width:17%"></colgroup>
+      <tr><td class="warr" rowspan="4">${warr.length ? `<b>Warranty :</b>${warr.map(w => `<div>${esc(w)}</div>`).join('')}` : ''}</td><th>รวมเป็นเงิน</th><td>${money(t.sum)}</td></tr>
+      <tr><th>ส่วนลดพิเศษ</th><td>${+d.discount ? `(${money(d.discount)})` : '0.00'}</td></tr>
+      <tr><th>จำนวนเงินหลังหักส่วนลด</th><td>${money(t.after)}</td></tr>
+      <tr><th>${vatLabel}</th><td>${money(t.vat)}</td></tr>
+      <tr class="g"><td class="words">${bahtText(t.grand)}</td><th>จำนวนเงินรวมทั้งสิ้น</th><td>${money(t.grand)}</td></tr>
+    </table>
+    <div class="two">
+      <div><div class="bar">หมายเหตุ / Remark :</div>${rem.map(r => `<div class="ln">${esc(r)}</div>`).join('')}</div>
+      <div><div class="bar">การชำระเงิน / Payment terms</div>${pay.map(p => `<div class="pay"><span>- ${esc(p.text)}</span><span>${(+p.pct).toFixed(2)}%</span><b>${money(t.grand * p.pct / 100)}</b></div>`).join('')}</div>
+    </div>
+    <div class="bar bankbar">ธนาคาร / Bank</div>
+    <div class="bank"><div>${esc(S.bank)}</div><div>ชื่อบัญชีธนาคาร ${esc(S.bankAcctName)}</div><div>เลขที่บัญชี <b>${esc(S.bankAcctNo)}</b></div></div>
+    <div class="sig">
+      <div><div class="who">${esc(S.name)}</div><div class="line"></div><div class="dt"><span>Date:</span><span>${fmtDate(d.date)}</span></div></div>
+      <div><div class="who">${right}</div><div class="line"></div><div class="dt"><span>Date :</span><span>${fmtDate(d.date)}</span></div></div>
+    </div>
+  </article></div>`;
+}
+/* Shrink the A4 sheet to the screen width (phones) without reflowing it, so it looks exactly like the PDF */
+function fitPaper() {
+  $$('.a4wrap').forEach(w => {
+    const p = w.firstElementChild, k = Math.min(1, w.clientWidth / 794);
+    p.classList.remove('tight'); if (p.scrollHeight > 1123) p.classList.add('tight');
+    p.style.transform = k < 1 ? `scale(${k})` : '';
+    w.style.height = p.offsetHeight * k + 'px';
+  });
+}
+addEventListener('resize', fitPaper);
 function totalsRows(d, t) {
   return `<div><span>รวมเป็นเงิน</span><span>${money(t.sum)}</span></div>
     ${+d.discount ? `<div><span>ส่วนลด</span><span>-${money(d.discount)}</span></div>` : ''}
@@ -879,36 +1003,82 @@ function totalsRows(d, t) {
 
 /* ---------- New quotation (the only place documents are created) ---------- */
 let draft;
+function newDraft(kind) {
+  const S = db.settings, inst = kind === 'install';
+  return { kind, date: iso(new Date()), extra: iso(new Date(Date.now() + 15 * 864e5)), custId: '', project: '', vatMode: 'ex', discount: 0, priceMode: 'breakdown',
+    system: '', lumpTitle: '', sections: inst ? [{ name: 'Main Equipment', lot: false }, { name: 'Mounting', lot: true }, { name: 'Accessories', lot: true }] : [],
+    warranty: S.warranty || '', remark: S.remark || '', pay: JSON.parse(JSON.stringify(inst ? S.payInstall : S.payGeneral)), lines: [] };
+}
 function viewNew() {
   const today = iso(new Date());
   if (param && param.from) {
     const src = findDoc(param.from);
-    draft = { ...JSON.parse(JSON.stringify(src)), date: today, extra: iso(new Date(Date.now() + 30 * 864e5)), ref: '' };
+    draft = { ...JSON.parse(JSON.stringify(src)), date: today, extra: iso(new Date(Date.now() + 15 * 864e5)), ref: '' };
   } else if (!draft || (param && param.kind)) {
-    draft = { kind: param?.kind || 'general', date: today, extra: iso(new Date(Date.now() + 30 * 864e5)), custId: '', project: '', vatMode: 'ex', discount: 0, remark: 'ยืนราคา 30 วัน · ชำระมัดจำ 50% เมื่อยืนยันสั่งซื้อ', lines: [] };
+    draft = newDraft(param?.kind || 'general');
     if (param?.tpl) applyTemplate(db.templates.find(t => t.id === param.tpl), true);
   }
   param = null; ed = draft;
+  draft.sections = draft.sections || []; draft.pay = draft.pay || [];
   const inst = draft.kind === 'install';
   $('#main').innerHTML = `<div class="view">
-    <div class="head"><div><button class="btn ghost" id="back" type="button">← ใบเสนอราคาทั้งหมด</button><h1>${inst ? 'ใบเสนอราคางานติดตั้ง' : 'ใบเสนอราคาทั่วไป'}</h1>
-      <p>เลขที่จะได้ <b id="no" style="color:var(--accent)">${nextDocNo('QT', draft.date)}</b> · รันอัตโนมัติตามเดือน</p></div></div>
+    <div class="head"><div><button class="btn ghost" id="back" type="button">← ใบเสนอราคาทั้งหมด</button><h1>${inst ? 'ใบเสนอราคางานติดตั้ง' : 'ใบเสนอราคาขายสินค้า'}</h1>
+      <p>เลขที่จะได้ <b id="no" style="color:var(--accent)">${nextDocNo('QT', draft.date, draft.kind)}</b> · รันอัตโนมัติตามเดือน</p></div></div>
     ${inst ? `<div class="card"><div class="head"><h2>เลือกเทมเพลตงาน</h2><button class="btn small" id="tplNew" type="button">+ สร้างเทมเพลต</button></div>
       <div class="tpls">${db.templates.map(t => `<button class="tplcard" data-tpl="${t.id}" aria-pressed="${draft.tplId === t.id}" type="button">
         <span class="kind">${esc(t.group)}</span><b>${esc(t.name)}</b><span class="muted sm">${esc(t.desc || '')}</span>
         <span class="sm">${t.lines.length} รายการ · ประมาณ <b>฿${money(tplTotal(t))}</b></span></button>`).join('') || '<div class="empty">ยังไม่มีเทมเพลต กด “สร้างเทมเพลต”</div>'}</div>
-      <p class="muted sm" style="margin:0">เลือกแล้วรายการอุปกรณ์จะถูกเติมให้อัตโนมัติ ปรับจำนวน/ราคา หรือเพิ่มรายการต่อได้</p></div>` : ''}
+      <p class="muted sm" style="margin:0">เลือกแล้ว หมวดอุปกรณ์ รายการ เงื่อนไขรับประกัน และหมายเหตุ จะถูกเติมให้อัตโนมัติ แก้ไขต่อได้</p></div>` : ''}
     <div class="card"><h2>ลูกค้า</h2><div id="custBox"></div>
       <div class="grid">
-        <label class="f">โครงการ / หัวข้องาน <input id="project" value="${esc(draft.project)}" placeholder="เช่น ติดตั้งโซลาร์รูฟ 5kW"></label>
+        <label class="f">โครงการ / อ้างอิง <input id="project" value="${esc(draft.project)}" placeholder="เช่น ติดตั้งโซลาร์รูฟ 5kW"></label>
         <label class="f">วันที่เอกสาร <input id="date" type="date" value="${draft.date}"></label>
         <label class="f">ยืนราคาถึง <input id="extra" type="date" value="${draft.extra}"></label>
       </div></div>
-    <div class="card"><div class="head"><h2>รายการสินค้า / บริการ</h2>
-        ${inst ? `<div class="seg" id="pmSeg"><button data-pm="breakdown" aria-pressed="${draft.priceMode !== 'lump'}" type="button">แยกรายการ</button><button data-pm="lump" aria-pressed="${draft.priceMode === 'lump'}" type="button">ราคารวมก้อนเดียว</button></div>` : ''}
+    <div class="card"><div class="head"><h2>รายการ</h2>
+        ${inst ? `<div class="seg" id="pmSeg"><button data-pm="breakdown" aria-pressed="${draft.priceMode !== 'lump'}" type="button">แยกราคารายการ</button><button data-pm="lump" aria-pressed="${draft.priceMode === 'lump'}" type="button">ราคารวมก้อนเดียว</button></div>` : ''}
         <select id="vat" style="width:auto" aria-label="รูปแบบ VAT"><option value="ex">ราคาไม่รวม VAT (+7%)</option><option value="in">ราคารวม VAT แล้ว</option><option value="none">ไม่มี VAT</option></select></div>
-      <div class="addline">
-        <label class="f">หมวดหมู่ ${catSelect('pc', pickCat)}</label>
+      ${inst ? `<div class="grid">
+        <label class="f">หัวข้อระบบ (แถบสีบนตาราง) <input id="system" value="${esc(draft.system)}" placeholder="เช่น Solar system Capacity 5.5 kWp (String)"></label>
+        <label class="f">ชื่อรายการเหมารวม (ใช้ตอนแสดงราคารวมก้อนเดียว) <input id="lumpTitle" value="${esc(draft.lumpTitle)}" placeholder="เช่น Solar Roof top system Installation"></label></div>` : ''}
+      ${lineEditorHtml(inst)}
+      <div class="grid" style="align-items:start">
+        <div></div>
+        <div><div class="totals" id="tot"></div><label class="f" style="max-width:360px;margin:10px 0 0 auto">ส่วนลดพิเศษ (บาท) <input id="disc" type="number" min="0" step="0.01" value="${draft.discount}" inputmode="decimal"></label></div>
+      </div>
+      <div class="words" id="words"></div>
+    </div>
+    <div class="card"><h2>เงื่อนไขในเอกสาร</h2>
+      <div class="grid" style="align-items:start">
+        <label class="f">Warranty / การรับประกัน (บรรทัดละข้อ) <textarea id="warranty" rows="4">${esc(draft.warranty)}</textarea></label>
+        <label class="f">หมายเหตุ / Remark (บรรทัดละข้อ) <textarea id="remark" rows="4">${esc(draft.remark)}</textarea></label>
+      </div>
+      <div class="f" style="display:grid;gap:8px"><span class="muted sm" style="font-weight:500">การชำระเงิน / Payment terms</span><div id="payBox" style="display:grid;gap:8px"></div>
+        <div><button class="btn small" id="payAdd" type="button">+ เพิ่มงวดชำระ</button></div></div>
+    </div>
+    ${inst ? '<button class="btn ghost" id="asTpl" type="button" style="justify-self:start">บันทึกรายการชุดนี้เป็นเทมเพลตใหม่</button>' : ''}
+    <div class="actions mbar-form"><button class="btn" id="clear" type="button">ล้างฟอร์ม</button><button class="btn primary" id="ssave" type="button">ออกใบเสนอราคา</button></div>
+  </div>`;
+  $('#vat').value = draft.vatMode;
+  $('#back').onclick = () => go('list', 'QT');
+  ['project', 'date', 'extra', 'remark', 'warranty', 'system', 'lumpTitle'].forEach(id => { const el = $('#' + id); if (el) el.oninput = () => { syncDraft(); if (id === 'date') $('#no').textContent = nextDocNo('QT', draft.date, draft.kind); }; });
+  $('#vat').onchange = () => { draft.vatMode = $('#vat').value; drawTotals(); drawPay(); };
+  $$('#pmSeg [data-pm]').forEach(b => b.onclick = () => { draft.priceMode = b.dataset.pm; $$('#pmSeg [data-pm]').forEach(x => x.setAttribute('aria-pressed', x === b)); afterRender();
+    toast(b.dataset.pm === 'lump' ? 'ลูกค้าจะเห็นรายการอุปกรณ์ แต่ราคาเป็นก้อนเดียว' : 'ลูกค้าจะเห็นราคาแยกทุกรายการ'); });
+  $('#disc').oninput = () => { draft.discount = +$('#disc').value || 0; drawTotals(); drawPay(); };
+  $('#payAdd').onclick = () => { draft.pay.push({ text: '', pct: 0 }); drawPay(); $$('#payBox [data-pt]').pop()?.focus(); };
+  $('#clear').onclick = () => go('new', { kind: draft.kind });
+  $('#ssave').onclick = commit;
+  $$('[data-tpl]').forEach(b => b.onclick = () => { syncDraft(); applyTemplate(db.templates.find(t => t.id === b.dataset.tpl)); viewNew(); afterRender(); glide($('#main')); });
+  $('#tplNew')?.addEventListener('click', () => { syncDraft(); go('tpl', { id: 'new', back: true }); });
+  $('#asTpl')?.addEventListener('click', () => { syncDraft(); if (!draft.lines.length) return toast('ยังไม่มีรายการให้บันทึก');
+    go('tpl', { id: 'new', back: true, from: draft }); });
+  drawCust(); drawLines(); drawPay(); setupProductPicker();
+}
+function lineEditorHtml(withSec) {
+  return `<div class="addline${withSec ? ' withsec' : ''}">
+        <label class="f">หมวดสินค้า ${catSelect('pc', pickCat)}</label>
+        ${withSec ? '<label class="f">ใส่ในหมวดเอกสาร <select id="psec"></select></label>' : ''}
         <label class="f picker">ค้นหาสินค้าจากฐานข้อมูล <input id="ps" placeholder="พิมพ์ชื่อหรือรหัสสินค้า" autocomplete="off"><div class="menu" id="pm" hidden></div></label>
         <label class="f">จำนวน <input id="pq" type="number" min="0" step="any" value="1" inputmode="decimal"></label>
         <button class="btn primary" id="padd" type="button">+ เพิ่มรายการ</button>
@@ -916,31 +1086,25 @@ function viewNew() {
       <div class="tablewrap"><table class="lines">
         <thead><tr><th>รายการ</th><th class="num">จำนวน</th><th class="num">ราคา/หน่วย</th><th class="num">จำนวนเงิน</th><th></th></tr></thead>
         <tbody id="lines"></tbody></table></div>
-      <div class="grid" style="align-items:start">
-        <label class="f">หมายเหตุ <textarea id="remark">${esc(draft.remark)}</textarea></label>
-        <div><div class="totals" id="tot"></div><label class="f" style="max-width:360px;margin:10px 0 0 auto">ส่วนลดท้ายบิล (บาท) <input id="disc" type="number" min="0" step="0.01" value="${draft.discount}" inputmode="decimal"></label></div>
-      </div>
-      <div class="words" id="words"></div>
-    </div>
-    ${inst ? '<button class="btn ghost" id="asTpl" type="button" style="justify-self:start">บันทึกรายการชุดนี้เป็นเทมเพลตใหม่</button>' : ''}
-    <div class="actions mbar-form"><button class="btn" id="clear" type="button">ล้างฟอร์ม</button><button class="btn primary" id="ssave" type="button">ออกใบเสนอราคา</button></div>
-  </div>`;
-  $('#vat').value = draft.vatMode;
-  $('#back').onclick = () => go('list', 'QT');
-  ['project', 'date', 'extra', 'remark'].forEach(id => $('#' + id).oninput = () => { syncDraft(); if (id === 'date') $('#no').textContent = nextDocNo('QT', draft.date); });
-  $('#vat').onchange = () => { draft.vatMode = $('#vat').value; drawTotals(); };
-  $$('#pmSeg [data-pm]').forEach(b => b.onclick = () => { draft.priceMode = b.dataset.pm; $$('#pmSeg [data-pm]').forEach(x => x.setAttribute('aria-pressed', x === b)); afterRender();
-    toast(b.dataset.pm === 'lump' ? 'ลูกค้าจะเห็นรายการอุปกรณ์ แต่ไม่เห็นราคาแต่ละรายการ' : 'ลูกค้าจะเห็นราคาแยกทุกรายการ'); });
-  $('#disc').oninput = () => { draft.discount = +$('#disc').value || 0; drawTotals(); };
-  $('#clear').onclick = () => go('new', { kind: draft.kind });
-  $('#ssave').onclick = commit;
-  $$('[data-tpl]').forEach(b => b.onclick = () => { syncDraft(); applyTemplate(db.templates.find(t => t.id === b.dataset.tpl)); smooth(() => { viewNew(); afterRender(); }); });
-  $('#tplNew')?.addEventListener('click', () => { syncDraft(); go('tpl', { id: 'new', back: true }); });
-  $('#asTpl')?.addEventListener('click', () => { syncDraft(); if (!draft.lines.length) return toast('ยังไม่มีรายการให้บันทึก');
-    go('tpl', { id: 'new', back: true, lines: draft.lines.map(l => ({ pid: l.pid, qty: l.qty })), name: draft.project }); });
-  drawCust(); drawLines(); setupProductPicker();
+      ${withSec ? '<div><button class="btn small" id="addSec" type="button">+ เพิ่มหมวดในเอกสาร</button></div>' : ''}`;
 }
-function syncDraft() { draft.project = $('#project').value; draft.date = $('#date').value || draft.date; draft.extra = $('#extra').value; draft.remark = $('#remark').value; }
+function drawPay() {
+  const box = $('#payBox'); if (!box) return;
+  const g = totals(draft).grand, sum = draft.pay.reduce((a, p) => a + (+p.pct || 0), 0);
+  box.innerHTML = draft.pay.map((p, i) => `<div class="payrow"><input data-pt="${i}" value="${esc(p.text)}" placeholder="เช่น มัดจำเพื่อเตรียมอุปกรณ์" aria-label="รายละเอียดงวด">
+      <input data-pp="${i}" type="number" min="0" max="100" step="any" value="${p.pct}" inputmode="decimal" aria-label="เปอร์เซ็นต์"><span class="muted sm">% · ฿${money(g * p.pct / 100)}</span>
+      <button class="icon-btn" data-pdel="${i}" type="button" aria-label="ลบงวด">✕</button></div>`).join('')
+    + `<div class="paysum ${Math.abs(sum - 100) < .001 ? '' : 'bad'}">รวม ${fmtQty(sum)}%${Math.abs(sum - 100) < .001 ? '' : ' · ควรรวมเป็น 100%'}</div>`;
+  $$('[data-pt]', box).forEach(el => el.oninput = () => draft.pay[el.dataset.pt].text = el.value);
+  $$('[data-pp]', box).forEach(el => el.onchange = () => { draft.pay[el.dataset.pp].pct = +el.value || 0; drawPay(); });
+  $$('[data-pdel]', box).forEach(el => el.onclick = () => { draft.pay.splice(+el.dataset.pdel, 1); drawPay(); });
+}
+function syncDraft() {
+  const v = id => $('#' + id)?.value;
+  draft.project = v('project') ?? draft.project; draft.date = v('date') || draft.date; draft.extra = v('extra') ?? draft.extra;
+  draft.remark = v('remark') ?? draft.remark; draft.warranty = v('warranty') ?? draft.warranty;
+  draft.system = v('system') ?? draft.system; draft.lumpTitle = v('lumpTitle') ?? draft.lumpTitle;
+}
 function drawCust() {
   const c = cust(draft.custId), box = $('#custBox');
   if (c) {
@@ -991,32 +1155,54 @@ function setupProductPicker() {
   $('#pq').onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); add(); } };
 }
 function addLine(p) {
-  const qty = +$('#pq').value || 1;
-  const ex = ed.lines.find(l => l.pid === p.id && l.price === p.price);
-  if (ex) ex.qty += qty; else ed.lines.push({ pid: p.id, name: p.name, unit: p.unit, qty, price: p.price });
+  const qty = +$('#pq').value || 1, sec = ed.sections?.length ? +($('#psec')?.value || 0) : undefined;
+  const ex = ed.lines.find(l => l.pid === p.id && l.price === p.price && l.sec === sec);
+  if (ex) ex.qty += qty; else ed.lines.push({ pid: p.id, name: p.name, unit: p.unit, qty, price: p.price, sec });
   $('#pq').value = 1; drawLines(); toast(`เพิ่ม ${p.name} แล้ว`);
 }
-function drawLines() {
-  $('#lines').innerHTML = ed.lines.map((l, i) => `<tr>
+function lineRow(l, i) {
+  return `<tr>
     <td class="n"><b style="font-weight:600">${esc(l.name)}</b><div class="muted sm">${esc(l.unit)}</div></td>
     <td class="num"><input class="q num" type="number" min="0" step="any" value="${l.qty}" data-i="${i}" data-k="qty" aria-label="จำนวน"></td>
     <td class="num"><input class="p num" type="number" min="0" step="0.01" value="${l.price}" data-i="${i}" data-k="price" aria-label="ราคาต่อหน่วย"></td>
     <td class="num amt">${money(l.qty * l.price)}</td>
-    <td><button class="icon-btn" data-del="${i}" type="button" aria-label="ลบรายการ">✕</button></td></tr>`).join('')
-    || `<tr><td colspan="5"><div class="empty">ยังไม่มีรายการ · ค้นหาสินค้าด้านบนแล้วกด “เพิ่มรายการ”</div></td></tr>`;
-  $$('#lines input').forEach(inp => inp.oninput = () => {
+    <td><button class="icon-btn" data-del="${i}" type="button" aria-label="ลบรายการ">✕</button></td></tr>`;
+}
+function drawLines() {
+  const secs = ed.sections || [];
+  let html = '';
+  if (secs.length) secs.forEach((sc, si) => {
+    html += `<tr class="sechead"><td colspan="5"><div class="sh"><span class="sn">${si + 1}</span><input class="secname" data-s="${si}" value="${esc(sc.name)}" aria-label="ชื่อหมวด">
+      <label class="lot"><input type="checkbox" data-lot="${si}" ${sc.lot ? 'checked' : ''}>แสดงเป็น 1 LOT</label><button class="icon-btn" data-sdel="${si}" type="button" aria-label="ลบหมวด">✕</button></div></td></tr>`;
+    html += ed.lines.map((l, i) => [l, i]).filter(([l]) => (l.sec ?? 0) === si).map(([l, i]) => lineRow(l, i)).join('')
+      || '<tr><td colspan="5" class="muted sm" style="padding:8px 12px">ยังไม่มีรายการในหมวดนี้</td></tr>';
+  });
+  else html = ed.lines.map(lineRow).join('');
+  $('#lines').innerHTML = html || `<tr><td colspan="5"><div class="empty">ยังไม่มีรายการ · ค้นหาสินค้าด้านบนแล้วกด “เพิ่มรายการ”</div></td></tr>`;
+  const ps = $('#psec');
+  if (ps) { const v = ps.value; ps.innerHTML = secs.map((sc, si) => `<option value="${si}">${si + 1}. ${esc(sc.name)}</option>`).join(''); if (v && +v < secs.length) ps.value = v; }
+  $$('#lines input[data-k]').forEach(inp => inp.oninput = () => {
     const l = ed.lines[inp.dataset.i]; l[inp.dataset.k] = +inp.value || 0;
     inp.closest('tr').querySelector('.amt').textContent = money(l.qty * l.price); drawTotals();
   });
-  $$('[data-del]').forEach(b => b.onclick = () => { ed.lines.splice(+b.dataset.del, 1); drawLines(); });
+  $$('#lines [data-del]').forEach(b => b.onclick = () => { ed.lines.splice(+b.dataset.del, 1); drawLines(); });
+  $$('#lines .secname').forEach(inp => inp.oninput = () => { secs[inp.dataset.s].name = inp.value; const o = $(`#psec option[value="${inp.dataset.s}"]`); if (o) o.textContent = `${+inp.dataset.s + 1}. ${inp.value}`; });
+  $$('#lines [data-lot]').forEach(cb => cb.onchange = () => secs[cb.dataset.lot].lot = cb.checked);
+  $$('#lines [data-sdel]').forEach(b => b.onclick = () => {
+    const si = +b.dataset.sdel;
+    if (ed.lines.some(l => (l.sec ?? 0) === si) && !b.dataset.confirm) { b.dataset.confirm = 1; toast('หมวดนี้มีรายการอยู่ กด ✕ อีกครั้งเพื่อลบหมวดพร้อมรายการ'); return; }
+    ed.lines = ed.lines.filter(l => (l.sec ?? 0) !== si).map(l => ({ ...l, sec: (l.sec ?? 0) > si ? l.sec - 1 : l.sec }));
+    secs.splice(si, 1); drawLines();
+  });
+  const add = $('#addSec'); if (add) add.onclick = () => { secs.push({ name: 'หมวดใหม่', lot: true }); ed.sections = secs; drawLines(); $$('#lines .secname').pop()?.select(); };
   drawTotals();
 }
-function drawTotals() { const t = totals(ed); $('#tot').innerHTML = totalsRows(ed, t); $('#words').textContent = `(${bahtText(t.grand)})`; }
+function drawTotals() { const t = totals(ed), tot = $('#tot'); if (!tot) return; tot.innerHTML = totalsRows(ed, t); $('#words').textContent = `(${bahtText(t.grand)})`; if (ed === draft) drawPay(); }
 function commit() {
   syncDraft();
   if (!cust(draft.custId)) { toast('กรุณาเลือกลูกค้าจากฐานข้อมูล'); $('#cs')?.focus(); return; }
   if (!draft.lines.length) { toast('กรุณาเพิ่มรายการอย่างน้อย 1 รายการ'); $('#ps').focus(); return; }
-  const doc = { ...draft, type: 'QT', no: nextDocNo('QT', draft.date), status: 'issued', discount: +draft.discount || 0 };
+  const doc = { ...draft, type: 'QT', no: nextDocNo('QT', draft.date, draft.kind), status: 'issued', discount: +draft.discount || 0 };
   if (doc.kind !== 'install') { delete doc.tplId; delete doc.tplName; }
   db.docs.push(doc); save(); draft = null;
   toast(`ออกใบเสนอราคา ${doc.no} แล้ว`);
@@ -1030,12 +1216,12 @@ const loadScript = src => new Promise((ok, bad) => { if ($(`script[src="${src}"]
 const note = msg => { const n = $('#shareNote'); if (n) n.textContent = msg; };
 async function renderPages() {
   await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
-  const paper = $('.paper'); paper.classList.add('capture');
-  const canvas = await html2canvas(paper, { scale: 2, backgroundColor: '#ffffff', useCORS: true, windowWidth: 820 });
-  paper.classList.remove('capture');
-  const W = 210, H = 297, m = 8, iw = W - m * 2, pageH = Math.floor((H - m * 2) * canvas.width / iw);
+  const paper = $('.paper'), wrap = paper.parentElement; paper.classList.add('capture'); wrap.style.overflow = 'visible';
+  const canvas = await html2canvas(paper, { scale: 2, backgroundColor: '#ffffff', useCORS: true, windowWidth: 1000, width: 794 });
+  paper.classList.remove('capture'); wrap.style.overflow = ''; fitPaper();
+  const W = 210, H = 297, m = 0, iw = W - m * 2, pageH = Math.floor((H - m * 2) * canvas.width / iw);
   const pages = [];
-  for (let y = 0; y < canvas.height; y += pageH) {
+  for (let y = 0; y < canvas.height - 24; y += pageH) {
     const c = document.createElement('canvas'); c.width = canvas.width; c.height = Math.min(pageH, canvas.height - y);
     c.getContext('2d').drawImage(canvas, 0, y, c.width, c.height, 0, 0, c.width, c.height);
     pages.push({ src: c.toDataURL('image/jpeg', .92), w: c.width, h: c.height });
@@ -1044,7 +1230,7 @@ async function renderPages() {
 }
 async function buildPdf(d, pages) {
   await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
-  const pdf = new jspdf.jsPDF({ unit: 'mm', format: 'a4' }), m = 8, iw = 210 - m * 2;
+  const pdf = new jspdf.jsPDF({ unit: 'mm', format: 'a4' }), m = 0, iw = 210 - m * 2;
   pages.forEach((pg, i) => { if (i) pdf.addPage(); pdf.addImage(pg.src, 'JPEG', m, m, iw, pg.h * iw / pg.w); });
   return new File([pdf.output('blob')], `${d.no}.pdf`, { type: 'application/pdf' });
 }
@@ -1084,7 +1270,7 @@ async function previewDoc(d, mode) {
 }
 function lineText(d) {
   const c = cust(d.custId) || {};
-  return `${TYPES[d.type].name} เลขที่ ${d.no}\nลูกค้า: ${c.name || '-'}${d.project ? '\nโครงการ: ' + d.project : ''}\nยอดรวมทั้งสิ้น: ฿${money(totals(d).grand)}\n${COMPANY.name} โทร ${COMPANY.phone}`;
+  return `${TYPES[d.type].name} เลขที่ ${d.no}\nลูกค้า: ${c.name || '-'}${d.project ? '\nโครงการ: ' + d.project : ''}\nยอดรวมทั้งสิ้น: ฿${money(totals(d).grand)}\n${db.settings.name} โทร ${db.settings.phone}`;
 }
 async function exportPdf(d, mode) {
   const btn = $(mode === 'line' ? '#line' : '#pdf'), label = btn.textContent;
@@ -1116,13 +1302,15 @@ function pickKind() {
   $$('[data-k]', f).forEach(b => b.onclick = () => { dlg.close(); go('new', { kind: b.dataset.k }); });
   dlg.showModal();
 }
-const tplLine = l => { const p = db.products.find(x => x.id === l.pid); return p ? { pid: p.id, name: p.name, unit: p.unit, qty: l.qty, price: p.price } : null; };
+const tplLine = l => { const p = db.products.find(x => x.id === l.pid); return p ? { pid: p.id, name: p.name, unit: p.unit, qty: l.qty, price: p.price, sec: l.sec } : null; };
 const tplTotal = t => t.lines.map(tplLine).filter(Boolean).reduce((s, l) => s + l.qty * l.price, 0);
 function applyTemplate(t, silent) {
   if (!t) return;
   draft.lines = t.lines.map(tplLine).filter(Boolean);
-  draft.tplId = t.id; draft.tplName = t.name;
+  draft.sections = JSON.parse(JSON.stringify(t.sections || []));
+  Object.assign(draft, { tplId: t.id, tplName: t.name, system: t.system || '', lumpTitle: t.lumpTitle || '' });
   if (!draft.project) draft.project = t.name;
+  if (t.warranty) draft.warranty = t.warranty;
   if (t.remark) draft.remark = t.remark;
   if (!silent) toast(`ใช้เทมเพลต “${t.name}” แล้ว · ${draft.lines.length} รายการ`);
 }
@@ -1144,9 +1332,13 @@ function viewTemplates() {
 }
 let tdraft;
 function viewTpl() {
-  const P = param || { id: 'new' }, src = db.templates.find(t => t.id === P.id);
-  tdraft = src ? { ...JSON.parse(JSON.stringify(src)) } : { id: null, name: P.name || '', group: 'โซลาร์เซลล์', desc: '', remark: '', lines: P.lines || [] };
-  tdraft.lines = tdraft.lines.map(tplLine).filter(Boolean); tdraft.vatMode = 'ex'; tdraft.discount = 0;
+  const P = param || { id: 'new' }, src = db.templates.find(t => t.id === P.id), f = P.from;
+  tdraft = src ? JSON.parse(JSON.stringify(src))
+    : f ? { id: null, name: f.project || '', group: 'โซลาร์เซลล์', desc: '', system: f.system || '', lumpTitle: f.lumpTitle || '', warranty: f.warranty || '', remark: f.remark || '',
+        sections: JSON.parse(JSON.stringify(f.sections || [])), lines: f.lines.map(l => ({ pid: l.pid, qty: l.qty, sec: l.sec })) }
+    : { id: null, name: '', group: 'โซลาร์เซลล์', desc: '', system: '', lumpTitle: '', warranty: db.settings.warranty || '', remark: db.settings.remark || '',
+        sections: [{ name: 'Main Equipment', lot: false }, { name: 'Mounting', lot: true }, { name: 'Accessories', lot: true }], lines: [] };
+  tdraft.lines = tdraft.lines.map(tplLine).filter(Boolean); tdraft.sections = tdraft.sections || []; tdraft.vatMode = 'ex'; tdraft.discount = 0;
   ed = tdraft;
   const groups = [...new Set(db.templates.map(t => t.group).concat(['โซลาร์เซลล์', 'งานไฟฟ้า', 'งานรับเหมาก่อสร้าง']))];
   $('#main').innerHTML = `<div class="view">
@@ -1156,19 +1348,18 @@ function viewTpl() {
       <label class="f">กลุ่มงาน <input id="tg" list="tgl" value="${esc(tdraft.group)}"><datalist id="tgl">${groups.map(g => `<option value="${esc(g)}">`).join('')}</datalist></label>
     </div>
       <label class="f">คำอธิบาย (เหมาะกับลูกค้าแบบไหน) <input id="td" value="${esc(tdraft.desc)}"></label>
-      <label class="f">หมายเหตุ/เงื่อนไขที่จะใส่ในใบเสนอราคา <textarea id="tr">${esc(tdraft.remark)}</textarea></label></div>
-    <div class="card"><h2>ชุดอุปกรณ์และค่าแรง</h2>
-      <div class="addline">
-        <label class="f">หมวดหมู่ ${catSelect('pc', pickCat)}</label>
-        <label class="f picker">ค้นหาสินค้าจากฐานข้อมูล <input id="ps" placeholder="พิมพ์ชื่อหรือรหัสสินค้า" autocomplete="off"><div class="menu" id="pm" hidden></div></label>
-        <label class="f">จำนวน <input id="pq" type="number" min="0" step="any" value="1" inputmode="decimal"></label>
-        <button class="btn primary" id="padd" type="button">+ เพิ่มรายการ</button>
+      <div class="grid">
+        <label class="f">หัวข้อระบบ (แถบสีบนตาราง) <input id="tsys" value="${esc(tdraft.system)}" placeholder="เช่น Solar system Capacity 5.5 kWp (String)"></label>
+        <label class="f">ชื่อรายการเหมารวม <input id="tlump" value="${esc(tdraft.lumpTitle)}" placeholder="เช่น Solar Roof top system Installation"></label>
       </div>
-      <div class="tablewrap"><table class="lines">
-        <thead><tr><th>รายการ</th><th class="num">จำนวน</th><th class="num">ราคา/หน่วย</th><th class="num">จำนวนเงิน</th><th></th></tr></thead>
-        <tbody id="lines"></tbody></table></div>
+      <div class="grid" style="align-items:start">
+        <label class="f">Warranty / การรับประกัน (บรรทัดละข้อ) <textarea id="tw" rows="4">${esc(tdraft.warranty)}</textarea></label>
+        <label class="f">หมายเหตุ / Remark (บรรทัดละข้อ) <textarea id="tr" rows="4">${esc(tdraft.remark)}</textarea></label>
+      </div></div>
+    <div class="card"><h2>หมวดอุปกรณ์และรายการ</h2>
+      ${lineEditorHtml(true)}
       <div class="totals" id="tot"></div><div class="words" id="words"></div>
-      <p class="muted sm" style="margin:0">ราคาในเทมเพลตอ้างอิงจากฐานข้อมูลสินค้า เมื่อแก้ราคาสินค้า เทมเพลตจะใช้ราคาใหม่อัตโนมัติ</p></div>
+      <p class="muted sm" style="margin:0">ราคาในเทมเพลตอ้างอิงจากฐานข้อมูลสินค้า เมื่อแก้ราคาสินค้า เทมเพลตจะใช้ราคาใหม่อัตโนมัติ · ติ๊ก “แสดงเป็น 1 LOT” เพื่อให้หมวดนั้นแสดงจำนวนรวมเป็น 1 LOT ในเอกสาร</p></div>
     <div class="actions mbar-form">${src ? '<button class="btn danger" id="tdel" type="button">ลบ</button>' : ''}<button class="btn primary" id="tsave" type="button">บันทึกเทมเพลต</button></div>
   </div>`;
   const back = () => P.back ? go('new') : go('templates');
@@ -1177,8 +1368,9 @@ function viewTpl() {
     const name = $('#tn').value.trim();
     if (!name) { toast('กรุณาตั้งชื่อเทมเพลต'); $('#tn').focus(); return; }
     if (!tdraft.lines.length) { toast('กรุณาเพิ่มอุปกรณ์อย่างน้อย 1 รายการ'); $('#ps').focus(); return; }
-    const t = { id: src ? src.id : nextId(db.templates, 'T'), name, group: $('#tg').value.trim() || 'อื่นๆ', desc: $('#td').value.trim(), remark: $('#tr').value.trim(),
-      lines: tdraft.lines.map(l => ({ pid: l.pid, qty: l.qty })) };
+    const t = { id: src ? src.id : nextId(db.templates, 'T'), name, group: $('#tg').value.trim() || 'อื่นๆ', desc: $('#td').value.trim(),
+      system: $('#tsys').value.trim(), lumpTitle: $('#tlump').value.trim(), warranty: $('#tw').value, remark: $('#tr').value,
+      sections: tdraft.sections, lines: tdraft.lines.map(l => ({ pid: l.pid, qty: l.qty, sec: l.sec })) };
     if (src) Object.assign(src, t); else db.templates.push(t);
     save(); toast(`บันทึกเทมเพลต “${name}” แล้ว`);
     if (P.back && draft) { draft.kind = 'install'; applyTemplate(t, true); }
@@ -1284,20 +1476,81 @@ function applyTheme() {
   if (pref.skin !== 'modern' || pref.mode === 'system') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = pref.mode;
   try { localStorage.setItem('qs-theme', JSON.stringify(pref)); } catch (e) {}
 }
+let setTab = 'company';
 function viewSettings() {
+  if (setTab === 'company') return viewCompany();
   $('#main').innerHTML = `<div class="view">
-    <div class="head"><div><h1>ธีม</h1><p>เปลี่ยนหน้าตาทั้งระบบ ทั้งพื้นหลัง สี ฟอนต์ และรูปทรง</p></div></div>
+    <div class="head"><div><h1>ตั้งค่า</h1><p>เปลี่ยนหน้าตาทั้งระบบ ทั้งพื้นหลัง สี ฟอนต์ และรูปทรง</p></div></div>
+    ${setTabs()}
     <div class="skins">${Object.entries(SKINS).map(([k, v]) => `<button class="skin" data-skin-pick="${k}" aria-pressed="${pref.skin === k}" type="button">
       <span class="prev" style="background:${v.bg}"><span class="pc" style="background:${v.card}"><i style="background:${v.acc}"></i><u></u><u></u></span></span>
       <b>${v.name}</b><span class="muted sm">${v.desc}</span></button>`).join('')}</div>
     ${pref.skin === 'modern' ? `<div class="card"><h2>โหมดแสดงผล (เฉพาะธีมโมเดิร์น)</h2><div><div class="seg">${[['system', 'ตามเครื่อง'], ['light', 'สว่าง'], ['dark', 'มืด']].map(([k, n]) => `<button data-m="${k}" aria-pressed="${pref.mode === k}" type="button">${n}</button>`).join('')}</div></div></div>` : ''}
     <div class="card"><h2>ข้อมูลทดสอบ</h2><p class="muted sm" style="margin:0">ลูกค้า สินค้า และเอกสารเป็นข้อมูลจำลอง เก็บไว้ในเบราว์เซอร์เครื่องนี้เท่านั้น ยังไม่เชื่อม Google Sheet</p>
       <div><button class="btn" id="reset" type="button">รีเซ็ตกลับเป็นข้อมูลตัวอย่าง</button></div></div></div>`;
+  bindSetTabs();
   $$('[data-skin-pick]').forEach(b => b.onclick = () => { pref.skin = b.dataset.skinPick; applyTheme(); viewSettings(); });
   $$('[data-m]').forEach(b => b.onclick = () => { pref.mode = b.dataset.m; applyTheme(); viewSettings(); });
   $('#reset').onclick = () => {
     if ($('#reset').dataset.confirm) { db = seed(); save(); draft = null; toast('รีเซ็ตข้อมูลตัวอย่างแล้ว'); go('list', 'QT'); }
     else { $('#reset').dataset.confirm = 1; $('#reset').textContent = 'กดอีกครั้งเพื่อยืนยันการรีเซ็ต'; }
+  };
+}
+
+const setTabs = () => `<div><div class="seg">${[['company', 'ข้อมูลบริษัท'], ['theme', 'ธีม']].map(([k, n]) => `<button data-st="${k}" aria-pressed="${setTab === k}" type="button">${n}</button>`).join('')}</div></div>`;
+function bindSetTabs() { $$('[data-st]').forEach(b => b.onclick = () => { setTab = b.dataset.st; viewSettings(); afterRender(); glide($('#main')); }); }
+/* Company details printed on every document header; editable so other companies can use the system */
+function viewCompany() {
+  const S = db.settings, P = S.prefix;
+  const fld = (id, label, val, extra = '') => `<label class="f">${label} <input id="${id}" value="${esc(val)}" ${extra}></label>`;
+  $('#main').innerHTML = `<div class="view">
+    <div class="head"><div><h1>ตั้งค่า</h1><p>ข้อมูลนี้จะแสดงบนหัวกระดาษและท้ายเอกสารทุกฉบับ</p></div></div>
+    ${setTabs()}
+    <div class="card"><h2>ข้อมูลบริษัท</h2>
+      <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+        <div class="logoprev" id="logoPrev">${S.logo ? `<img src="${S.logo}" alt="โลโก้">` : '<span class="muted sm">ยังไม่มีโลโก้</span>'}</div>
+        <div style="display:grid;gap:8px"><label class="btn small" style="cursor:pointer">อัปโหลดโลโก้<input id="logoFile" type="file" accept="image/*" hidden></label>
+          ${S.logo ? '<button class="btn small danger" id="logoDel" type="button">ลบโลโก้</button>' : ''}<span class="muted sm">PNG/JPG พื้นขาวหรือโปร่งใส</span></div>
+      </div>
+      <div class="grid">${fld('s_name', 'ชื่อบริษัท / ห้างร้าน *', S.name)}${fld('s_tax', 'เลขประจำตัวผู้เสียภาษี', S.tax, 'inputmode="numeric"')}</div>
+      <label class="f">ที่อยู่ <textarea id="s_addr" rows="2">${esc(S.addr)}</textarea></label>
+      <div class="grid">${fld('s_phone', 'เบอร์โทร', S.phone, 'inputmode="tel"')}${fld('s_email', 'E-mail', S.email, 'inputmode="email"')}</div>
+    </div>
+    <div class="card"><h2>บัญชีธนาคาร (แสดงท้ายเอกสาร)</h2>
+      ${fld('s_bank', 'ธนาคาร / ประเภทบัญชี / สาขา', S.bank, 'placeholder="เช่น ธนาคารกรุงเทพ บัญชีสะสมทรัพย์ สาขาเซ็นทรัลลาดพร้าว"')}
+      <div class="grid">${fld('s_bname', 'ชื่อบัญชี', S.bankAcctName)}${fld('s_bno', 'เลขที่บัญชี', S.bankAcctNo)}</div>
+    </div>
+    <div class="card"><h2>รูปแบบเอกสาร</h2>
+      <label class="f" style="max-width:240px">สีแถบหัวข้อในเอกสาร <input id="s_color" type="color" value="${esc(S.color)}" style="height:44px;padding:4px"></label>
+      <div class="muted sm" style="font-weight:500">ตัวอักษรนำหน้าเลขที่เอกสาร (ต่อด้วย ปีเดือน-ลำดับ เช่น QT202310-1)</div>
+      <div class="grid">${fld('p_QT', 'ใบเสนอราคาขายสินค้า', P.QT)}${fld('p_QTI', 'ใบเสนอราคางานติดตั้ง', P.QTI)}${fld('p_IV', 'ใบแจ้งหนี้', P.IV)}${fld('p_DO', 'ใบส่งของ', P.DO)}${fld('p_RC', 'ใบเสร็จ/ใบกำกับภาษี', P.RC)}</div>
+      <div class="grid" style="align-items:start">
+        <label class="f">หมายเหตุเริ่มต้น (บรรทัดละข้อ) <textarea id="s_remark" rows="3">${esc(S.remark)}</textarea></label>
+        <label class="f">Warranty เริ่มต้น (บรรทัดละข้อ) <textarea id="s_warr" rows="3">${esc(S.warranty)}</textarea></label>
+      </div>
+    </div>
+    <div class="actions mbar-form"><button class="btn primary" id="s_save" type="button">บันทึกข้อมูลบริษัท</button></div>
+  </div>`;
+  bindSetTabs();
+  $('#logoFile').onchange = e => {
+    const f = e.target.files[0]; if (!f) return;
+    const img = new Image(), rd = new FileReader();
+    rd.onload = () => { img.src = rd.result; };
+    img.onload = () => {
+      const k = Math.min(1, 360 / Math.max(img.width, img.height)), c = document.createElement('canvas');
+      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      S.logo = c.toDataURL('image/png'); save(); viewCompany(); toast('อัปโหลดโลโก้แล้ว');
+    };
+    rd.readAsDataURL(f);
+  };
+  $('#logoDel')?.addEventListener('click', () => { S.logo = ''; save(); viewCompany(); });
+  $('#s_save').onclick = () => {
+    const v = id => $('#' + id).value.trim();
+    if (!v('s_name')) { toast('กรุณากรอกชื่อบริษัท'); $('#s_name').focus(); return; }
+    Object.assign(S, { name: v('s_name'), tax: v('s_tax'), addr: v('s_addr'), phone: v('s_phone'), email: v('s_email'), bank: v('s_bank'), bankAcctName: v('s_bname'), bankAcctNo: v('s_bno'),
+      color: $('#s_color').value, remark: $('#s_remark').value, warranty: $('#s_warr').value,
+      prefix: { QT: v('p_QT') || 'QT', QTI: v('p_QTI') || 'QTPV', IV: v('p_IV') || 'INV', DO: v('p_DO') || 'DO', RC: v('p_RC') || 'RE' } });
+    save(); toast('บันทึกข้อมูลบริษัทแล้ว');
   };
 }
 
