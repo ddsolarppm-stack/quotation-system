@@ -227,6 +227,11 @@
   .sec svg { width: 18px; height: 18px; }
   .sec[aria-current="page"] { color: var(--accent-fg); background: var(--accent); border-color: transparent; box-shadow: 0 8px 18px -10px var(--acc-l); }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tools { align-items: center; }
+  .sync { font-size: .78rem; color: var(--ok); padding: 0 6px; white-space: nowrap; }
+  .sync[data-st="saving"], .sync[data-st="loading"] { color: var(--muted); } .sync[data-st="error"] { color: var(--bad); }
+  .bootwait { display: grid; place-items: center; gap: 12px; padding: 80px 16px; color: var(--muted); }
+  .bootwait .spin { border-color: var(--line); border-top-color: var(--accent); width: 28px; height: 28px; }
   dialog.pv { width: min(860px, calc(100% - 24px)); max-width: none; height: min(92vh, 1100px); max-height: none; padding: 0; display: none; flex-direction: column; overflow: hidden; }
   dialog.pv[open] { display: flex; }
   .pvhead, .pvfoot { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
@@ -495,6 +500,7 @@
 <header class="top"><div class="wrap bar-in">
   <button class="brand" data-go="list" data-p="QT" type="button"><span class="logo">QS</span><span><b>ระบบออกเอกสาร</b><small>เวอร์ชันทดสอบ · ข้อมูลจำลอง</small></span></button>
   <nav class="tools" aria-label="ฐานข้อมูลและการตั้งค่า">
+    <span class="sync" id="sync" hidden></span>
     <button class="tool" data-go="settings" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>ตั้งค่า</span></button>
   </nav>
 </div></header>
@@ -531,11 +537,13 @@ const TYPES = {
         next: { label: 'ยืนยันชำระเงิน', done: 'ยืนยันชำระเงินแล้ว', final: true } }
 };
 const TITLES = { QT: ['ใบเสนอราคา', 'Quotation'], IV: ['ใบแจ้งหนี้', 'Invoice'], DO: ['ใบส่งของ', 'Delivery Note'], RC: ['ใบเสร็จรับเงิน / ใบกำกับภาษี', 'Receipt / Tax Invoice'] };
+const PI_LOGO = 'data:image/jpeg;base64,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';
 function defaultSettings() {
   return {
-    name: 'บริษัท ตัวอย่าง จำกัด', addr: '99/9 ถนนตัวอย่าง แขวงตัวอย่าง เขตตัวอย่าง กรุงเทพฯ 10900', tax: '0105500000000', phone: '02-000-0000', email: 'info@example.com', logo: '',
-    bank: 'ธนาคารตัวอย่าง บัญชีออมทรัพย์ สาขาตัวอย่าง', bankAcctName: 'บริษัท ตัวอย่าง จำกัด', bankAcctNo: '000-0-00000-0',
-    color: '#f9a825',
+    name: 'ห้างหุ้นส่วนจำกัด พี แอนด์ ไอ อิเล็คทริค', addr: '58/4 ซ.ลาดพร้าว35 ถ.ลาดพร้าว แขวงจันทรเกษม เขตจตุจักร กรุงเทพฯ 10900', tax: '0103566004102', phone: '082-2014302',
+    email: 'pandielectric.th@gmail.com', logo: PI_LOGO,
+    bank: 'ธนาคาร กรุงเทพ บัญชี สะสมทรัพย์ สาขา เซ็นทรัลลาดพร้าว', bankAcctName: 'ห้างหุ้นส่วนจำกัด พี แอนด์ ไอ อิเล็คทริค', bankAcctNo: '087-7-70418-9',
+    color: '#f7a21b',
     prefix: { QT: 'QT', QTI: 'QTPV', IV: 'INV', DO: 'DO', RC: 'RE' },
     remark: '- กำหนดยืนราคา 15 วัน',
     warranty: '',
@@ -617,16 +625,68 @@ function seed() {
 }
 let db;
 const SEED_CAT = { P001: 'แผงโซลาร์เซลล์', P002: 'อินเวอร์เตอร์', P003: 'อินเวอร์เตอร์', P004: 'แบตเตอรี่', P005: 'อุปกรณ์ติดตั้ง', P006: 'อุปกรณ์ติดตั้ง', P007: 'งานบริการ', P008: 'งานบริการ' };
-function load() {
-  try { db = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+/* Two storage back-ends:
+   - preview (claude.ai / plain browser): the whole db in localStorage
+   - Google Apps Script web app: getAll() once on open, then save() sends only the records that changed to sync() */
+const GAS = typeof google !== 'undefined' && google.script && google.script.run;
+let synced = {};
+const keyOf = (col, x) => col + ':' + (col === 'docs' ? x.uid || x.no : x.id);
+function snapshot() {
+  synced = {};
+  ['customers', 'products', 'templates', 'docs'].forEach(col => db[col].forEach(x => synced[keyOf(col, x)] = JSON.stringify(x)));
+  synced.settings = JSON.stringify(db.settings);
+}
+function load(remote) {
+  if (GAS) db = remote;
+  else try { db = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+  if (GAS && (!db || !db.settings)) db = { ...seed(), customers: [], docs: [] }; // brand-new sheet: company, products and templates only
   if (!db || !db.docs) db = seed();
+  if (db.settings && db.settings.name === 'บริษัท ตัวอย่าง จำกัด') db.settings = defaultSettings();
   if (!db.templates) db.templates = seed().templates;
   db.settings = { ...defaultSettings(), ...(db.settings || {}) };
   db.products.forEach(p => { if (!p.cat) p.cat = SEED_CAT[p.id] || 'อื่นๆ'; });
 }
 const cats = () => [...new Set(db.products.map(p => p.cat))].sort((a, b) => a.localeCompare(b, 'th'));
 const catSelect = (id, val) => `<select id="${id}" aria-label="หมวดหมู่"><option value="">ทุกหมวดหมู่</option>${cats().map(c => `<option ${c === val ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select>`;
-function save() { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) {} }
+function save() {
+  if (!GAS) { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) {} return; }
+  const out = { customers: [], products: [], templates: [], docs: [], deleteTemplates: [] }, seen = new Set(); let n = 0;
+  ['customers', 'products', 'templates', 'docs'].forEach(col => db[col].forEach(x => {
+    const k = keyOf(col, x), j = JSON.stringify(x); seen.add(k);
+    if (synced[k] !== j) {
+      const row = col === 'docs' ? { ...x, customerName: cust(x.custId)?.name || '', grand: totals(x).grand } : x;
+      out[col].push(row); synced[k] = j; n++;
+    }
+  }));
+  Object.keys(synced).forEach(k => { if (k.startsWith('templates:') && !seen.has(k)) { out.deleteTemplates.push(k.slice(10)); delete synced[k]; n++; } });
+  const sj = JSON.stringify(db.settings);
+  if (synced.settings !== sj) { out.settings = db.settings; synced.settings = sj; n++; }
+  if (!n) return;
+  syncState('saving');
+  google.script.run
+    .withSuccessHandler(res => {
+      const ren = res && res.renamed || {};
+      if (Object.keys(ren).length) {
+        db.docs.forEach(d => { if (ren[d.no]) d.no = ren[d.no]; if (ren[d.ref]) d.ref = ren[d.ref]; });
+        if (route === 'doc' && ren[param]) param = ren[param];
+        toast('มีผู้ใช้อื่นออกเลขเดียวกันพร้อมกัน ระบบเปลี่ยนเป็นเลข ' + Object.values(ren).join(', '));
+        render(); save();
+      }
+      syncState('ok');
+    })
+    .withFailureHandler(err => {
+      // forget what we sent so the next save() retries it
+      [...out.customers.map(x => keyOf('customers', x)), ...out.products.map(x => keyOf('products', x)), ...out.templates.map(x => keyOf('templates', x)), ...out.docs.map(x => keyOf('docs', x))].forEach(k => delete synced[k]);
+      if (out.settings) delete synced.settings;
+      syncState('error'); toast('บันทึกลง Google Sheet ไม่สำเร็จ: ' + (err && err.message || err) + ' · จะลองใหม่เมื่อบันทึกครั้งถัดไป');
+    })
+    .sync(out);
+}
+function syncState(st) {
+  const el = $('#sync'); if (!el) return;
+  el.hidden = false; el.dataset.st = st;
+  el.textContent = st === 'saving' ? 'กำลังบันทึก…' : st === 'error' ? 'บันทึกไม่สำเร็จ' : st === 'loading' ? 'กำลังโหลด…' : 'บันทึกแล้ว ✓';
+}
 
 /* ---------- Helpers ---------- */
 const $ = (s, el = document) => el.querySelector(s);
@@ -649,6 +709,7 @@ function nextDocNo(type, dateStr, kind) {
   const max = db.docs.filter(x => x.no.startsWith(prefix)).reduce((m, x) => Math.max(m, +x.no.slice(prefix.length) || 0), 0);
   return prefix + (max + 1);
 }
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 const fmtDate = s => { if (!s) return '-'; const [y, m, d] = s.split('-'); return `${d}/${m}/${y}`; };
 const fmtQty = q => (+q).toLocaleString('en-US', { maximumFractionDigits: 2 });
 function totals(doc) {
@@ -689,7 +750,7 @@ function advance(d) {
   d.status = 'finish';
   if (T.next.final) { save(); toast(`${d.no} · ${T.next.done}`); render(); return; }
   const nt = FLOW[FLOW.indexOf(d.type) + 1], today = iso(new Date());
-  const nd = { ...JSON.parse(JSON.stringify(d)), type: nt, no: nextDocNo(nt, today, d.kind), date: today, ref: d.no, status: TYPES[nt].open,
+  const nd = { ...JSON.parse(JSON.stringify(d)), uid: uid(), type: nt, no: nextDocNo(nt, today, d.kind), date: today, ref: d.no, status: TYPES[nt].open,
     extra: nt === 'DO' ? today : iso(new Date(Date.now() + 30 * 864e5)) };
   db.docs.push(nd); save();
   toast(`สร้าง${TYPES[nt].name} ${nd.no} แล้ว`);
@@ -1202,7 +1263,7 @@ function commit() {
   syncDraft();
   if (!cust(draft.custId)) { toast('กรุณาเลือกลูกค้าจากฐานข้อมูล'); $('#cs')?.focus(); return; }
   if (!draft.lines.length) { toast('กรุณาเพิ่มรายการอย่างน้อย 1 รายการ'); $('#ps').focus(); return; }
-  const doc = { ...draft, type: 'QT', no: nextDocNo('QT', draft.date, draft.kind), status: 'issued', discount: +draft.discount || 0 };
+  const doc = { ...draft, type: 'QT', no: nextDocNo('QT', draft.date, draft.kind), status: 'issued', discount: +draft.discount || 0, uid: uid() };
   if (doc.kind !== 'install') { delete doc.tplId; delete doc.tplName; }
   db.docs.push(doc); save(); draft = null;
   toast(`ออกใบเสนอราคา ${doc.no} แล้ว`);
@@ -1492,7 +1553,7 @@ function viewSettings() {
   $$('[data-skin-pick]').forEach(b => b.onclick = () => { pref.skin = b.dataset.skinPick; applyTheme(); viewSettings(); });
   $$('[data-m]').forEach(b => b.onclick = () => { pref.mode = b.dataset.m; applyTheme(); viewSettings(); });
   $('#reset').onclick = () => {
-    if ($('#reset').dataset.confirm) { db = seed(); save(); draft = null; toast('รีเซ็ตข้อมูลตัวอย่างแล้ว'); go('list', 'QT'); }
+    if ($('#reset').dataset.confirm) { db = GAS ? { ...seed(), customers: db.customers, docs: db.docs } : seed(); save(); draft = null; toast('รีเซ็ตข้อมูลตัวอย่างแล้ว'); go('list', 'QT'); }
     else { $('#reset').dataset.confirm = 1; $('#reset').textContent = 'กดอีกครั้งเพื่อยืนยันการรีเซ็ต'; }
   };
 }
@@ -1557,7 +1618,15 @@ function viewCompany() {
 /* ---------- Boot ---------- */
 $('#pvClose').onclick = () => $('#pv').close();
 try { Object.assign(pref, JSON.parse(localStorage.getItem('qs-theme')) || {}); } catch (e) {}
-applyTheme(); load(); render();
+applyTheme();
+if (GAS) {
+  $('#main').innerHTML = '<div class="bootwait"><span class="spin"></span>กำลังโหลดข้อมูลจาก Google Sheet…</div>';
+  syncState('loading');
+  google.script.run
+    .withSuccessHandler(data => { load(data); if (data && data.settings) { snapshot(); syncState('ok'); } else save(); render(); })
+    .withFailureHandler(err => { $('#main').innerHTML = `<div class="bootwait">โหลดข้อมูลไม่สำเร็จ: ${esc(err && err.message || err)}<br>ตรวจสอบว่ารันฟังก์ชัน setup แล้ว และกดอนุญาตสิทธิ์ครบ</div>`; syncState('error'); })
+    .getAll();
+} else { load(); render(); }
 </script>
 </body>
 </html>
