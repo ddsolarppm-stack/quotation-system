@@ -43,6 +43,7 @@
 ## แนวทางพัฒนา
 - เขียน HTML/CSS/JS ให้ทำงานได้ภายใน Apps Script HTML Service (หลีกเลี่ยงการพึ่ง build tool)
 - ใช้ `google.script.run` สำหรับเรียกฟังก์ชันฝั่งเซิร์ฟเวอร์เมื่อย้ายไป Apps Script
+- **ใน `<script>` ห้ามมี `//` ในข้อความ/URL** (Apps Script ตัดข้อความหลัง `//` ทิ้ง ทำให้ `'https://…'` พัง) ให้เขียน `'https:/\/…'` แทน, ห้ามใส่เครื่องหมายคำพูดใน regex (ใช้ `\x22` `\x27`), ห้ามมี `/*` `*/` นอกคอมเมนต์
 - **ห้ามใช้อีโมจิหรืออักขระ 4 ไบต์ (นอก BMP) ใน `index.html`** — Apps Script HtmlService ทำให้โค้ดพัง (SyntaxError: Invalid or unexpected token) ใช้ไอคอน SVG แทน; รัน `python3 scripts/check-gas-safe.py` ก่อน push ทุกครั้ง
 - Apps Script ใส่หน้าเว็บด้วย `document.write` เลขบรรทัดใน error จึงนับจากต้นแท็ก `<script>` ไม่ใช่ต้นไฟล์ (กล่อง error ตอนเริ่มระบบแสดงบรรทัดโค้ดให้แล้ว)
 
