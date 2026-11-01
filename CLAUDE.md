@@ -43,6 +43,8 @@
 ## แนวทางพัฒนา
 - เขียน HTML/CSS/JS ให้ทำงานได้ภายใน Apps Script HTML Service (หลีกเลี่ยงการพึ่ง build tool)
 - ใช้ `google.script.run` สำหรับเรียกฟังก์ชันฝั่งเซิร์ฟเวอร์เมื่อย้ายไป Apps Script
+- **ห้ามใช้อีโมจิหรืออักขระ 4 ไบต์ (นอก BMP) ใน `index.html`** — Apps Script HtmlService ทำให้โค้ดพัง (SyntaxError: Invalid or unexpected token) ใช้ไอคอน SVG แทน; รัน `python3 scripts/check-gas-safe.py` ก่อน push ทุกครั้ง
+- Apps Script ใส่หน้าเว็บด้วย `document.write` เลขบรรทัดใน error จึงนับจากต้นแท็ก `<script>` ไม่ใช่ต้นไฟล์ (กล่อง error ตอนเริ่มระบบแสดงบรรทัดโค้ดให้แล้ว)
 
 ## Workflow เอกสาร
 สร้างเอกสารได้ที่ใบเสนอราคาที่เดียว เอกสารขั้นถัดไปถูกสร้างอัตโนมัติเมื่อกดปุ่มส่งต่อ (คัดลอกลูกค้า/รายการ, ได้เลขใหม่, อ้างอิงเลขเอกสารก่อนหน้า)
