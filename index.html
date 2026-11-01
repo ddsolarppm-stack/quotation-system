@@ -227,6 +227,9 @@
   .sec svg { width: 18px; height: 18px; }
   .sec[aria-current="page"] { color: var(--accent-fg); background: var(--accent); border-color: transparent; box-shadow: 0 8px 18px -10px var(--acc-l); }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .booterr { margin: 40px auto; max-width: 520px; display: grid; gap: 8px; padding: 18px; border-radius: 14px; border: 1px solid var(--bad); color: var(--fg);
+    background: color-mix(in srgb, var(--bad) 10%, var(--surface)); word-break: break-word; }
+  .booterr b { color: var(--bad); }
   body.auth .sections, body.auth #pipe, body.auth .tools, body.auth .fab { display: none !important; }
   .login { min-height: 70vh; display: grid; place-items: center; }
   .login form { width: min(400px, 100%); gap: 14px; padding: 26px 22px; }
@@ -516,7 +519,28 @@
   <button class="sec" data-go="products" data-sec="products" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5z"/><path d="M3 7.5 12 12l9-4.5M12 12v9"/></svg>สินค้า</button>
   <button class="sec" data-go="templates" data-sec="templates" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M17.5 14v7M14 17.5h7"/></svg>เทมเพลต</button>
 </nav><div class="pipe" id="pipe"></div></div>
-<main class="wrap" id="main"></main>
+<main class="wrap" id="main"><div class="bootwait"><span class="spin"></span>กำลังเริ่มระบบ…</div></main>
+<script>
+/* Start-up guard, kept separate from the app script: if the app script fails or the file was pasted incompletely,
+   show the reason on screen instead of a blank page. */
+(function () {
+  function show(title, detail) {
+    var m = document.getElementById('main'); if (!m) return;
+    m.innerHTML = '<div class="booterr"><b>' + title + '</b><div>' + String(detail || '').replace(/[&<]/g, function (c) { return c === '&' ? '&amp;' : '&lt;'; }) +
+      '</div><div class="muted sm">ถ่ายภาพหน้าจอนี้ส่งให้ผู้ดูแลระบบ</div></div>';
+  }
+  window.addEventListener('error', function (e) {
+    if (window.__qsLoaded) return;
+    show('ระบบเริ่มทำงานไม่สำเร็จ', (e.message || 'Unknown error') + (e.lineno ? ' (บรรทัด ' + e.lineno + ')' : ''));
+  });
+  window.addEventListener('load', function () {
+    setTimeout(function () {
+      if (!window.__qsLoaded && !document.querySelector('.booterr'))
+        show('ไฟล์ index ไม่ครบ หรือโหลดไม่สำเร็จ', 'ใน Apps Script ให้เปิดไฟล์ index ลบโค้ดเดิมทั้งหมด แล้ววางโค้ดใหม่ให้ครบจนถึงบรรทัดสุดท้าย </html> จากนั้น Deploy เวอร์ชันใหม่');
+    }, 1500);
+  });
+})();
+</script>
 
 <dialog id="pv" class="pv"><div class="pvhead"><b id="pvTitle"></b><button class="icon-btn" id="pvClose" type="button" aria-label="ปิด">✕</button></div>
   <div class="pvbody" id="pvBody"></div>
@@ -1722,6 +1746,7 @@ function loadRemote() {
 }
 if (GAS) { TOKEN ? loadRemote() : showLogin(); }
 else { load(); render(); }
+window.__qsLoaded = true;
 </script>
 </body>
 </html>
