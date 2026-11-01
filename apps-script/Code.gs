@@ -2,20 +2,33 @@
  * ระบบใบเสนอราคา — ฝั่งเซิร์ฟเวอร์ (Google Apps Script)
  *
  * หน้าเว็บ (index.html) โหลดข้อมูลทั้งหมดครั้งเดียวด้วย getAll() แล้วส่งเฉพาะรายการที่เปลี่ยนมาที่ sync()
- * ข้อมูลเก็บใน Google Sheet ที่ผูกกับสคริปต์นี้ แยกแท็บละประเภทข้อมูล
+ * ข้อมูลเก็บใน Google Sheet ตาม SPREADSHEET_ID แยกแท็บละประเภทข้อมูล และเอกสารแยกแท็บตามประเภทเอกสาร
  */
 
 /** Google Sheet ที่ใช้เก็บข้อมูล (ID จากลิงก์ .../spreadsheets/d/<ID>/edit) */
 const SPREADSHEET_ID = '1P-_gglnLqaN9ij9q3K-IEEPq32conXy0Pd_FlhGpvHs';
 const book_ = () => SpreadsheetApp.openById(SPREADSHEET_ID);
 
+/* เอกสารแยกแท็บตามประเภท: คอลัมน์ซ้ายไว้ดู (หัวภาษาไทย) คอลัมน์ขวาระบบใช้ (ซ่อนไว้) */
+const DOC_TABS = { QT: 'ใบเสนอราคา', IV: 'ใบแจ้งหนี้', DO: 'ใบส่งของ', RC: 'ใบเสร็จ-ใบกำกับภาษี' };
+const DOC_COLS = ['no', 'date', 'customerName', 'project', 'statusText', 'grand', 'ref', 'kindText', 'updatedAt', 'customerId', 'status', 'kind', 'type', 'uid', 'data'];
+const DOC_HEAD = ['เลขที่', 'วันที่', 'ลูกค้า', 'โครงการ', 'สถานะ', 'ยอดรวมทั้งสิ้น', 'อ้างอิงเอกสารก่อนหน้า', 'ประเภท', 'แก้ไขล่าสุด', 'customerId', 'status', 'kind', 'type', 'uid', 'data'];
+const DOC_VISIBLE = 9;
+const STATUS_TEXT = {
+  QT: { issued: 'ออกใบเสนอราคาแล้ว', finish: 'Finish (ลูกค้าสั่งซื้อ)', cancel: 'ยกเลิก' },
+  IV: { pending: 'รอส่งของ', finish: 'Finish', cancel: 'ยกเลิก' },
+  DO: { pending: 'รอออกใบเสร็จ', finish: 'Finish', cancel: 'ยกเลิก' },
+  RC: { pending: 'รอออกใบเสร็จ', finish: 'เสร็จแล้ว (ชำระเงินแล้ว)', cancel: 'ยกเลิก' }
+};
+
 const SHEETS = {
   Customers: ['id', 'name', 'tax', 'branch', 'addr', 'contact', 'phone'],
   Products: ['id', 'code', 'name', 'cat', 'unit', 'price'],
   Templates: ['id', 'name', 'group', 'data'],
-  Documents: ['no', 'type', 'kind', 'status', 'date', 'customerId', 'customerName', 'project', 'ref', 'grand', 'uid', 'updatedAt', 'data'],
   Settings: ['key', 'value']
 };
+Object.keys(DOC_TABS).forEach(t => SHEETS[DOC_TABS[t]] = DOC_COLS);
+const OLD_DOCS = 'Documents';
 
 /** เปิดหน้าเว็บแอป */
 function doGet() {
@@ -29,16 +42,48 @@ function setup() {
   const ss = book_();
   Object.keys(SHEETS).forEach(name => {
     const sh = ss.getSheetByName(name) || ss.insertSheet(name);
-    const cols = SHEETS[name];
-    sh.getRange(1, 1, 1, cols.length).setValues([cols]).setFontWeight('bold').setBackground('#f9a825');
+    const cols = SHEETS[name], isDoc = cols === DOC_COLS;
+    sh.getRange(1, 1, 1, cols.length).setValues([isDoc ? DOC_HEAD : cols]).setFontWeight('bold').setBackground('#f9a825');
     sh.setFrozenRows(1);
     // เก็บทุกคอลัมน์เป็นข้อความ กันเลขผู้เสียภาษี/เบอร์โทรที่ขึ้นต้นด้วย 0 หาย
     sh.getRange(1, 1, sh.getMaxRows(), cols.length).setNumberFormat('@');
+    if (isDoc) {
+      sh.hideColumns(DOC_VISIBLE + 1, cols.length - DOC_VISIBLE);
+      sh.setColumnWidth(1, 130); sh.setColumnWidth(3, 220); sh.setColumnWidth(4, 220); sh.setColumnWidth(5, 170); sh.setColumnWidth(6, 120); sh.setColumnWidth(7, 150);
+      sh.getRange(1, 6, sh.getMaxRows(), 1).setHorizontalAlignment('right');
+    }
   });
+  migrateOldDocuments_(ss);
   const first = ss.getSheetByName('Sheet1') || ss.getSheetByName('ชีต1');
   if (first && first.getLastRow() === 0 && ss.getSheets().length > 1) ss.deleteSheet(first);
   ensureAdmin_();
   return 'สร้างแท็บเรียบร้อย';
+}
+
+/** ย้ายเอกสารจากแท็บ Documents เดิม (ก่อนแยกแท็บ) — คัดลอกไปแท็บใหม่ แล้วเปลี่ยนชื่อแท็บเดิมเป็น "Documents (เก่า)" ไม่ลบ */
+function migrateOldDocuments_(ss) {
+  const old = ss.getSheetByName(OLD_DOCS);
+  if (!old) return;
+  const n = old.getLastRow(), head = old.getRange(1, 1, 1, old.getLastColumn()).getValues()[0], di = head.indexOf('data');
+  if (n >= 2 && di >= 0) {
+    old.getRange(2, di + 1, n - 1, 1).getValues().forEach(r => {
+      const d = parse_(r[0], null);
+      if (d && d.no && DOC_TABS[d.type] && rowIndex_(DOC_TABS[d.type], 'no', d.no) < 0) writeDoc_(d);
+    });
+  }
+  old.setName(OLD_DOCS + ' (เก่า)');
+}
+function writeDoc_(d) {
+  const tab = DOC_TABS[d.type];
+  if (!tab) throw new Error('ไม่รู้จักประเภทเอกสาร ' + d.type);
+  const [y, m, dd] = String(d.date || '').split('-');
+  upsert_(tab, 'no', d, {
+    no: d.no, date: dd ? dd + '/' + m + '/' + y : '', customerName: d.customerName || '', project: d.project || '',
+    statusText: (STATUS_TEXT[d.type] || {})[d.status] || d.status, grand: d.grand === '' || d.grand == null ? '' : Number(d.grand).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+    ref: d.ref || '', kindText: d.type === 'QT' ? (d.kind === 'install' ? 'งานติดตั้ง' : 'ขายสินค้า') : '',
+    updatedAt: Utilities.formatDate(new Date(), 'Asia/Bangkok', 'dd/MM/yyyy HH:mm'),
+    customerId: d.custId || '', status: d.status, kind: d.kind || '', type: d.type, uid: d.uid || '', data: JSON.stringify(d)
+  });
 }
 
 /* ---------- ผู้ใช้และรหัสผ่าน ----------
@@ -136,7 +181,7 @@ function getAll(token) {
     customers: rows_('Customers').filter(r => r.id),
     products: rows_('Products').filter(r => r.id).map(r => Object.assign(r, { price: Number(r.price) || 0 })),
     templates: rows_('Templates').filter(r => r.id).map(r => Object.assign(parse_(r.data, {}), { id: r.id, name: r.name, group: r.group })),
-    docs: rows_('Documents').filter(r => r.no).map(r => parse_(r.data, null)).filter(Boolean),
+    docs: [].concat(...Object.keys(DOC_TABS).map(t => rows_(DOC_TABS[t]))).filter(r => r.no).map(r => parse_(r.data, null)).filter(Boolean),
     me: me
   };
 }
@@ -161,17 +206,14 @@ function sync(token, payload) {
     (payload.deleteTemplates || []).forEach(id => remove_('Templates', 'id', id));
     (payload.docs || []).forEach(d => {
       // ถ้าเลขนี้ถูกใช้ไปแล้วโดยเอกสารอื่น (คนละ uid) ให้ออกเลขถัดไปแทน
-      const exist = find_('Documents', 'no', d.no);
+      const tab = DOC_TABS[d.type];
+      const exist = tab && find_(tab, 'no', d.no);
       if (exist && exist.uid && d.uid && exist.uid !== d.uid) {
-        const nn = nextNo_(d.no);
+        const nn = nextNo_(tab, d.no);
         renamed[d.no] = nn; d.no = nn;
       }
       if (d.ref && renamed[d.ref]) d.ref = renamed[d.ref];
-      upsert_('Documents', 'no', d, {
-        no: d.no, type: d.type, kind: d.kind || '', status: d.status, date: d.date, customerId: d.custId,
-        customerName: d.customerName || '', project: d.project || '', ref: d.ref || '', grand: d.grand || '',
-        uid: d.uid || '', updatedAt: new Date().toISOString(), data: JSON.stringify(d)
-      });
+      writeDoc_(d);
     });
     if (payload.settings) {
       Object.keys(payload.settings).forEach(k => {
@@ -227,9 +269,9 @@ function remove_(name, keyCol, key) {
 function parse_(s, fallback) { try { return JSON.parse(s); } catch (e) { return fallback; } }
 
 /** เลขถัดไปของชุดเดียวกัน เช่น QT202610-7 → ตัวนำหน้า QT202610- แล้วหาเลขสูงสุด + 1 */
-function nextNo_(no) {
+function nextNo_(tab, no) {
   const prefix = no.replace(/\d+$/, '');
-  const max = rows_('Documents').filter(r => r.no.indexOf(prefix) === 0)
+  const max = rows_(tab).filter(r => r.no.indexOf(prefix) === 0)
     .reduce((m, r) => Math.max(m, Number(r.no.slice(prefix.length)) || 0), 0);
   return prefix + (max + 1);
 }
