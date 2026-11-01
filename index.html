@@ -227,6 +227,10 @@
   .sec svg { width: 18px; height: 18px; }
   .sec[aria-current="page"] { color: var(--accent-fg); background: var(--accent); border-color: transparent; box-shadow: 0 8px 18px -10px var(--acc-l); }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pwbox { position: relative; display: block; }
+  .pwbox input { padding-right: 46px; }
+  .pweye { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 38px; height: 38px; border: 0; background: none; color: var(--muted); border-radius: 10px; cursor: pointer; display: grid; place-items: center; }
+  .pweye.on { color: var(--accent); background: var(--accent-soft); }
   .booterr { margin: 40px auto; max-width: 520px; display: grid; gap: 8px; padding: 18px; border-radius: 14px; border: 1px solid var(--bad); color: var(--fg);
     background: color-mix(in srgb, var(--bad) 10%, var(--surface)); word-break: break-word; }
   .booterr b { color: var(--bad); }
@@ -510,6 +514,7 @@
   <button class="brand" data-go="list" data-p="QT" type="button"><span class="logo">QS</span><span><b>ระบบออกเอกสาร</b><small>เวอร์ชันทดสอบ · ข้อมูลจำลอง</small></span></button>
   <nav class="tools" aria-label="ฐานข้อมูลและการตั้งค่า">
     <span class="sync" id="sync" hidden></span>
+    <button class="tool" id="hdrOut" type="button" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/></svg><span>ออกจากระบบ</span></button>
     <button class="tool" data-go="settings" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span>ตั้งค่า</span></button>
   </nav>
 </div></header>
@@ -1607,9 +1612,9 @@ function viewAccount() {
     ${setTabs()}
     ${!GAS ? '<div class="card"><h2>บัญชีผู้ใช้</h2><p class="muted sm" style="margin:0">หน้าทดสอบนี้ไม่มีระบบเข้าสู่ระบบ การเข้าสู่ระบบ เปลี่ยนรหัสผ่าน และจัดการผู้ใช้ จะใช้ได้เมื่อเปิดผ่าน Google Apps Script</p></div>' : `
     <div class="card"><h2>เปลี่ยนรหัสผ่านของฉัน</h2>
-      <div class="grid"><label class="f">รหัสผ่านเดิม <input id="pw0" type="password" autocomplete="current-password"></label>
-        <label class="f">รหัสผ่านใหม่ (อย่างน้อย 8 ตัว) <input id="pw1" type="password" autocomplete="new-password"></label>
-        <label class="f">ยืนยันรหัสผ่านใหม่ <input id="pw2" type="password" autocomplete="new-password"></label></div>
+      <div class="grid"><label class="f">รหัสผ่านเดิม <span class="pwbox"><input id="pw0" type="password" autocomplete="new-password"><button class="pweye" type="button" aria-label="แสดงรหัสผ่าน"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></span></label>
+        <label class="f">รหัสผ่านใหม่ (อย่างน้อย 8 ตัว) <span class="pwbox"><input id="pw1" type="password" autocomplete="new-password"><button class="pweye" type="button" aria-label="แสดงรหัสผ่าน"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></span></label>
+        <label class="f">ยืนยันรหัสผ่านใหม่ <span class="pwbox"><input id="pw2" type="password" autocomplete="new-password"><button class="pweye" type="button" aria-label="แสดงรหัสผ่าน"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></span></label></div>
       <div class="actions"><button class="btn" id="logout" type="button">ออกจากระบบ</button><button class="btn primary" id="pwsave" type="button">เปลี่ยนรหัสผ่าน</button></div></div>
     ${ME && ME.role === 'admin' ? `<div class="card"><div class="head"><h2>ผู้ใช้ทั้งหมด</h2><button class="btn small primary" id="uadd" type="button">+ เพิ่มผู้ใช้</button></div>
       <div id="ulist"><div class="muted sm">กำลังโหลด…</div></div>
@@ -1617,7 +1622,8 @@ function viewAccount() {
   </div>`;
   bindSetTabs();
   if (!GAS) return;
-  $('#logout').onclick = async () => { try { await api('logout', TOKEN); } catch (e) {} ME = null; showLogin('ออกจากระบบแล้ว'); };
+  bindEyes();
+  $('#logout').onclick = signOut;
   $('#pwsave').onclick = async () => {
     const [a, b, c] = ['#pw0', '#pw1', '#pw2'].map(x => $(x).value);
     if (b !== c) return toast('รหัสผ่านใหม่ทั้ง 2 ช่องไม่ตรงกัน');
@@ -1712,11 +1718,19 @@ try { Object.assign(pref, JSON.parse(localStorage.getItem('qs-theme')) || {}); }
 applyTheme();
 /* ---------- Sign-in (Apps Script only). Passwords live hashed in Script Properties on the server, never in this file. ---------- */
 let TOKEN = '', ME = null;
-try { TOKEN = localStorage.getItem('qs-token') || ''; } catch (e) {}
+try { localStorage.removeItem('qs-token'); } catch (e) {} // older versions kept the sign-in; never remember it now
 const isAuthErr = err => /^AUTH/.test(String(err && err.message || err));
 const api = (fn, ...args) => new Promise((ok, bad) => google.script.run.withSuccessHandler(ok).withFailureHandler(bad)[fn](...args));
 const errMsg = e => String(e && e.message || e).replace(/^AUTH:\s{0,}/, '').replace(/^Error:\s{0,}/, '');
-function setToken(t) { TOKEN = t; try { t ? localStorage.setItem('qs-token', t) : localStorage.removeItem('qs-token'); } catch (e) {} }
+function setToken(t) { TOKEN = t; }
+function bindEyes() {
+  $$('.pweye').forEach(b => b.onclick = () => {
+    const i = b.previousElementSibling, show = i.type === 'password';
+    i.type = show ? 'text' : 'password'; b.classList.toggle('on', show);
+    b.setAttribute('aria-label', show ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'); i.focus();
+  });
+}
+async function signOut() { try { await api('logout', TOKEN); } catch (e) {} ME = null; db = null; draft = null; showLogin('ออกจากระบบแล้ว'); }
 function showLogin(msg) {
   setToken(''); document.body.classList.add('auth');
   const S = db?.settings || defaultSettings();
@@ -1724,18 +1738,19 @@ function showLogin(msg) {
       ${S.logo ? `<img class="llogo" src="${S.logo}" alt="">` : ''}
       <div><h1>เข้าสู่ระบบ</h1><p class="muted sm" style="margin:2px 0 0">${esc(S.name)}</p></div>
       ${msg ? `<p class="lerr">${esc(msg)}</p>` : ''}
-      <label class="f">ID ผู้ใช้ <input id="lid" autocomplete="username" autocapitalize="none" required></label>
-      <label class="f">รหัสผ่าน <input id="lpw" type="password" autocomplete="current-password" required></label>
+      <label class="f">ID ผู้ใช้ <input id="lid" value="admin" autocomplete="off" autocapitalize="none" spellcheck="false" required></label>
+      <label class="f">รหัสผ่าน <span class="pwbox"><input id="lpw" type="password" autocomplete="new-password" required><button class="pweye" type="button" aria-label="แสดงรหัสผ่าน"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></span></label>
       <button class="btn primary" id="lbtn" type="submit">เข้าสู่ระบบ</button>
     </form></div>`;
-  $('#lid').focus();
+  $('#lpw').focus(); bindEyes();
   $('#lf').onsubmit = async e => {
     e.preventDefault();
     const b = $('#lbtn'); b.disabled = true; b.textContent = 'กำลังตรวจสอบ…';
     try {
       const r = await api('login', $('#lid').value, $('#lpw').value);
       setToken(r.token); ME = r.user; document.body.classList.remove('auth');
-      if (db) { route = 'list'; param = 'QT'; render(); synced = {}; snapshot(); save(); } else loadRemote();
+      route = 'list'; param = 'QT';
+      if (db) { render(); save(); } else loadRemote();
     } catch (err) {
       b.disabled = false; b.textContent = 'เข้าสู่ระบบ';
       const p = $('.lerr') || $('#lf').insertBefore(Object.assign(document.createElement('p'), { className: 'lerr' }), $('#lid').parentElement);
@@ -1753,7 +1768,7 @@ function loadRemote() {
       $('#main').innerHTML = `<div class="bootwait">โหลดข้อมูลไม่สำเร็จ: ${esc(errMsg(err))}<br>ตรวจสอบว่ารันฟังก์ชัน setup แล้ว และกดอนุญาตสิทธิ์ครบ</div>`; syncState('error');
     });
 }
-if (GAS) { TOKEN ? loadRemote() : showLogin(); }
+if (GAS) { $('#hdrOut').hidden = false; $('#hdrOut').onclick = signOut; showLogin(); }
 else { load(); render(); }
 window.__qsLoaded = true;
 </script>
