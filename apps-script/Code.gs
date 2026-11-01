@@ -37,11 +37,98 @@ function setup() {
   });
   const first = ss.getSheetByName('Sheet1') || ss.getSheetByName('ชีต1');
   if (first && first.getLastRow() === 0 && ss.getSheets().length > 1) ss.deleteSheet(first);
+  ensureAdmin_();
   return 'สร้างแท็บเรียบร้อย';
 }
 
+/* ---------- ผู้ใช้และรหัสผ่าน ----------
+   รหัสผ่านเก็บใน Script Properties (ไม่อยู่ใน HTML และไม่อยู่ใน Sheet) แบบแฮช SHA-256 + salt
+   ดู/ลบได้ที่ Apps Script → ⚙ Project Settings → Script Properties */
+const DEFAULT_ADMIN = { id: 'admin', pw: 'PI123456' };
+const SESSION_SEC = 12 * 3600;
+
+function users_() { return parse_(PropertiesService.getScriptProperties().getProperty('users'), {}) || {}; }
+function saveUsers_(u) { PropertiesService.getScriptProperties().setProperty('users', JSON.stringify(u)); }
+function hash_(pw, salt) {
+  return Utilities.base64Encode(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, salt + ':' + pw, Utilities.Charset.UTF_8));
+}
+function setPw_(u, pw) { u.salt = Utilities.getUuid(); u.hash = hash_(pw, u.salt); }
+function ensureAdmin_() {
+  const u = users_();
+  if (!Object.keys(u).length) { u[DEFAULT_ADMIN.id] = { name: 'ผู้ดูแลระบบ', role: 'admin' }; setPw_(u[DEFAULT_ADMIN.id], DEFAULT_ADMIN.pw); saveUsers_(u); }
+}
+/** ลืมรหัส admin: รันฟังก์ชันนี้ใน Apps Script เพื่อตั้งรหัส admin กลับเป็นค่าเริ่มต้น */
+function resetAdminPassword() {
+  const u = users_();
+  u[DEFAULT_ADMIN.id] = Object.assign(u[DEFAULT_ADMIN.id] || { name: 'ผู้ดูแลระบบ' }, { role: 'admin', disabled: false });
+  setPw_(u[DEFAULT_ADMIN.id], DEFAULT_ADMIN.pw); saveUsers_(u);
+  return 'ตั้งรหัส admin เป็น ' + DEFAULT_ADMIN.pw + ' แล้ว กรุณาเปลี่ยนหลังเข้าใช้';
+}
+function authErr_() { throw new Error('AUTH: กรุณาเข้าสู่ระบบใหม่'); }
+/** ตรวจ token ทุกครั้งก่อนอ่าน/เขียนข้อมูล */
+function auth_(token, needAdmin) {
+  if (!token) authErr_();
+  const s = parse_(CacheService.getScriptCache().get('tok:' + token), null);
+  if (!s) authErr_();
+  const u = users_()[s.id];
+  if (!u || u.disabled) authErr_();
+  if (needAdmin && u.role !== 'admin') throw new Error('เฉพาะผู้ดูแลระบบเท่านั้น');
+  CacheService.getScriptCache().put('tok:' + token, JSON.stringify(s), SESSION_SEC);
+  return { id: s.id, name: u.name, role: u.role };
+}
+function login(id, pw) {
+  ensureAdmin_();
+  id = String(id || '').trim().toLowerCase();
+  const cache = CacheService.getScriptCache(), fk = 'fail:' + id, fails = Number(cache.get(fk)) || 0;
+  if (fails >= 5) throw new Error('ใส่รหัสผิดหลายครั้ง กรุณารอ 15 นาทีแล้วลองใหม่');
+  const u = users_()[id];
+  if (!u || u.disabled || hash_(String(pw || ''), u.salt) !== u.hash) {
+    cache.put(fk, String(fails + 1), 900);
+    throw new Error('ID หรือรหัสผ่านไม่ถูกต้อง');
+  }
+  cache.remove(fk);
+  const token = Utilities.getUuid();
+  cache.put('tok:' + token, JSON.stringify({ id: id }), SESSION_SEC);
+  return { token: token, user: { id: id, name: u.name, role: u.role } };
+}
+function logout(token) { if (token) CacheService.getScriptCache().remove('tok:' + token); return true; }
+function changePassword(token, oldPw, newPw) {
+  const me = auth_(token), u = users_();
+  if (hash_(String(oldPw || ''), u[me.id].salt) !== u[me.id].hash) throw new Error('รหัสผ่านเดิมไม่ถูกต้อง');
+  if (String(newPw || '').length < 8) throw new Error('รหัสผ่านใหม่ต้องมีอย่างน้อย 8 ตัวอักษร');
+  setPw_(u[me.id], newPw); saveUsers_(u);
+  return true;
+}
+/* ผู้ดูแลระบบจัดการผู้ใช้ */
+function listUsers(token) {
+  auth_(token, true);
+  const u = users_();
+  return Object.keys(u).sort().map(id => ({ id: id, name: u[id].name || '', role: u[id].role, disabled: !!u[id].disabled }));
+}
+function saveUser(token, data) {
+  const me = auth_(token, true), u = users_();
+  const id = String(data.id || '').trim().toLowerCase();
+  if (!/^[a-z0-9._-]{3,30}$/.test(id)) throw new Error('ID ใช้ได้เฉพาะ a-z 0-9 . _ - ยาว 3–30 ตัว');
+  const isNew = !u[id];
+  if (isNew && String(data.password || '').length < 8) throw new Error('รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร');
+  if (data.password && String(data.password).length < 8) throw new Error('รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร');
+  const role = data.role === 'admin' ? 'admin' : 'user';
+  if (id === me.id && role !== 'admin') throw new Error('ไม่สามารถลดสิทธิ์ของตัวเองได้');
+  u[id] = Object.assign(u[id] || {}, { name: String(data.name || '').trim(), role: role, disabled: !!data.disabled && id !== me.id });
+  if (data.password) setPw_(u[id], String(data.password));
+  saveUsers_(u);
+  return listUsers(token);
+}
+function deleteUser(token, id) {
+  const me = auth_(token, true), u = users_();
+  if (id === me.id) throw new Error('ไม่สามารถลบบัญชีของตัวเองได้');
+  delete u[id]; saveUsers_(u);
+  return listUsers(token);
+}
+
 /** อ่านข้อมูลทั้งหมดให้หน้าเว็บ */
-function getAll() {
+function getAll(token) {
+  const me = auth_(token);
   const settings = {};
   rows_('Settings').forEach(r => { if (r.key) settings[r.key] = parse_(r.value, r.value); });
   return {
@@ -49,7 +136,8 @@ function getAll() {
     customers: rows_('Customers').filter(r => r.id),
     products: rows_('Products').filter(r => r.id).map(r => Object.assign(r, { price: Number(r.price) || 0 })),
     templates: rows_('Templates').filter(r => r.id).map(r => Object.assign(parse_(r.data, {}), { id: r.id, name: r.name, group: r.group })),
-    docs: rows_('Documents').filter(r => r.no).map(r => parse_(r.data, null)).filter(Boolean)
+    docs: rows_('Documents').filter(r => r.no).map(r => parse_(r.data, null)).filter(Boolean),
+    me: me
   };
 }
 
@@ -58,7 +146,8 @@ function getAll() {
  * payload = { customers:[], products:[], templates:[], docs:[], deleteTemplates:[id], settings:{} }
  * คืนค่า { renamed: { เลขเดิม: เลขใหม่ } } เมื่อมีคนออกเลขเอกสารซ้ำพร้อมกัน
  */
-function sync(payload) {
+function sync(token, payload) {
+  auth_(token);
   const lock = LockService.getScriptLock();
   lock.waitLock(30000);
   try {

@@ -227,6 +227,11 @@
   .sec svg { width: 18px; height: 18px; }
   .sec[aria-current="page"] { color: var(--accent-fg); background: var(--accent); border-color: transparent; box-shadow: 0 8px 18px -10px var(--acc-l); }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  body.auth .sections, body.auth #pipe, body.auth .tools, body.auth .fab { display: none !important; }
+  .login { min-height: 70vh; display: grid; place-items: center; }
+  .login form { width: min(400px, 100%); gap: 14px; padding: 26px 22px; }
+  .login .llogo { width: 104px; height: auto; border-radius: 12px; background: #fff; padding: 6px; }
+  .lerr { margin: 0; padding: 10px 12px; border-radius: 10px; background: color-mix(in srgb, var(--bad) 12%, transparent); color: var(--bad); font-size: .9rem; }
   .tools { align-items: center; }
   .sync { font-size: .78rem; color: var(--ok); padding: 0 6px; white-space: nowrap; }
   .sync[data-st="saving"], .sync[data-st="loading"] { color: var(--muted); } .sync[data-st="error"] { color: var(--bad); }
@@ -678,9 +683,10 @@ function save() {
       // forget what we sent so the next save() retries it
       [...out.customers.map(x => keyOf('customers', x)), ...out.products.map(x => keyOf('products', x)), ...out.templates.map(x => keyOf('templates', x)), ...out.docs.map(x => keyOf('docs', x))].forEach(k => delete synced[k]);
       if (out.settings) delete synced.settings;
+      if (isAuthErr(err)) return showLogin('หมดเวลาการเข้าสู่ระบบ กรุณาเข้าสู่ระบบใหม่ ข้อมูลล่าสุดจะถูกบันทึกหลังเข้าสู่ระบบ');
       syncState('error'); toast('บันทึกลง Google Sheet ไม่สำเร็จ: ' + (err && err.message || err) + ' · จะลองใหม่เมื่อบันทึกครั้งถัดไป');
     })
-    .sync(out);
+    .sync(TOKEN, out);
 }
 function syncState(st) {
   const el = $('#sync'); if (!el) return;
@@ -1540,6 +1546,7 @@ function applyTheme() {
 let setTab = 'company';
 function viewSettings() {
   if (setTab === 'company') return viewCompany();
+  if (setTab === 'account') return viewAccount();
   $('#main').innerHTML = `<div class="view">
     <div class="head"><div><h1>ตั้งค่า</h1><p>เปลี่ยนหน้าตาทั้งระบบ ทั้งพื้นหลัง สี ฟอนต์ และรูปทรง</p></div></div>
     ${setTabs()}
@@ -1558,8 +1565,59 @@ function viewSettings() {
   };
 }
 
-const setTabs = () => `<div><div class="seg">${[['company', 'ข้อมูลบริษัท'], ['theme', 'ธีม']].map(([k, n]) => `<button data-st="${k}" aria-pressed="${setTab === k}" type="button">${n}</button>`).join('')}</div></div>`;
+const setTabs = () => `<div><div class="seg">${[['company', 'ข้อมูลบริษัท'], ['account', 'บัญชีผู้ใช้'], ['theme', 'ธีม']].map(([k, n]) => `<button data-st="${k}" aria-pressed="${setTab === k}" type="button">${n}</button>`).join('')}</div></div>`;
 function bindSetTabs() { $$('[data-st]').forEach(b => b.onclick = () => { setTab = b.dataset.st; viewSettings(); afterRender(); glide($('#main')); }); }
+/* Account: change own password, sign out; admins also manage users */
+function viewAccount() {
+  $('#main').innerHTML = `<div class="view">
+    <div class="head"><div><h1>ตั้งค่า</h1><p>${GAS && ME ? `เข้าสู่ระบบเป็น <b>${esc(ME.id)}</b>${ME.name ? ' · ' + esc(ME.name) : ''} (${ME.role === 'admin' ? 'ผู้ดูแลระบบ' : 'ผู้ใช้'})` : 'บัญชีผู้ใช้'}</p></div></div>
+    ${setTabs()}
+    ${!GAS ? '<div class="card"><h2>บัญชีผู้ใช้</h2><p class="muted sm" style="margin:0">หน้าทดสอบนี้ไม่มีระบบเข้าสู่ระบบ การเข้าสู่ระบบ เปลี่ยนรหัสผ่าน และจัดการผู้ใช้ จะใช้ได้เมื่อเปิดผ่าน Google Apps Script</p></div>' : `
+    <div class="card"><h2>เปลี่ยนรหัสผ่านของฉัน</h2>
+      <div class="grid"><label class="f">รหัสผ่านเดิม <input id="pw0" type="password" autocomplete="current-password"></label>
+        <label class="f">รหัสผ่านใหม่ (อย่างน้อย 8 ตัว) <input id="pw1" type="password" autocomplete="new-password"></label>
+        <label class="f">ยืนยันรหัสผ่านใหม่ <input id="pw2" type="password" autocomplete="new-password"></label></div>
+      <div class="actions"><button class="btn" id="logout" type="button">ออกจากระบบ</button><button class="btn primary" id="pwsave" type="button">เปลี่ยนรหัสผ่าน</button></div></div>
+    ${ME && ME.role === 'admin' ? `<div class="card"><div class="head"><h2>ผู้ใช้ทั้งหมด</h2><button class="btn small primary" id="uadd" type="button">+ เพิ่มผู้ใช้</button></div>
+      <div id="ulist"><div class="muted sm">กำลังโหลด…</div></div>
+      <p class="muted sm" style="margin:0">ผู้ดูแลระบบ: จัดการผู้ใช้และตั้งค่าได้ทั้งหมด · ผู้ใช้: ออกเอกสารและจัดการลูกค้า/สินค้าได้</p></div>` : ''}`}
+  </div>`;
+  bindSetTabs();
+  if (!GAS) return;
+  $('#logout').onclick = async () => { try { await api('logout', TOKEN); } catch (e) {} ME = null; showLogin('ออกจากระบบแล้ว'); };
+  $('#pwsave').onclick = async () => {
+    const [a, b, c] = ['#pw0', '#pw1', '#pw2'].map(x => $(x).value);
+    if (b !== c) return toast('รหัสผ่านใหม่ทั้ง 2 ช่องไม่ตรงกัน');
+    try { await api('changePassword', TOKEN, a, b); ['#pw0', '#pw1', '#pw2'].forEach(x => $(x).value = ''); toast('เปลี่ยนรหัสผ่านแล้ว'); }
+    catch (e) { isAuthErr(e) ? showLogin() : toast(errMsg(e)); }
+  };
+  if (ME && ME.role === 'admin') {
+    const draw = list => {
+      $('#ulist').innerHTML = `<div class="tablewrap"><table><thead><tr><th>ID</th><th>ชื่อ</th><th>สิทธิ์</th><th></th></tr></thead><tbody>${list.map(u => `<tr>
+        <td><b>${esc(u.id)}</b>${u.disabled ? ' <span class="pill s-cancel">ปิดใช้งาน</span>' : ''}</td><td>${esc(u.name)}</td><td>${u.role === 'admin' ? 'ผู้ดูแลระบบ' : 'ผู้ใช้'}</td>
+        <td class="num"><button class="btn small" data-uedit="${esc(u.id)}" type="button">แก้ไข</button>${u.id !== ME.id ? ` <button class="btn small danger" data-udel="${esc(u.id)}" type="button">ลบ</button>` : ''}</td></tr>`).join('')}</tbody></table></div>`;
+      $$('[data-uedit]').forEach(b => b.onclick = () => userDialog(list.find(u => u.id === b.dataset.uedit), draw));
+      $$('[data-udel]').forEach(b => b.onclick = async () => {
+        if (!b.dataset.confirm) { b.dataset.confirm = 1; b.textContent = 'กดอีกครั้งเพื่อลบ'; return; }
+        try { draw(await api('deleteUser', TOKEN, b.dataset.udel)); toast('ลบผู้ใช้แล้ว'); } catch (e) { isAuthErr(e) ? showLogin() : toast(errMsg(e)); }
+      });
+    };
+    $('#uadd').onclick = () => userDialog(null, draw);
+    api('listUsers', TOKEN).then(draw).catch(e => isAuthErr(e) ? showLogin() : ($('#ulist').textContent = errMsg(e)));
+  }
+}
+function userDialog(u, done) {
+  openDialog(`<h2>${u ? 'แก้ไขผู้ใช้ ' + esc(u.id) : 'เพิ่มผู้ใช้ใหม่'}</h2>
+    <label class="f">ID ผู้ใช้ (a-z 0-9 . _ -) * <input name="id" required autocapitalize="none" pattern="[a-zA-Z0-9._\\-]{3,30}" value="${esc(u?.id || '')}" ${u ? 'readonly' : ''}></label>
+    <label class="f">ชื่อที่แสดง <input name="name" value="${esc(u?.name || '')}" placeholder="เช่น คุณสมชาย ฝ่ายขาย"></label>
+    <label class="f">สิทธิ์ <select name="role"><option value="user">ผู้ใช้</option><option value="admin" ${u?.role === 'admin' ? 'selected' : ''}>ผู้ดูแลระบบ</option></select></label>
+    <label class="f">${u ? 'ตั้งรหัสผ่านใหม่ (เว้นว่างถ้าไม่เปลี่ยน)' : 'รหัสผ่าน (อย่างน้อย 8 ตัว) *'} <input name="password" type="text" autocomplete="off" ${u ? '' : 'required minlength="8"'}></label>
+    ${u && u.id !== ME.id ? `<label class="choice"><input type="checkbox" name="disabled" ${u.disabled ? 'checked' : ''}><span>ปิดการใช้งานบัญชีนี้ชั่วคราว</span></label>` : ''}`,
+    async data => {
+      try { done(await api('saveUser', TOKEN, { ...data, disabled: data.disabled === 'on' })); toast('บันทึกผู้ใช้แล้ว'); }
+      catch (e) { isAuthErr(e) ? showLogin() : toast(errMsg(e)); }
+    }, 'บันทึก');
+}
 /* Company details printed on every document header; editable so other companies can use the system */
 function viewCompany() {
   const S = db.settings, P = S.prefix;
@@ -1619,14 +1677,51 @@ function viewCompany() {
 $('#pvClose').onclick = () => $('#pv').close();
 try { Object.assign(pref, JSON.parse(localStorage.getItem('qs-theme')) || {}); } catch (e) {}
 applyTheme();
-if (GAS) {
+/* ---------- Sign-in (Apps Script only). Passwords live hashed in Script Properties on the server, never in this file. ---------- */
+let TOKEN = '', ME = null;
+try { TOKEN = localStorage.getItem('qs-token') || ''; } catch (e) {}
+const isAuthErr = err => /^AUTH/.test(String(err && err.message || err));
+const api = (fn, ...args) => new Promise((ok, bad) => google.script.run.withSuccessHandler(ok).withFailureHandler(bad)[fn](...args));
+const errMsg = e => String(e && e.message || e).replace(/^AUTH:\s*/, '').replace(/^Error:\s*/, '');
+function setToken(t) { TOKEN = t; try { t ? localStorage.setItem('qs-token', t) : localStorage.removeItem('qs-token'); } catch (e) {} }
+function showLogin(msg) {
+  setToken(''); document.body.classList.add('auth');
+  const S = db?.settings || defaultSettings();
+  $('#main').innerHTML = `<div class="login"><form class="card" id="lf">
+      ${S.logo ? `<img class="llogo" src="${S.logo}" alt="">` : ''}
+      <div><h1>เข้าสู่ระบบ</h1><p class="muted sm" style="margin:2px 0 0">${esc(S.name)}</p></div>
+      ${msg ? `<p class="lerr">${esc(msg)}</p>` : ''}
+      <label class="f">ID ผู้ใช้ <input id="lid" autocomplete="username" autocapitalize="none" required></label>
+      <label class="f">รหัสผ่าน <input id="lpw" type="password" autocomplete="current-password" required></label>
+      <button class="btn primary" id="lbtn" type="submit">เข้าสู่ระบบ</button>
+    </form></div>`;
+  $('#lid').focus();
+  $('#lf').onsubmit = async e => {
+    e.preventDefault();
+    const b = $('#lbtn'); b.disabled = true; b.textContent = 'กำลังตรวจสอบ…';
+    try {
+      const r = await api('login', $('#lid').value, $('#lpw').value);
+      setToken(r.token); ME = r.user; document.body.classList.remove('auth');
+      if (db) { route = 'list'; param = 'QT'; render(); synced = {}; snapshot(); save(); } else loadRemote();
+    } catch (err) {
+      b.disabled = false; b.textContent = 'เข้าสู่ระบบ';
+      const p = $('.lerr') || $('#lf').insertBefore(Object.assign(document.createElement('p'), { className: 'lerr' }), $('#lid').parentElement);
+      p.textContent = errMsg(err); $('#lpw').select();
+    }
+  };
+}
+function loadRemote() {
   $('#main').innerHTML = '<div class="bootwait"><span class="spin"></span>กำลังโหลดข้อมูลจาก Google Sheet…</div>';
   syncState('loading');
-  google.script.run
-    .withSuccessHandler(data => { load(data); if (data && data.settings) { snapshot(); syncState('ok'); } else save(); render(); })
-    .withFailureHandler(err => { $('#main').innerHTML = `<div class="bootwait">โหลดข้อมูลไม่สำเร็จ: ${esc(err && err.message || err)}<br>ตรวจสอบว่ารันฟังก์ชัน setup แล้ว และกดอนุญาตสิทธิ์ครบ</div>`; syncState('error'); })
-    .getAll();
-} else { load(); render(); }
+  api('getAll', TOKEN)
+    .then(data => { ME = data.me; load(data); if (data && data.settings) { snapshot(); syncState('ok'); } else save(); render(); })
+    .catch(err => {
+      if (isAuthErr(err)) return showLogin();
+      $('#main').innerHTML = `<div class="bootwait">โหลดข้อมูลไม่สำเร็จ: ${esc(errMsg(err))}<br>ตรวจสอบว่ารันฟังก์ชัน setup แล้ว และกดอนุญาตสิทธิ์ครบ</div>`; syncState('error');
+    });
+}
+if (GAS) { TOKEN ? loadRemote() : showLogin(); }
+else { load(); render(); }
 </script>
 </body>
 </html>
