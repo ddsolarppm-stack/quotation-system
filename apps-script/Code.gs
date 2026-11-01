@@ -5,6 +5,10 @@
  * ข้อมูลเก็บใน Google Sheet ที่ผูกกับสคริปต์นี้ แยกแท็บละประเภทข้อมูล
  */
 
+/** Google Sheet ที่ใช้เก็บข้อมูล (ID จากลิงก์ .../spreadsheets/d/<ID>/edit) */
+const SPREADSHEET_ID = '1P-_gglnLqaN9ij9q3K-IEEPq32conXy0Pd_FlhGpvHs';
+const book_ = () => SpreadsheetApp.openById(SPREADSHEET_ID);
+
 const SHEETS = {
   Customers: ['id', 'name', 'tax', 'branch', 'addr', 'contact', 'phone'],
   Products: ['id', 'code', 'name', 'cat', 'unit', 'price'],
@@ -22,7 +26,7 @@ function doGet() {
 
 /** รันครั้งแรกครั้งเดียว: สร้างแท็บและหัวคอลัมน์ (รันซ้ำได้ ไม่ลบข้อมูลเดิม) */
 function setup() {
-  const ss = SpreadsheetApp.getActive();
+  const ss = book_();
   Object.keys(SHEETS).forEach(name => {
     const sh = ss.getSheetByName(name) || ss.insertSheet(name);
     const cols = SHEETS[name];
@@ -94,7 +98,7 @@ function sync(payload) {
 
 /* ---------- ตัวช่วยอ่าน/เขียนชีต ---------- */
 function sheet_(name) {
-  const sh = SpreadsheetApp.getActive().getSheetByName(name);
+  const sh = book_().getSheetByName(name);
   if (!sh) throw new Error('ไม่พบแท็บ ' + name + ' กรุณารันฟังก์ชัน setup ก่อน');
   return sh;
 }
