@@ -680,6 +680,53 @@ function snapshot() {
   ['customers', 'products', 'templates', 'docs'].forEach(col => db[col].forEach(x => synced[keyOf(col, x)] = JSON.stringify(x)));
   synced.settings = JSON.stringify(db.settings);
 }
+/* Solar MDB panels, from supplier quotations QT-P-26100073 (ACB 1250A) and QT-P-26100074-R1 (ACB 1600A).
+   `cost` is the supplier's net price; `price` (selling price) starts equal to cost and must be set before quoting.
+   Items with price 0 are included in the panel price. Added once to existing data (settings.addedMdb). */
+const MDB_CAT = 'ตู้ MDB โซลาร์', MDB_INC = 'อุปกรณ์ในตู้ MDB';
+const MDB_PRODUCTS = [
+  ['MDB-SOL-1250', 'SMDB.1 SOLAR PANEL (IN DOOR) - ACB 1250A', MDB_CAT, 'SET', 178900],
+  ['MDB-SOL-1600', 'SMDB.1 SOLAR PANEL (IN DOOR) - ACB 1600A', MDB_CAT, 'SET', 186900],
+  ['MDB-CUB-1021', 'CUBICLE SIZE : W.1000 x H.2100 x D.800 (Frame From 2A Outdoor type Double cover, Panel 2.0 mm. Cover 2.0 mm., BUSBAR IEC 61439-2 Ral 7032)', MDB_INC, 'EA', 0],
+  ['MDB-ACC', 'Accessories (Terminal, Wireduct, Name Plate and Other)', MDB_INC, 'LOT', 0],
+  ['MDB-M01', 'PILOT LAMP LED 22mm. 220V. "XB7-EV07MP" W (SCHNEIDER)', MDB_INC, 'EA', 0],
+  ['MDB-M02', 'MINIATURE 1P 6A "iK60n" (SCHNEIDER)', MDB_INC, 'EA', 0],
+  ['MDB-M03', 'PROTECTION RELAY "WPR3" (WIP)', MDB_INC, 'EA', 0],
+  ['MDB-M04', 'CONTROL RELAY "CA2-KN22" 2NO/2NC (SCHNEIDER)', MDB_INC, 'EA', 0],
+  ['MDB-M05', 'CT-85-1250/5 A. 10VA Class 0.5 (ENTEC)', MDB_INC, 'EA', 0],
+  ['MDB-M06', 'DIGITAL METER "METSEPM2230" Modbus RS485 (SCHNEIDER)', MDB_INC, 'EA', 0],
+  ['MDB-M07', 'PUSH BUTTON SW. 22mm. "XB7-NA.." (SCHNEIDER)', MDB_INC, 'EA', 0],
+  ['MDB-M08', 'FUSE BASE 3P For NH00 (LINDNER)', MDB_INC, 'EA', 0],
+  ['MDB-M09', 'FUSE LINK High Speed 160A, AC 1000V (LINDNER)', MDB_INC, 'EA', 0],
+  ['MDB-M10', 'SURGE PROTECTION G30-B+C/12.5/440-4P (GA&DA)', MDB_INC, 'EA', 0],
+  ['MDB-M11', 'Earth Fault Relay Model:RX232-230A (MIKRO)', MDB_INC, 'EA', 0],
+  ['CB-ACB-1250', 'ACB MVS212N 3P 1250A 50KA TSS2.0S Fixed (SCHNEIDER)', 'เบรกเกอร์', 'EA', 59040],
+  ['CB-ACB-1600', 'ACB MVS212N 3P 1600A 50KA TSS2.0S Fixed (SCHNEIDER)', 'เบรกเกอร์', 'EA', 64608],
+  ['CB-SHUNT-220', 'Shunt opening releases 220V. 50Hz. (SCHNEIDER)', 'เบรกเกอร์', 'EA', 4039.20],
+  ['CB-MCCB-250', 'MCCB CVS250B 3P 200AT/250AF 25KA (SCHNEIDER)', 'เบรกเกอร์', 'EA', 3624],
+  ['CB-MCCB-400', 'MCCB CVS400F 3P 320AT/400AF 36KA (SCHNEIDER)', 'เบรกเกอร์', 'EA', 10152]
+];
+const MDB_METER = [['MDB-M01', 7], ['MDB-M02', 7], ['MDB-M03', 1], ['MDB-M04', 2], ['MDB-M05', 7], ['MDB-M06', 1], ['MDB-M07', 1], ['MDB-M08', 1], ['MDB-M09', 3], ['MDB-M10', 1], ['MDB-M11', 1]];
+const mdbTemplate = (amp, panel, acb, mccb, mccbQty) => ({
+  name: `ตู้ MDB โซลาร์ ACB ${amp}A`, group: 'ตู้ MDB / ไฟฟ้า', desc: `SMDB.1 SOLAR PANEL (IN DOOR) · ACB ${amp}A + MCCB x${mccbQty}`,
+  system: 'SMDB.1 SOLAR PANEL (IN DOOR)', lumpTitle: 'TOTAL MDB SOLAR PANEL',
+  warranty: '- ระยะเวลาการรับประกัน 1 ปี',
+  remark: '- กำหนดยืนราคา 30 วันนับจากวันที่เสนอราคา\n- ระยะเวลาการจัดส่ง 15-20 วันเมื่อได้รับ PO.',
+  sections: [{ name: 'SMDB.1 SOLAR PANEL (IN DOOR)', lot: false }, { name: 'METERING EQUIPMENT', lot: false }, { name: 'CIRCUIT BREAKER (SCHNEIDER)', lot: false }],
+  lines: [[panel, 1, 0], ['MDB-CUB-1021', 1, 0], ['MDB-ACC', 1, 0], ...MDB_METER.map(([c, q]) => [c, q, 1]), [acb, 1, 2], ['CB-SHUNT-220', 1, 2], [mccb, mccbQty, 2]]
+});
+const MDB_TEMPLATES = [mdbTemplate(1250, 'MDB-SOL-1250', 'CB-ACB-1250', 'CB-MCCB-250', 7), mdbTemplate(1600, 'MDB-SOL-1600', 'CB-ACB-1600', 'CB-MCCB-400', 4)];
+function ensureMdb() {
+  if (db.settings.addedMdb) return false;
+  const byCode = c => db.products.find(p => p.code === c);
+  MDB_PRODUCTS.forEach(([code, name, cat, unit, cost]) => { if (!byCode(code)) db.products.push({ id: nextId(db.products, 'P'), code, name, cat, unit, price: cost, cost }); });
+  MDB_TEMPLATES.forEach(t => {
+    if (db.templates.some(x => x.name === t.name)) return;
+    db.templates.push({ ...t, id: nextId(db.templates, 'T'), lines: t.lines.map(([c, qty, sec]) => ({ pid: byCode(c).id, qty, sec })) });
+  });
+  db.settings.addedMdb = true;
+  return true;
+}
 function load(remote) {
   if (GAS) db = remote;
   else try { db = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
@@ -1043,7 +1090,7 @@ function paperHtml(d) {
   const S = db.settings, c = cust(d.custId) || {}, t = totals(d), [th, en] = TITLES[d.type], T = TYPES[d.type];
   const lump = d.kind === 'install' && d.priceMode === 'lump';
   const secs = d.kind === 'install' && d.sections?.length ? d.sections : null;
-  const cell = v => lump ? '' : money(v);
+  const cell = v => lump || !+v ? '' : money(v);
   let rows = '', count = 0;
   if (d.kind === 'install' && d.system) { rows += `<tr class="sysrow"><td colspan="6">${esc(d.system)}</td></tr>`; count++; }
   if (lump) { rows += `<tr class="lumprow"><td></td><td>${esc(d.lumpTitle || 'ค่าอุปกรณ์และติดตั้งครบชุด')}</td><td class="c">1</td><td class="c">LOT</td><td class="r">${money(t.sum)}</td><td class="r">${money(t.sum)}</td></tr>`; count++; }
@@ -1418,6 +1465,7 @@ function pickKind() {
 }
 const tplLine = l => { const p = db.products.find(x => x.id === l.pid); return p ? { pid: p.id, name: p.name, unit: p.unit, qty: l.qty, price: p.price, sec: l.sec } : null; };
 const tplTotal = t => t.lines.map(tplLine).filter(Boolean).reduce((s, l) => s + l.qty * l.price, 0);
+const tplCost = t => t.lines.reduce((s, l) => { const p = db.products.find(x => x.id === l.pid); return s + (p ? l.qty * (p.cost ?? p.price) : 0); }, 0);
 function applyTemplate(t, silent) {
   if (!t) return;
   draft.lines = t.lines.map(tplLine).filter(Boolean);
@@ -1436,7 +1484,7 @@ function viewTemplates() {
       <div class="avatar"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.6-.6-.6-2.6z"/></svg></div>
       <div style="min-width:0"><div class="t"><b>${esc(t.name)}</b><span class="kind">${esc(t.group)}</span></div>
         <div class="muted sm">${esc(t.desc || '')}</div><div class="code">${t.lines.length} รายการ</div></div>
-      <div class="right"><span class="amt">฿${money(tplTotal(t))}</span><span class="muted sm">ก่อน VAT</span></div>
+      <div class="right"><span class="amt">฿${money(tplTotal(t))}</span><span class="muted sm">ราคาขาย ก่อน VAT · ต้นทุน ฿${money(tplCost(t))}${tplTotal(t) > tplCost(t) ? ` · กำไร ${Math.round((tplTotal(t) - tplCost(t)) / tplTotal(t) * 100)}%` : tplTotal(t) === tplCost(t) ? ' · ยังไม่ได้ตั้งราคาขาย' : ''}</span></div>
       <div class="acts"><button class="btn small" data-edit="${t.id}" type="button">แก้ไข</button><button class="btn small primary" data-use="${t.id}" type="button">ใช้เทมเพลตนี้ →</button></div>
     </div>`).join('') || '<div class="empty">ยังไม่มีเทมเพลต</div>'}</div></div>`;
   $('#add').onclick = () => go('tpl', { id: 'new' });
@@ -1536,11 +1584,12 @@ function viewProducts() {
     .sort((a, b) => a.cat.localeCompare(b.cat, 'th') || a.code.localeCompare(b.code));
   $('#main').innerHTML = `<div class="view">
     <div class="head"><div><h1>ฐานข้อมูลสินค้า / บริการ</h1><p>${db.products.length} รายการ · สินค้าที่เพิ่มจากหน้าใบเสนอราคาจะถูกบันทึกที่นี่ด้วย</p></div><button class="btn primary" id="add" type="button">+ เพิ่มสินค้า</button></div>
-    <div class="chips">${[['', 'ทั้งหมด'], ...cats().map(c => [c, c])].map(([k, n]) => `<button data-cat="${esc(k)}" aria-pressed="${prodCat === k}" type="button">${esc(n)} <span class="muted">${k ? db.products.filter(p => p.cat === k).length : db.products.length}</span></button>`).join('')}</div>
+    <label class="f" style="max-width:420px">หมวดหมู่ <select id="pcat">${[['', 'ทุกหมวดหมู่'], ...cats().map(c => [c, c])].map(([k, n]) => `<option value="${esc(k)}" ${prodCat === k ? 'selected' : ''}>${esc(n)} (${k ? db.products.filter(p => p.cat === k).length : db.products.length})</option>`).join('')}</select></label>
+    <div hidden>${[['', 'ทั้งหมด'], ...cats().map(c => [c, c])].map(([k, n]) => `<button data-cat="${esc(k)}" aria-pressed="${prodCat === k}" type="button">${esc(n)} <span class="muted">${k ? db.products.filter(p => p.cat === k).length : db.products.length}</span></button>`).join('')}</div>
     <div class="card"><input id="s" type="search" placeholder="ค้นหาชื่อหรือรหัสสินค้า" value="${esc(prodSearch)}">
-      <div class="tablewrap"><table><thead><tr><th>รหัส</th><th>ชื่อสินค้า</th><th class="hide-sm">หมวดหมู่</th><th>หน่วย</th><th class="num">ราคา/หน่วย</th></tr></thead>
-      <tbody class="plist">${list.map(p => `<tr class="click" data-id="${p.id}" tabindex="0"><td class="p-code"><span class="tag">${esc(p.code)}</span></td><td class="p-name">${esc(p.name)}<div class="muted sm show-sm">${esc(p.cat)} · ${esc(p.unit)}</div></td><td class="hide-sm muted">${esc(p.cat)}</td><td class="hide-sm">${esc(p.unit)}</td><td class="num p-price">${money(p.price)}</td></tr>`).join('') || `<tr><td colspan="5" class="empty">ไม่พบสินค้า</td></tr>`}</tbody></table></div></div></div>`;
-  $$('[data-cat]').forEach(b => b.onclick = () => { prodCat = b.dataset.cat; viewProducts(); afterRender(); glide($('#main .card')); });
+      <div class="tablewrap"><table><thead><tr><th>รหัส</th><th>ชื่อสินค้า</th><th class="hide-sm">หมวดหมู่</th><th>หน่วย</th><th class="num hide-sm">ต้นทุน</th><th class="num">ราคาขาย/หน่วย</th></tr></thead>
+      <tbody class="plist">${list.map(p => `<tr class="click" data-id="${p.id}" tabindex="0"><td class="p-code"><span class="tag">${esc(p.code)}</span></td><td class="p-name">${esc(p.name)}<div class="muted sm show-sm">${esc(p.cat)} · ${esc(p.unit)}</div></td><td class="hide-sm muted">${esc(p.cat)}</td><td class="hide-sm">${esc(p.unit)}</td><td class="num hide-sm muted">${p.cost ? money(p.cost) : '-'}</td><td class="num p-price">${p.price ? money(p.price) : '<span class="muted sm">รวมในชุด</span>'}</td></tr>`).join('') || `<tr><td colspan="5" class="empty">ไม่พบสินค้า</td></tr>`}</tbody></table></div></div></div>`;
+  $('#pcat').onchange = e => { prodCat = e.target.value; viewProducts(); afterRender(); glide($('#main .card')); };
   $('#add').onclick = () => productDialog(null, '', viewProducts);
   $('#s').oninput = e => { prodSearch = e.target.value; const p = e.target.selectionStart; viewProducts(); $('#s').focus(); $('#s').setSelectionRange(p, p); };
   $$('tr[data-id]').forEach(tr => { tr.onclick = () => productDialog(db.products.find(p => p.id === tr.dataset.id), '', viewProducts); tr.onkeydown = e => e.key === 'Enter' && tr.onclick(); });
@@ -1552,9 +1601,11 @@ function productDialog(p, name, done, cat = '') {
     <label class="f">หมวดหมู่ * <input name="cat" required list="catlist" value="${esc(v.cat)}" placeholder="เลือกหรือพิมพ์หมวดหมู่ใหม่"><datalist id="catlist">${cats().map(c => `<option value="${esc(c)}">`).join('')}</datalist></label>
     <div class="grid"><label class="f">รหัสสินค้า <input name="code" value="${esc(v.code)}" placeholder="เว้นว่างให้ระบบตั้งให้"></label>
       <label class="f">หน่วย * <input name="unit" required value="${esc(v.unit)}"></label>
-      <label class="f">ราคา/หน่วย (บาท) * <input name="price" type="number" min="0" step="0.01" required value="${v.price}" inputmode="decimal"></label></div>`,
+      <label class="f">ราคาขาย/หน่วย (บาท) * <input name="price" type="number" min="0" step="0.01" required value="${v.price}" inputmode="decimal"></label>
+      <label class="f">ต้นทุน/หน่วย (ไม่แสดงในเอกสาร) <input name="cost" type="number" min="0" step="0.01" value="${v.cost ?? ''}" inputmode="decimal"></label></div>
+    <p class="muted sm" style="margin:0">ราคาขาย 0 = รวมอยู่ในราคาชุดแล้ว (ในเอกสารจะไม่แสดงราคา)</p>`,
     data => {
-      data.price = +data.price || 0;
+      data.price = +data.price || 0; data.cost = data.cost === '' ? undefined : +data.cost || 0;
       if (p) Object.assign(p, data);
       else { p = { id: nextId(db.products, 'P'), ...data }; if (!p.code) p.code = 'SKU-' + p.id.slice(1); db.products.push(p); }
       save(); toast(`บันทึกสินค้า ${p.name} ลงฐานข้อมูลแล้ว`); done(p);
@@ -1779,14 +1830,14 @@ function loadRemote() {
   $('#main').innerHTML = '<div class="bootwait"><span class="spin"></span>กำลังโหลดข้อมูลจาก Google Sheet…</div>';
   syncState('loading');
   api('getAll', TOKEN)
-    .then(data => { ME = data.me; load(data); if (data && data.settings) { snapshot(); syncState('ok'); } else save(); render(); })
+    .then(data => { ME = data.me; load(data); if (data && data.settings) { snapshot(); syncState('ok'); } ensureMdb(); save(); render(); })
     .catch(err => {
       if (isAuthErr(err)) return showLogin();
       $('#main').innerHTML = `<div class="bootwait">โหลดข้อมูลไม่สำเร็จ: ${esc(errMsg(err))}<br>ตรวจสอบว่ารันฟังก์ชัน setup แล้ว และกดอนุญาตสิทธิ์ครบ</div>`; syncState('error');
     });
 }
 if (GAS) { $('#hdrOut').hidden = false; $('#hdrOut').onclick = signOut; showLogin(); }
-else { load(); render(); }
+else { load(); if (ensureMdb()) save(); render(); }
 window.__qsLoaded = true;
 </script>
 </body>

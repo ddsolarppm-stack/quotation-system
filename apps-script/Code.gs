@@ -23,7 +23,7 @@ const STATUS_TEXT = {
 
 const SHEETS = {
   Customers: ['id', 'name', 'tax', 'branch', 'addr', 'contact', 'phone'],
-  Products: ['id', 'code', 'name', 'cat', 'unit', 'price'],
+  Products: ['id', 'code', 'name', 'cat', 'unit', 'price', 'cost'],
   Templates: ['id', 'name', 'group', 'data'],
   Settings: ['key', 'value']
 };
@@ -179,7 +179,7 @@ function getAll(token) {
   return {
     settings: Object.keys(settings).length ? settings : null,
     customers: rows_('Customers').filter(r => r.id),
-    products: rows_('Products').filter(r => r.id).map(r => Object.assign(r, { price: Number(r.price) || 0 })),
+    products: rows_('Products').filter(r => r.id).map(r => Object.assign(r, { price: Number(r.price) || 0, cost: r.cost === '' ? undefined : Number(r.cost) || 0 })),
     templates: rows_('Templates').filter(r => r.id).map(r => Object.assign(parse_(r.data, {}), { id: r.id, name: r.name, group: r.group })),
     docs: [].concat(...Object.keys(DOC_TABS).map(t => rows_(DOC_TABS[t]))).filter(r => r.no).map(r => parse_(r.data, null)).filter(Boolean),
     me: me
