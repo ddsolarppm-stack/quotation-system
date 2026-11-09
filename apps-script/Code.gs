@@ -97,7 +97,15 @@ function saveUsers_(u) { PropertiesService.getScriptProperties().setProperty('us
 function hash_(pw, salt) {
   return Utilities.base64Encode(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, salt + ':' + pw, Utilities.Charset.UTF_8));
 }
-function setPw_(u, pw) { u.salt = Utilities.getUuid(); u.hash = hash_(pw, u.salt); }
+// รหัสผ่านไม่แยกตัวพิมพ์เล็ก/ใหญ่ (PI123456 = pi123456): เก็บแฮชของตัวพิมพ์เล็กเสมอ
+function setPw_(u, pw) { u.salt = Utilities.getUuid(); u.hash = hash_(String(pw).toLowerCase(), u.salt); }
+/** ตรวจรหัส; บัญชีที่ตั้งรหัสก่อนเปลี่ยนเป็นไม่แยกตัวพิมพ์ ใช้รหัสตรงตัวได้ครั้งแรกแล้วระบบแปลงให้ */
+function pwOk_(users, id, pw) {
+  const u = users[id]; pw = String(pw || '');
+  if (hash_(pw.toLowerCase(), u.salt) === u.hash) return true;
+  if (hash_(pw, u.salt) === u.hash) { setPw_(u, pw); saveUsers_(users); return true; }
+  return false;
+}
 function ensureAdmin_() {
   const u = users_();
   if (!Object.keys(u).length) { u[DEFAULT_ADMIN.id] = { name: 'ผู้ดูแลระบบ', role: 'admin' }; setPw_(u[DEFAULT_ADMIN.id], DEFAULT_ADMIN.pw); saveUsers_(u); }
@@ -126,8 +134,8 @@ function login(id, pw) {
   id = String(id || '').trim().toLowerCase();
   const cache = CacheService.getScriptCache(), fk = 'fail:' + id, fails = Number(cache.get(fk)) || 0;
   if (fails >= 5) throw new Error('ใส่รหัสผิดหลายครั้ง กรุณารอ 15 นาทีแล้วลองใหม่');
-  const u = users_()[id];
-  if (!u || u.disabled || hash_(String(pw || ''), u.salt) !== u.hash) {
+  const all = users_(), u = all[id];
+  if (!u || u.disabled || !pwOk_(all, id, pw)) {
     cache.put(fk, String(fails + 1), 900);
     throw new Error('ID หรือรหัสผ่านไม่ถูกต้อง');
   }
@@ -139,7 +147,7 @@ function login(id, pw) {
 function logout(token) { if (token) CacheService.getScriptCache().remove('tok:' + token); return true; }
 function changePassword(token, oldPw, newPw) {
   const me = auth_(token), u = users_();
-  if (hash_(String(oldPw || ''), u[me.id].salt) !== u[me.id].hash) throw new Error('รหัสผ่านเดิมไม่ถูกต้อง');
+  if (!pwOk_(u, me.id, oldPw)) throw new Error('รหัสผ่านเดิมไม่ถูกต้อง');
   if (String(newPw || '').length < 8) throw new Error('รหัสผ่านใหม่ต้องมีอย่างน้อย 8 ตัวอักษร');
   setPw_(u[me.id], newPw); saveUsers_(u);
   return true;

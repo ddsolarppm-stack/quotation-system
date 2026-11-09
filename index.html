@@ -227,6 +227,9 @@
   .sec svg { width: 18px; height: 18px; }
   .sec[aria-current="page"] { color: var(--accent-fg); background: var(--accent); border-color: transparent; box-shadow: 0 8px 18px -10px var(--acc-l); }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .mkrow { display: flex; gap: 6px; } .mkrow input { flex: 1; min-width: 0; } .mkrow select { width: auto; flex: none; }
+  .mkbulk { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; } .mkbulk .mkrow { flex: 1 1 220px; }
+  .warnc { color: var(--warn); font-weight: 600; }
   .pwbox { position: relative; display: block; }
   .pwbox input { padding-right: 46px; }
   .pweye { position: absolute; right: 4px; top: 50%; transform: translateY(-50%); width: 38px; height: 38px; border: 0; background: none; color: var(--muted); border-radius: 10px; cursor: pointer; display: grid; place-items: center; }
@@ -1464,6 +1467,10 @@ function pickKind() {
   dlg.showModal();
 }
 const tplLine = l => { const p = db.products.find(x => x.id === l.pid); return p ? { pid: p.id, name: p.name, unit: p.unit, qty: l.qty, price: p.price, sec: l.sec } : null; };
+/* Selling price from cost + profit: markup { type: 'pct' | 'amt', value } */
+const r2 = n => Math.round(n * 100) / 100;
+const priceFrom = (cost, mk) => !mk ? +cost || 0 : r2(mk.type === 'amt' ? (+cost || 0) + (+mk.value || 0) : (+cost || 0) * (1 + (+mk.value || 0) / 100));
+const marginTxt = p => p.cost && p.price ? `${money(p.price - p.cost)} (${Math.round((p.price - p.cost) / p.cost * 100)}%)` : '-';
 const tplTotal = t => t.lines.map(tplLine).filter(Boolean).reduce((s, l) => s + l.qty * l.price, 0);
 const tplCost = t => t.lines.reduce((s, l) => { const p = db.products.find(x => x.id === l.pid); return s + (p ? l.qty * (p.cost ?? p.price) : 0); }, 0);
 function applyTemplate(t, silent) {
@@ -1518,6 +1525,12 @@ function viewTpl() {
         <label class="f">Warranty / การรับประกัน (บรรทัดละข้อ) <textarea id="tw" rows="4">${esc(tdraft.warranty)}</textarea></label>
         <label class="f">หมายเหตุ / Remark (บรรทัดละข้อ) <textarea id="tr" rows="4">${esc(tdraft.remark)}</textarea></label>
       </div></div>
+    <div class="card"><h2>กำไรของชุดนี้</h2>
+      <div class="muted sm" id="tmkSum"></div>
+      <div class="mkbulk"><span class="mkrow"><input id="tmkVal" type="number" step="0.01" placeholder="เช่น 15" inputmode="decimal">
+        <select id="tmkType" aria-label="หน่วยกำไร"><option value="pct">% ของต้นทุน</option><option value="amt">บาท ทั้งชุด</option></select></span>
+        <button class="btn primary" id="tmkApply" type="button">คำนวณราคาขาย</button></div>
+      <p class="muted sm" style="margin:0">ระบบตั้งราคาขายของสินค้าที่มีต้นทุนในชุดนี้ (กำไรเป็นบาทจะเฉลี่ยตามสัดส่วนต้นทุน) · ราคาขายเก็บที่สินค้า ถ้าสินค้าตัวเดียวกันอยู่ในเทมเพลตอื่นก็ใช้ราคาใหม่ด้วย</p></div>
     <div class="card"><h2>หมวดอุปกรณ์และรายการ</h2>
       ${lineEditorHtml(true)}
       <div class="totals" id="tot"></div><div class="words" id="words"></div>
@@ -1525,6 +1538,23 @@ function viewTpl() {
     <div class="actions mbar-form">${src ? '<button class="btn danger" id="tdel" type="button">ลบ</button>' : ''}<button class="btn primary" id="tsave" type="button">บันทึกเทมเพลต</button></div>
   </div>`;
   const back = () => P.back ? go('new') : go('templates');
+  const tmkSum = () => {
+    const ps = tdraft.lines.map(l => [l, db.products.find(x => x.id === l.pid)]).filter(([, p]) => p);
+    const cost = ps.reduce((a, [l, p]) => a + l.qty * (p.cost ?? p.price), 0), sale = ps.reduce((a, [l, p]) => a + l.qty * p.price, 0);
+    $('#tmkSum').innerHTML = `ต้นทุนรวม <b>฿${money(cost)}</b> · ราคาขายรวม <b>฿${money(sale)}</b> · กำไร <b>฿${money(sale - cost)}</b>${cost ? ` (${Math.round((sale - cost) / cost * 100)}%)` : ''}`;
+  };
+  tmkSum();
+  $('#tmkApply').onclick = () => {
+    const v = $('#tmkVal').value; if (v === '') { toast('ใส่ตัวเลขกำไรก่อน'); $('#tmkVal').focus(); return; }
+    const ids = [...new Set(tdraft.lines.map(l => l.pid))], ps = ids.map(id => db.products.find(p => p.id === id)).filter(p => p && p.cost);
+    const totalCost = tdraft.lines.reduce((a, l) => { const p = ps.find(x => x.id === l.pid); return a + (p ? l.qty * p.cost : 0); }, 0);
+    ps.forEach(p => {
+      p.markup = $('#tmkType').value === 'pct' ? { type: 'pct', value: +v } : { type: 'pct', value: totalCost ? +v / totalCost * 100 : 0 };
+      p.price = priceFrom(p.cost, p.markup);
+    });
+    tdraft.lines.forEach(l => { const p = db.products.find(x => x.id === l.pid); if (p) l.price = p.price; });
+    save(); drawLines(); tmkSum(); toast(`ตั้งราคาขาย ${ps.length} รายการในชุดนี้แล้ว`);
+  };
   $('#back').onclick = back;
   $('#tsave').onclick = () => {
     const name = $('#tn').value.trim();
@@ -1586,9 +1616,19 @@ function viewProducts() {
     <div class="head"><div><h1>ฐานข้อมูลสินค้า / บริการ</h1><p>${db.products.length} รายการ · สินค้าที่เพิ่มจากหน้าใบเสนอราคาจะถูกบันทึกที่นี่ด้วย</p></div><button class="btn primary" id="add" type="button">+ เพิ่มสินค้า</button></div>
     <label class="f" style="max-width:420px">หมวดหมู่ <select id="pcat">${[['', 'ทุกหมวดหมู่'], ...cats().map(c => [c, c])].map(([k, n]) => `<option value="${esc(k)}" ${prodCat === k ? 'selected' : ''}>${esc(n)} (${k ? db.products.filter(p => p.cat === k).length : db.products.length})</option>`).join('')}</select></label>
     <div hidden>${[['', 'ทั้งหมด'], ...cats().map(c => [c, c])].map(([k, n]) => `<button data-cat="${esc(k)}" aria-pressed="${prodCat === k}" type="button">${esc(n)} <span class="muted">${k ? db.products.filter(p => p.cat === k).length : db.products.length}</span></button>`).join('')}</div>
+    <div class="card"><h2>ตั้งกำไรหลายรายการพร้อมกัน</h2>
+      <div class="mkbulk"><span class="muted sm">${prodCat ? `สินค้าหมวด “${esc(prodCat)}”` : 'สินค้าทุกหมวด'} ที่มีต้นทุน (${list.filter(p => p.cost).length} รายการ) บวกกำไร</span>
+        <span class="mkrow"><input id="bkVal" type="number" step="0.01" placeholder="เช่น 20" inputmode="decimal"><select id="bkType" aria-label="หน่วยกำไร"><option value="pct">%</option><option value="amt">บาท/หน่วย</option></select></span>
+        <button class="btn primary" id="bkApply" type="button">คำนวณราคาขาย</button></div></div>
     <div class="card"><input id="s" type="search" placeholder="ค้นหาชื่อหรือรหัสสินค้า" value="${esc(prodSearch)}">
-      <div class="tablewrap"><table><thead><tr><th>รหัส</th><th>ชื่อสินค้า</th><th class="hide-sm">หมวดหมู่</th><th>หน่วย</th><th class="num hide-sm">ต้นทุน</th><th class="num">ราคาขาย/หน่วย</th></tr></thead>
-      <tbody class="plist">${list.map(p => `<tr class="click" data-id="${p.id}" tabindex="0"><td class="p-code"><span class="tag">${esc(p.code)}</span></td><td class="p-name">${esc(p.name)}<div class="muted sm show-sm">${esc(p.cat)} · ${esc(p.unit)}</div></td><td class="hide-sm muted">${esc(p.cat)}</td><td class="hide-sm">${esc(p.unit)}</td><td class="num hide-sm muted">${p.cost ? money(p.cost) : '-'}</td><td class="num p-price">${p.price ? money(p.price) : '<span class="muted sm">รวมในชุด</span>'}</td></tr>`).join('') || `<tr><td colspan="5" class="empty">ไม่พบสินค้า</td></tr>`}</tbody></table></div></div></div>`;
+      <div class="tablewrap"><table><thead><tr><th>รหัส</th><th>ชื่อสินค้า</th><th class="hide-sm">หมวดหมู่</th><th>หน่วย</th><th class="num hide-sm">ต้นทุน</th><th class="num hide-sm">กำไร</th><th class="num">ราคาขาย/หน่วย</th></tr></thead>
+      <tbody class="plist">${list.map(p => `<tr class="click" data-id="${p.id}" tabindex="0"><td class="p-code"><span class="tag">${esc(p.code)}</span></td><td class="p-name">${esc(p.name)}<div class="muted sm show-sm">${esc(p.cat)} · ${esc(p.unit)}</div></td><td class="hide-sm muted">${esc(p.cat)}</td><td class="hide-sm">${esc(p.unit)}</td><td class="num hide-sm muted">${p.cost ? money(p.cost) : '-'}</td><td class="num hide-sm ${p.cost && p.price <= p.cost ? 'warnc' : ''}">${p.cost && p.price && p.price <= p.cost ? 'ยังไม่ได้ตั้ง' : marginTxt(p)}</td><td class="num p-price">${p.price ? money(p.price) : '<span class="muted sm">รวมในชุด</span>'}</td></tr>`).join('') || `<tr><td colspan="5" class="empty">ไม่พบสินค้า</td></tr>`}</tbody></table></div></div></div>`;
+  $('#bkApply').onclick = () => {
+    const v = $('#bkVal').value; if (v === '') { toast('ใส่ตัวเลขกำไรก่อน'); $('#bkVal').focus(); return; }
+    const mk = { type: $('#bkType').value, value: +v }, items = list.filter(p => p.cost);
+    items.forEach(p => { p.markup = mk; p.price = priceFrom(p.cost, mk); });
+    save(); toast(`ตั้งราคาขาย ${items.length} รายการแล้ว`); viewProducts(); afterRender();
+  };
   $('#pcat').onchange = e => { prodCat = e.target.value; viewProducts(); afterRender(); glide($('#main .card')); };
   $('#add').onclick = () => productDialog(null, '', viewProducts);
   $('#s').oninput = e => { prodSearch = e.target.value; const p = e.target.selectionStart; viewProducts(); $('#s').focus(); $('#s').setSelectionRange(p, p); };
@@ -1601,15 +1641,26 @@ function productDialog(p, name, done, cat = '') {
     <label class="f">หมวดหมู่ * <input name="cat" required list="catlist" value="${esc(v.cat)}" placeholder="เลือกหรือพิมพ์หมวดหมู่ใหม่"><datalist id="catlist">${cats().map(c => `<option value="${esc(c)}">`).join('')}</datalist></label>
     <div class="grid"><label class="f">รหัสสินค้า <input name="code" value="${esc(v.code)}" placeholder="เว้นว่างให้ระบบตั้งให้"></label>
       <label class="f">หน่วย * <input name="unit" required value="${esc(v.unit)}"></label>
-      <label class="f">ราคาขาย/หน่วย (บาท) * <input name="price" type="number" min="0" step="0.01" required value="${v.price}" inputmode="decimal"></label>
       <label class="f">ต้นทุน/หน่วย (ไม่แสดงในเอกสาร) <input name="cost" type="number" min="0" step="0.01" value="${v.cost ?? ''}" inputmode="decimal"></label></div>
-    <p class="muted sm" style="margin:0">ราคาขาย 0 = รวมอยู่ในราคาชุดแล้ว (ในเอกสารจะไม่แสดงราคา)</p>`,
+    <div class="grid">
+      <label class="f">กำไร <span class="mkrow"><input name="mkValue" type="number" step="0.01" value="${v.markup ? v.markup.value : ''}" placeholder="0" inputmode="decimal">
+        <select name="mkType" aria-label="หน่วยกำไร"><option value="pct">%</option><option value="amt" ${v.markup?.type === 'amt' ? 'selected' : ''}>บาท</option></select></span></label>
+      <label class="f">ราคาขาย/หน่วย (บาท) * <input name="price" type="number" min="0" step="0.01" required value="${v.price}" inputmode="decimal"></label></div>
+    <p class="muted sm" id="mkNote" style="margin:0">ใส่ต้นทุน + กำไร (เป็น % หรือบาท) ระบบคำนวณราคาขายให้ หรือพิมพ์ราคาขายเองก็ได้ · ราคาขาย 0 = รวมอยู่ในราคาชุดแล้ว</p>`,
     data => {
       data.price = +data.price || 0; data.cost = data.cost === '' ? undefined : +data.cost || 0;
+      data.markup = data.mkValue === '' ? undefined : { type: data.mkType, value: +data.mkValue || 0 }; delete data.mkValue; delete data.mkType;
       if (p) Object.assign(p, data);
       else { p = { id: nextId(db.products, 'P'), ...data }; if (!p.code) p.code = 'SKU-' + p.id.slice(1); db.products.push(p); }
       save(); toast(`บันทึกสินค้า ${p.name} ลงฐานข้อมูลแล้ว`); done(p);
     });
+  // live: cost/profit -> price, and typing a price fills the profit back in
+  const f = $('#dlgForm'), F = n => f.elements[n];
+  const note = () => { const c = +F('cost').value, pr = +F('price').value; $('#mkNote').textContent = c && pr ? `กำไร ${money(pr - c)} บาท (${Math.round((pr - c) / c * 100)}% ของต้นทุน)` : 'ใส่ต้นทุน + กำไร (เป็น % หรือบาท) ระบบคำนวณราคาขายให้ หรือพิมพ์ราคาขายเองก็ได้'; };
+  const fromMk = () => { if (F('cost').value !== '' && F('mkValue').value !== '') F('price').value = priceFrom(F('cost').value, { type: F('mkType').value, value: F('mkValue').value }); note(); };
+  F('cost').oninput = fromMk; F('mkValue').oninput = fromMk; F('mkType').onchange = fromMk;
+  F('price').oninput = () => { const c = +F('cost').value, pr = +F('price').value; if (c) F('mkValue').value = F('mkType').value === 'amt' ? r2(pr - c) : r2((pr / c - 1) * 100); note(); };
+  note();
 }
 
 /* ---------- Dialog ---------- */
