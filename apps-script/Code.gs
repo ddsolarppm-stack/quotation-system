@@ -77,7 +77,8 @@ function writeDoc_(d) {
   const tab = DOC_TABS[d.type];
   if (!tab) throw new Error('ไม่รู้จักประเภทเอกสาร ' + d.type);
   const [y, m, dd] = String(d.date || '').split('-');
-  upsert_(tab, 'no', d, {
+  const byUid = d.uid ? rowIndex_(tab, 'uid', d.uid) : -1;
+  upsert_(tab, byUid > 0 ? 'uid' : 'no', d, {
     no: d.no, date: dd ? dd + '/' + m + '/' + y : '', customerName: d.customerName || '', project: d.project || '',
     statusText: (STATUS_TEXT[d.type] || {})[d.status] || d.status, grand: d.grand === '' || d.grand == null ? '' : Number(d.grand).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
     ref: d.ref || '', kindText: d.type === 'QT' ? (d.kind === 'install' ? 'งานติดตั้ง' : 'ขายสินค้า') : '',

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>ระบบใบเสนอราคา – ทดสอบ</title>
-<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Bai+Jamjuree:wght@400;500;600;700&family=Kanit:wght@400;500;600&family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Bai+Jamjuree:wght@400;500;600;700&family=Kanit:wght@400;500;600&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   /* Layout: top app bar + 4-stage pipeline stepper (QT → IV → DO → RC); each stage lists document cards; detail = paper + action/timeline panel */
   /* Each skin restyles the whole page: background, surfaces, corner radius, typeface, glass, accent.
@@ -472,9 +472,27 @@
 
   /* ---------- A4 document form (fixed light palette, matches the company's paper form) ---------- */
   .a4wrap { width: 100%; overflow: hidden; position: relative; }
-  .paper.a4 { width: 794px; min-height: 1123px; padding: 34px 40px 30px; background: #fff; color: #111; font: 11.5px/1.45 'Sarabun', 'Anuphan', 'Tahoma', sans-serif;
+  .paper.a4 { width: 794px; min-height: 1123px; padding: 36px 42px 32px; background: #fff; color: #1d1d1f; font: 400 12.5px/1.5 'Sarabun', 'Tahoma', sans-serif; -webkit-font-smoothing: antialiased;
     transform-origin: top left; box-shadow: var(--shadow); border-radius: 4px; display: flex; flex-direction: column; position: relative; overflow: hidden; }
   .paper.capture { transform: none !important; box-shadow: none; border-radius: 0; }
+  /* Sarabun typography for the paper form: clear hierarchy, even numbers */
+  .a4 * { font-family: 'Sarabun', 'Tahoma', sans-serif; }
+  .a4 .co b { font-size: 17px !important; font-weight: 700; letter-spacing: .1px; }
+  .a4 .co div { font-size: 12px !important; color: #3a3a3c; line-height: 1.55; }
+  .a4 .ttl { font-size: 17px !important; font-weight: 600; letter-spacing: .3px; padding: 10px 26px !important; border-width: 1.5px !important; border-radius: 4px; }
+  .a4 .ttl div + div { font-size: 13px; font-weight: 500; color: #555; letter-spacing: 1px; }
+  .a4 .info th { font-weight: 600 !important; color: #222; }
+  .a4 .info td { color: #1d1d1f; }
+  .a4 .items th { font-weight: 600 !important; font-size: 12px; background: #f6f6f6; line-height: 1.3; }
+  .a4 .items td { padding: 3px 8px !important; }
+  .a4 .items .r, .a4 .sum td { font-variant-numeric: tabular-nums lining-nums; }
+  .a4 .secrow td, .a4 .sysrow td { font-weight: 600; }
+  .a4 .sum th { font-weight: 500 !important; }
+  .a4 .sum tr.g th, .a4 .sum tr.g td { font-weight: 700 !important; font-size: 13.5px; }
+  .a4 .sum td.words { font-size: 13.5px; }
+  .a4 .bar { font-weight: 600 !important; padding: 3px 6px !important; }
+  .a4 .ln, .a4 .bank div, .a4 .pay { font-size: 11.5px !important; line-height: 1.55; }
+  .a4.tight { font-size: 11.5px !important; } .a4.tight .items td { padding: 1px 8px !important; }
   .a4 .ph { display: grid; grid-template-columns: 112px 1fr auto; gap: 14px; align-items: start; margin-bottom: 14px; }
   .a4 .logo4 { width: 112px; height: 92px; display: grid; place-items: center; }
   .a4 .logo4 img { max-width: 100%; max-height: 100%; object-fit: contain; }
@@ -551,6 +569,7 @@
 </div></header>
 
 <div class="wrap"><nav class="sections" aria-label="เมนูหลัก">
+  <button class="sec" data-go="dash" data-sec="dash" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>ภาพรวม</button>
   <button class="sec" data-go="list" data-p="QT" data-sec="docs" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h6"/></svg>เอกสาร</button>
   <button class="sec" data-go="customers" data-sec="customers" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18 14.8c2 .7 3.2 2.5 3.6 5.2"/></svg>ลูกค้า</button>
   <button class="sec" data-go="products" data-sec="products" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5z"/><path d="M3 7.5 12 12l9-4.5M12 12v9"/></svg>สินค้า</button>
@@ -619,7 +638,7 @@ function defaultSettings() {
     bank: 'ธนาคาร กรุงเทพ บัญชี สะสมทรัพย์ สาขา เซ็นทรัลลาดพร้าว', bankAcctName: 'ห้างหุ้นส่วนจำกัด พี แอนด์ ไอ อิเล็คทริค', bankAcctNo: '087-7-70418-9',
     color: '#f7a21b',
     prefix: { QT: 'QT', IV: 'INV', DO: 'DO', RC: 'RE' },
-    lastSeq: { QT: 49, IV: 35 }, // last running number already used on paper; the system continues from here
+    lastSeq: { QT: 48, IV: 34 }, // next to issue: QT...0049, INV...0035 // last running number already used on paper; the system continues from here
     remark: '- กำหนดยืนราคา 15 วัน',
     warranty: '',
     payGeneral: [{ text: 'หลังจากส่งมอบสินค้า', pct: 100 }],
@@ -747,6 +766,21 @@ const mdbTemplate = (amp, panel, acb, mccb, mccbQty) => ({
   lines: [[panel, 1, 0], ['MDB-CUB-1021', 1, 0], ['MDB-ACC', 1, 0], ...MDB_METER.map(([c, q]) => [c, q, 1]), [acb, 1, 2], ['CB-SHUNT-220', 1, 2], [mccb, mccbQty, 2]]
 });
 const MDB_TEMPLATES = [mdbTemplate(1250, 'MDB-SOL-1250', 'CB-ACB-1250', 'CB-MCCB-250', 7), mdbTemplate(1600, 'MDB-SOL-1600', 'CB-ACB-1600', 'CB-MCCB-400', 4)];
+/* One-time fix: QT2026110049 / INV2026110035 are the NEXT numbers to use (not the last used).
+   Lower the counters and renumber the quotation issued as QT2026110050 to QT2026110049. */
+function fixSeqOnce() {
+  if (db.settings.seqFix1) return false;
+  const L = db.settings.lastSeq = { ...(db.settings.lastSeq || {}) };
+  if (L.QT === 49) L.QT = 48;
+  if (L.IV === 35) L.IV = 34;
+  const d50 = findDoc('QT2026110050');
+  if (d50 && !findDoc('QT2026110049')) {
+    d50.no = 'QT2026110049';
+    db.docs.forEach(x => { if (x.ref === 'QT2026110050') x.ref = 'QT2026110049'; if (x.revOf === 'QT2026110050') x.revOf = 'QT2026110049'; });
+  }
+  db.settings.seqFix1 = true;
+  return true;
+}
 function ensureMdb() {
   if (db.settings.addedMdb) return false;
   const byCode = c => db.products.find(p => p.code === c);
@@ -879,6 +913,22 @@ const pill = d => `<span class="pill s-${d.status}">${TYPES[d.type].st[d.status]
 const isOpen = d => d.status === TYPES[d.type].open;
 
 /* ---------- Workflow actions ---------- */
+/* Guard against a wrong tap: every forward step needs "123" typed in */
+function confirm123(d) {
+  const T = TYPES[d.type], nt = FLOW[FLOW.indexOf(d.type) + 1];
+  const what = T.next.final ? `ยืนยันชำระเงิน ${d.no}` : `${T.next.label}: ${d.no} → สร้าง${TYPES[nt].name}`;
+  const dlg = $('#dlg'), f = $('#dlgForm');
+  f.innerHTML = `<h2>ยืนยัน${esc(T.next.label)}</h2>
+    <p style="margin:0">${esc(what)}</p>
+    <label class="f">พิมพ์ <b style="color:var(--fg)">123</b> เพื่อยืนยัน (กันกดผิด) <input id="c123" inputmode="numeric" autocomplete="off" maxlength="3" placeholder="123"></label>
+    <div class="actions"><button class="btn" value="cancel" formnovalidate>ยกเลิก</button><button class="btn primary" id="c123ok" type="button" disabled>ยืนยัน</button></div>`;
+  f.onsubmit = null;
+  const inp = $('#c123'), ok = $('#c123ok');
+  inp.oninput = () => { ok.disabled = inp.value.trim() !== '123'; };
+  inp.onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); if (!ok.disabled) ok.click(); } };
+  ok.onclick = () => { if (inp.value.trim() !== '123') return; dlg.close(); advance(d); };
+  dlg.showModal(); inp.focus();
+}
 function advance(d) {
   confetti(lastClick.x, lastClick.y);
   const T = TYPES[d.type];
@@ -912,17 +962,18 @@ function cancelDoc(d) {
       save(); go(route, param);
     }, 'ยืนยันยกเลิก', 'danger');
 }
-function actionButtons(d) {
-  if (!isOpen(d)) return '';
+function actionButtons(d, withEdit) {
+  const ed = withEdit && d.status !== 'cancel' ? `<button class="btn small" data-act="edit" data-no="${esc(d.no)}" type="button">แก้ไข</button>` : '';
+  if (!isOpen(d)) return ed;
   const T = TYPES[d.type];
-  return `${T.cancel ? `<button class="btn small danger" data-act="cancel" data-no="${esc(d.no)}" type="button">ยกเลิก</button>` : ''}
+  return `${ed}${T.cancel ? `<button class="btn small danger" data-act="cancel" data-no="${esc(d.no)}" type="button">ยกเลิก</button>` : ''}
     <button class="btn small ${T.next.final ? 'ok' : 'primary'}" data-act="next" data-no="${esc(d.no)}" type="button">${T.next.label} →</button>`;
 }
 function bindActions(root = document) {
   $$('[data-act]', root).forEach(b => b.onclick = e => {
     e.stopPropagation();
     const d = findDoc(b.dataset.no);
-    b.dataset.act === 'next' ? advance(d) : cancelDoc(d);
+    b.dataset.act === 'next' ? confirm123(d) : b.dataset.act === 'edit' ? editDialog(d) : cancelDoc(d);
   });
 }
 function chain(d) {
@@ -933,7 +984,7 @@ function chain(d) {
 }
 
 /* ---------- Router ---------- */
-let route = 'list', param = 'QT';
+let route = 'dash', param = null;
 /* Navigation never blanks or dims the screen: the new content is drawn immediately at full opacity,
    then glides a few pixels into place (sideways between stage tabs, upward otherwise). */
 function go(r, p = null) {
@@ -996,7 +1047,7 @@ document.addEventListener('pointerdown', e => lastClick = { x: e.clientX, y: e.c
 $$('[data-go]').forEach(b => b.onclick = () => go(b.dataset.go, b.dataset.p || null));
 function currentStage() { return route === 'list' ? param : route === 'doc' ? findDoc(param)?.type : route === 'new' ? 'QT' : null; }
 function syncNav() {
-  const sec = ['list', 'doc', 'new'].includes(route) ? 'docs' : route === 'tpl' ? 'templates' : route;
+  const sec = ['list', 'doc', 'new'].includes(route) ? 'docs' : route === 'tpl' ? 'templates' : route;  // dash has its own section
   $$('.sec').forEach(b => b.setAttribute('aria-current', b.dataset.sec === sec ? 'page' : 'false'));
   $$('.tool').forEach(t => t.setAttribute('aria-current', t.dataset.go === route ? 'page' : 'false'));
   $('#pipe').hidden = sec !== 'docs';
@@ -1031,7 +1082,7 @@ function renderPipe() {
 }
 function render() {
   renderPipe();
-  ({ list: viewList, doc: viewDoc, new: viewNew, templates: viewTemplates, tpl: viewTpl, customers: viewCustomers, products: viewProducts, settings: viewSettings })[route]();
+  ({ dash: viewDash, list: viewList, doc: viewDoc, new: viewNew, templates: viewTemplates, tpl: viewTpl, customers: viewCustomers, products: viewProducts, settings: viewSettings })[route]();
   afterRender();
 }
 
@@ -1050,7 +1101,7 @@ function viewList() {
   $('#main').innerHTML = `<div class="view">
     <div class="head"><div><span class="eyebrow">ขั้นที่ ${FLOW.indexOf(type) + 1} จาก 4</span><h1 class="hero">${T.name}</h1><p>${type === 'QT' ? 'สร้างเอกสารได้ที่ขั้นนี้ขั้นเดียว แล้วกดส่งต่อไปขั้นถัดไป' : 'เอกสารในขั้นนี้มาจากขั้นก่อนหน้าอัตโนมัติ'}</p></div>
       ${type === 'QT' ? '<button class="btn primary hide-sm" id="nb" type="button">+ สร้างใบเสนอราคา</button><button class="fab" id="fab" type="button" aria-label="สร้างใบเสนอราคา">+</button>' : ''}</div>
-    ${type === 'QT' ? dashHtml() : `    <div class="stats">
+    ${`    <div class="stats">
       <div class="stat"><span>${T.st[T.open]}</span><b data-count="${openDocs.length}">${openDocs.length} ฉบับ</b></div>
       <div class="stat glow"><span>มูลค่ารอดำเนินการ</span><b data-count="${sumOf(openDocs)}" data-fmt="money">฿${money(sumOf(openDocs))}</b></div>
       <div class="stat"><span>${T.st.finish}</span><b data-count="${sumOf(fin)}" data-fmt="money">฿${money(sumOf(fin))}</b></div>
@@ -1066,11 +1117,10 @@ function viewList() {
           <div class="muted sm">${esc(d.project || '')}</div>
           <div class="code">${esc(d.no)} · ${thDate(d.date)}${d.ref ? ` · อ้างอิง ${esc(d.ref)}` : ''}</div></div>
         <div class="right"><span class="amt">฿${money(totals(d).grand)}</span></div>
-        <div class="acts">${actionButtons(d)}</div>
+        <div class="acts">${actionButtons(d, true)}</div>
       </div>`; }).join('') || `<div class="empty">${filt === 'open' ? 'ไม่มีเอกสารที่รอดำเนินการในขั้นนี้' : 'ไม่พบเอกสาร'}${type === 'QT' ? '<br><button class="btn ghost" id="nb2" type="button">+ สร้างใบเสนอราคาใหม่</button>' : ''}</div>`}</div>
   </div>`;
   ['#nb', '#fab', '#nb2'].forEach(id => $(id)?.addEventListener('click', pickKind));
-  bindDash();
   $$('[data-f]').forEach(b => b.onclick = () => { filt = b.dataset.f; viewList(); afterRender(); glide($('.docs')); });
   $('#ds').oninput = e => { search = e.target.value; const p = e.target.selectionStart; $('#main').classList.add('calm'); viewList(); afterRender(); $('#ds').focus(); $('#ds').setSelectionRange(p, p); };
   $$('.doc').forEach(el => { el.onclick = () => go('doc', el.dataset.no); el.onkeydown = e => e.key === 'Enter' && e.target === el && el.onclick(); });
@@ -1078,8 +1128,19 @@ function viewList() {
 }
 
 /* ---------- Dashboard ---------- */
+function viewDash() {
+  $('#main').innerHTML = `<div class="view"><div class="head"><div><h1 class="hero">ภาพรวม</h1><p>สรุปใบเสนอราคา ยอดขาย และกำไร</p></div>
+      <button class="btn primary hide-sm" id="nb" type="button">+ สร้างใบเสนอราคา</button><button class="fab" id="fab" type="button" aria-label="สร้างใบเสนอราคา">+</button></div>
+    ${dashHtml()}</div>`;
+  ['#nb', '#fab'].forEach(id => $(id)?.addEventListener('click', pickKind));
+  bindDash();
+}
 let dashPeriod = 'month';
-function bindDash() { $$('[data-dp]').forEach(b => b.onclick = () => { dashPeriod = b.dataset.dp; $('#dash').outerHTML = dashHtml(); afterRender(); bindDash(); }); }
+function bindDash() {
+  $$('[data-dp]').forEach(b => b.onclick = () => { dashPeriod = b.dataset.dp; viewDash(); afterRender(); });
+  $$('[data-open]').forEach(b => b.onclick = () => go('doc', b.dataset.open));
+  $$('[data-go2]').forEach(b => b.onclick = () => go('list', 'QT'));
+}
 function dashHtml() {
   const now = new Date(), ym = iso(now).slice(0, 7), y = ym.slice(0, 4);
   const inP = d => dashPeriod === 'all' || (dashPeriod === 'year' ? d.date.slice(0, 4) === y : d.date.slice(0, 7) === ym);
@@ -1097,7 +1158,11 @@ function dashHtml() {
       <div class="dk"><span>รอลูกค้าตอบ</span><b>${wait.length} ใบ</b><small>฿${money(val(wait))}</small></div>
       <div class="dk"><span>ใบแจ้งหนี้รอส่งของ</span><b>${ivWait.length} ใบ</b><small>฿${money(ivWait.reduce((a, d) => a + totals(d).grand, 0))}</small></div>
       <div class="dk"><span>ใบเสร็จรอชำระ</span><b>${rcWait.length} ใบ</b><small>฿${money(rcWait.reduce((a, d) => a + totals(d).grand, 0))}</small></div>
-    </div><p class="muted sm" style="margin:0">มูลค่าเป็นราคาขายหลังส่วนลด ก่อน VAT · ไม่นับฉบับที่ถูกแทนด้วยฉบับแก้ไข${decided ? '' : ''}</p></div>`;
+    </div><p class="muted sm" style="margin:0">มูลค่าเป็นราคาขายหลังส่วนลด ก่อน VAT · ไม่นับฉบับที่ถูกแทนด้วยฉบับแก้ไข${decided ? '' : ''}</p></div>
+    <div class="card"><div class="head"><h2>ใบเสนอราคาล่าสุด</h2><button class="btn ghost" data-go2="list" type="button">ดูทั้งหมด →</button></div>
+      <div class="docs">${db.docs.filter(d => d.type === 'QT' && !isRevised(d)).sort((a, b) => b.date.localeCompare(a.date) || b.no.localeCompare(a.no)).slice(0, 5).map(d => { const P = docProfit(d); return `
+        <button class="trow" data-open="${esc(d.no)}" type="button"><span class="tn"><b>${esc(cust(d.custId)?.name || '-')}</b><span class="muted sm">${esc(d.no)} · ${thDate(d.date)} · ${esc(d.project || '')}</span></span>
+          <span class="tm">${pill(d)}<span class="sm">฿${money(P.sale)} · กำไร ${pctTxt(P.pct)}</span></span></button>`; }).join('') || '<div class="empty">ยังไม่มีใบเสนอราคา</div>'}</div></div>`;
 }
 
 /* ---------- Single document ---------- */
@@ -1933,9 +1998,9 @@ function viewCompany() {
     <div class="card"><h2>รูปแบบเอกสาร</h2>
       <label class="f" style="max-width:240px">สีแถบหัวข้อในเอกสาร <input id="s_color" type="color" value="${esc(S.color)}" style="height:44px;padding:4px"></label>
       <div class="muted sm" style="font-weight:500">เลขที่ใบเสนอราคา / ใบแจ้งหนี้: ตัวนำหน้า + ปี + เดือน + ลำดับ 4 หลักที่รันต่อเนื่องไม่เริ่มใหม่ (เช่น QT2026110050)</div>
-      <div class="grid">${fld('p_QT', 'ตัวนำหน้า ใบเสนอราคา (ทุกประเภท)', P.QT)}${fld('s_seqQT', 'ลำดับล่าสุดที่ใช้แล้ว (ใบเสนอราคา)', (S.lastSeq || {}).QT ?? 0, 'type="number" min="0" inputmode="numeric"')}
-        ${fld('p_IV', 'ตัวนำหน้า ใบแจ้งหนี้', P.IV)}${fld('s_seqIV', 'ลำดับล่าสุดที่ใช้แล้ว (ใบแจ้งหนี้)', (S.lastSeq || {}).IV ?? 0, 'type="number" min="0" inputmode="numeric"')}</div>
-      <div class="muted sm">ใบถัดไป: <b id="nextQT"></b> · <b id="nextIV"></b> — แก้ลำดับล่าสุดได้ถ้าออกเอกสารด้วยมือไปบางใบ</div>
+      <div class="grid">${fld('p_QT', 'ตัวนำหน้า ใบเสนอราคา (ทุกประเภท)', P.QT)}${fld('s_seqQT', 'เลขลำดับถัดไปที่จะออก (ใบเสนอราคา)', ((S.lastSeq || {}).QT ?? 0) + 1, 'type="number" min="1" inputmode="numeric"')}
+        ${fld('p_IV', 'ตัวนำหน้า ใบแจ้งหนี้', P.IV)}${fld('s_seqIV', 'เลขลำดับถัดไปที่จะออก (ใบแจ้งหนี้)', ((S.lastSeq || {}).IV ?? 0) + 1, 'type="number" min="1" inputmode="numeric"')}</div>
+      <div class="muted sm">ใบถัดไปจริง: <b id="nextQT"></b> · <b id="nextIV"></b> (ถ้าในระบบมีเลขสูงกว่านี้แล้ว ระบบจะรันต่อจากเลขสูงสุด)</div>
       <div class="muted sm" style="font-weight:500">ใบส่งของ / ใบเสร็จ (รูปแบบเดิม ตัวนำหน้า + ปีเดือน-ลำดับ)</div>
       <div class="grid">${fld('p_DO', 'ตัวนำหน้า ใบส่งของ', P.DO)}${fld('p_RC', 'ตัวนำหน้า ใบเสร็จ/ใบกำกับภาษี', P.RC)}</div>
       <div class="grid" style="align-items:start">
@@ -1966,7 +2031,7 @@ function viewCompany() {
     Object.assign(S, { name: v('s_name'), tax: v('s_tax'), addr: v('s_addr'), phone: v('s_phone'), email: v('s_email'), bank: v('s_bank'), bankAcctName: v('s_bname'), bankAcctNo: v('s_bno'),
       color: $('#s_color').value, remark: $('#s_remark').value, warranty: $('#s_warr').value,
       prefix: { QT: v('p_QT') || 'QT', IV: v('p_IV') || 'INV', DO: v('p_DO') || 'DO', RC: v('p_RC') || 'RE' },
-      lastSeq: { QT: Math.max(0, parseInt(v('s_seqQT')) || 0), IV: Math.max(0, parseInt(v('s_seqIV')) || 0) } });
+      lastSeq: { QT: Math.max(0, (parseInt(v('s_seqQT')) || 1) - 1), IV: Math.max(0, (parseInt(v('s_seqIV')) || 1) - 1) } });
     showNext();
     save(); toast('บันทึกข้อมูลบริษัทแล้ว');
   };
@@ -2009,7 +2074,7 @@ function showLogin(msg) {
     try {
       const r = await api('login', $('#lid').value, $('#lpw').value);
       setToken(r.token); ME = r.user; document.body.classList.remove('auth');
-      route = 'list'; param = 'QT';
+      route = 'dash'; param = null;
       if (db) { render(); save(); } else loadRemote();
     } catch (err) {
       b.disabled = false; b.textContent = 'เข้าสู่ระบบ';
@@ -2022,14 +2087,14 @@ function loadRemote() {
   $('#main').innerHTML = '<div class="bootwait"><span class="spin"></span>กำลังโหลดข้อมูลจาก Google Sheet…</div>';
   syncState('loading');
   api('getAll', TOKEN)
-    .then(data => { ME = data.me; load(data); if (data && data.settings) { snapshot(); syncState('ok'); } ensureMdb(); save(); render(); })
+    .then(data => { ME = data.me; load(data); if (data && data.settings) { snapshot(); syncState('ok'); } ensureMdb(); fixSeqOnce(); save(); render(); })
     .catch(err => {
       if (isAuthErr(err)) return showLogin();
       $('#main').innerHTML = `<div class="bootwait">โหลดข้อมูลไม่สำเร็จ: ${esc(errMsg(err))}<br>ตรวจสอบว่ารันฟังก์ชัน setup แล้ว และกดอนุญาตสิทธิ์ครบ</div>`; syncState('error');
     });
 }
 if (GAS) { $('#hdrOut').hidden = false; $('#hdrOut').onclick = signOut; showLogin(); }
-else { load(); if (ensureMdb()) save(); render(); }
+else { load(); if (ensureMdb() | fixSeqOnce()) save(); render(); }
 window.__qsLoaded = true;
 </script>
 </body>
