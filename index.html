@@ -587,7 +587,8 @@ function defaultSettings() {
     email: 'pandielectric.th@gmail.com', logo: PI_LOGO,
     bank: 'ธนาคาร กรุงเทพ บัญชี สะสมทรัพย์ สาขา เซ็นทรัลลาดพร้าว', bankAcctName: 'ห้างหุ้นส่วนจำกัด พี แอนด์ ไอ อิเล็คทริค', bankAcctNo: '087-7-70418-9',
     color: '#f7a21b',
-    prefix: { QT: 'QT', QTI: 'QTPV', IV: 'INV', DO: 'DO', RC: 'RE' },
+    prefix: { QT: 'QT', IV: 'INV', DO: 'DO', RC: 'RE' },
+    lastSeq: { QT: 49, IV: 35 }, // last running number already used on paper; the system continues from here
     remark: '- กำหนดยืนราคา 15 วัน',
     warranty: '',
     payGeneral: [{ text: 'หลังจากส่งมอบสินค้า', pct: 100 }],
@@ -596,7 +597,7 @@ function defaultSettings() {
 }
 
 /* ---------- Mock database (this browser only; Google Sheet later) ---------- */
-const KEY = 'qs-demo-v3';
+const KEY = 'qs-demo-v4';
 function seed() {
   const d = off => iso(new Date(Date.now() - off * 864e5)), now = new Date();
   const ym = now.getFullYear() + String(now.getMonth() + 1).padStart(2, '0');
@@ -654,15 +655,15 @@ function seed() {
     products,
     templates,
     docs: [
-      { ...fromTpl(templates[0], job1), no: `QTPV${ym}-1`, type: 'QT', date: d(12), extra: d(-3), status: 'finish' },
-      { ...fromTpl(templates[0], job1), no: `INV${ym}-1`, type: 'IV', date: d(10), extra: d(-20), status: 'finish', ref: `QTPV${ym}-1` },
-      { ...fromTpl(templates[0], job1), no: `DO${ym}-1`, type: 'DO', date: d(6), extra: d(6), status: 'finish', ref: `INV${ym}-1` },
+      { ...fromTpl(templates[0], job1), no: `QT${ym}0046`, type: 'QT', date: d(12), extra: d(-3), status: 'finish' },
+      { ...fromTpl(templates[0], job1), no: `INV${ym}0034`, type: 'IV', date: d(10), extra: d(-20), status: 'finish', ref: `QT${ym}0046` },
+      { ...fromTpl(templates[0], job1), no: `DO${ym}-1`, type: 'DO', date: d(6), extra: d(6), status: 'finish', ref: `INV${ym}0034` },
       { ...fromTpl(templates[0], job1), no: `RE${ym}-1`, type: 'RC', date: d(1), status: 'pending', ref: `DO${ym}-1` },
-      { ...gen(job2), no: `QT${ym}-1`, type: 'QT', date: d(8), extra: d(-7), status: 'finish' },
-      { ...gen(job2), no: `INV${ym}-2`, type: 'IV', date: d(3), extra: d(-27), status: 'pending', ref: `QT${ym}-1` },
-      { ...fromTpl(templates[2], { custId: 'C003', project: 'ระบบไฮบริดสำรองไฟห้องเรียน', discount: 0, priceMode: 'breakdown' }), no: `QTPV${ym}-2`, type: 'QT', date: d(2), extra: d(-13), status: 'issued' },
+      { ...gen(job2), no: `QT${ym}0047`, type: 'QT', date: d(8), extra: d(-7), status: 'finish' },
+      { ...gen(job2), no: `INV${ym}0035`, type: 'IV', date: d(3), extra: d(-27), status: 'pending', ref: `QT${ym}0047` },
+      { ...fromTpl(templates[2], { custId: 'C003', project: 'ระบบไฮบริดสำรองไฟห้องเรียน', discount: 0, priceMode: 'breakdown' }), no: `QT${ym}0048`, type: 'QT', date: d(2), extra: d(-13), status: 'issued' },
       { ...gen({ custId: 'C004', project: 'แผงโซลาร์สำหรับติดตั้งเอง', lines: [{ pid: 'P001', name: 'แผงโซลาร์เซลล์ 550W Mono Half-cell', unit: 'EA', qty: 10, price: 4500 }, { pid: 'P002', name: 'อินเวอร์เตอร์ On-grid 5kW 1 เฟส', unit: 'EA', qty: 1, price: 28500 }] }),
-        no: `QT${ym}-2`, type: 'QT', date: d(0), extra: d(-15), status: 'issued' }
+        no: `QT${ym}0049`, type: 'QT', date: d(0), extra: d(-15), status: 'issued' }
     ]
   };
 }
@@ -745,10 +746,18 @@ const findDoc = no => db.docs.find(d => d.no === no);
 const nextId = (arr, p) => p + String(arr.reduce((m, x) => Math.max(m, +x.id.slice(1)), 0) + 1).padStart(3, '0');
 const initials = s => (s || '?').replace(/^(บริษัท|หจก\.|คุณ|โรงเรียน)\s{0,}/, '').trim().charAt(0);
 
-/* Numbering follows the paper forms: <prefix><YYYY><MM>-<running no.>, e.g. QT202304-13, QTPV202305-19, INV202305-1 */
-function docPrefix(type, kind) { const P = db.settings.prefix; return type === 'QT' && kind === 'install' ? P.QTI : P[type]; }
+/* Delivery notes and receipts (for now): <prefix><YYYY><MM>-<running no. per month>, e.g. DO202611-1 */
+function docPrefix(type) { return db.settings.prefix[type]; }
+/* QT and INV: <prefix><YYYY><MM><running no. 4 digits>, e.g. QT2026110050. The running number never resets
+   (not by month, not by year); only the year/month part follows the document date. */
+const SEQ_TYPES = ['QT', 'IV'];
 function nextDocNo(type, dateStr, kind) {
   const d = new Date(dateStr + 'T00:00:00');
+  if (SEQ_TYPES.includes(type)) {
+    const pre = docPrefix(type), rx = new RegExp('^' + pre + '\\d{6}(\\d{4,})$');
+    const used = db.docs.reduce((m, x) => { const r = rx.exec(x.no); return r ? Math.max(m, +r[1]) : m; }, +(db.settings.lastSeq || {})[type] || 0);
+    return pre + d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(used + 1).padStart(4, '0');
+  }
   const prefix = docPrefix(type, kind) + d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + '-';
   const max = db.docs.filter(x => x.no.startsWith(prefix)).reduce((m, x) => Math.max(m, +x.no.slice(prefix.length) || 0), 0);
   return prefix + (max + 1);
@@ -1680,8 +1689,12 @@ function viewCompany() {
     </div>
     <div class="card"><h2>รูปแบบเอกสาร</h2>
       <label class="f" style="max-width:240px">สีแถบหัวข้อในเอกสาร <input id="s_color" type="color" value="${esc(S.color)}" style="height:44px;padding:4px"></label>
-      <div class="muted sm" style="font-weight:500">ตัวอักษรนำหน้าเลขที่เอกสาร (ต่อด้วย ปีเดือน-ลำดับ เช่น QT202310-1)</div>
-      <div class="grid">${fld('p_QT', 'ใบเสนอราคาขายสินค้า', P.QT)}${fld('p_QTI', 'ใบเสนอราคางานติดตั้ง', P.QTI)}${fld('p_IV', 'ใบแจ้งหนี้', P.IV)}${fld('p_DO', 'ใบส่งของ', P.DO)}${fld('p_RC', 'ใบเสร็จ/ใบกำกับภาษี', P.RC)}</div>
+      <div class="muted sm" style="font-weight:500">เลขที่ใบเสนอราคา / ใบแจ้งหนี้: ตัวนำหน้า + ปี + เดือน + ลำดับ 4 หลักที่รันต่อเนื่องไม่เริ่มใหม่ (เช่น QT2026110050)</div>
+      <div class="grid">${fld('p_QT', 'ตัวนำหน้า ใบเสนอราคา (ทุกประเภท)', P.QT)}${fld('s_seqQT', 'ลำดับล่าสุดที่ใช้แล้ว (ใบเสนอราคา)', (S.lastSeq || {}).QT ?? 0, 'type="number" min="0" inputmode="numeric"')}
+        ${fld('p_IV', 'ตัวนำหน้า ใบแจ้งหนี้', P.IV)}${fld('s_seqIV', 'ลำดับล่าสุดที่ใช้แล้ว (ใบแจ้งหนี้)', (S.lastSeq || {}).IV ?? 0, 'type="number" min="0" inputmode="numeric"')}</div>
+      <div class="muted sm">ใบถัดไป: <b id="nextQT"></b> · <b id="nextIV"></b> — แก้ลำดับล่าสุดได้ถ้าออกเอกสารด้วยมือไปบางใบ</div>
+      <div class="muted sm" style="font-weight:500">ใบส่งของ / ใบเสร็จ (รูปแบบเดิม ตัวนำหน้า + ปีเดือน-ลำดับ)</div>
+      <div class="grid">${fld('p_DO', 'ตัวนำหน้า ใบส่งของ', P.DO)}${fld('p_RC', 'ตัวนำหน้า ใบเสร็จ/ใบกำกับภาษี', P.RC)}</div>
       <div class="grid" style="align-items:start">
         <label class="f">หมายเหตุเริ่มต้น (บรรทัดละข้อ) <textarea id="s_remark" rows="3">${esc(S.remark)}</textarea></label>
         <label class="f">Warranty เริ่มต้น (บรรทัดละข้อ) <textarea id="s_warr" rows="3">${esc(S.warranty)}</textarea></label>
@@ -1690,6 +1703,8 @@ function viewCompany() {
     <div class="actions mbar-form"><button class="btn primary" id="s_save" type="button">บันทึกข้อมูลบริษัท</button></div>
   </div>`;
   bindSetTabs();
+  const showNext = () => { const t = iso(new Date()); $('#nextQT').textContent = nextDocNo('QT', t); $('#nextIV').textContent = nextDocNo('IV', t); };
+  showNext();
   $('#logoFile').onchange = e => {
     const f = e.target.files[0]; if (!f) return;
     const img = new Image(), rd = new FileReader();
@@ -1707,7 +1722,9 @@ function viewCompany() {
     if (!v('s_name')) { toast('กรุณากรอกชื่อบริษัท'); $('#s_name').focus(); return; }
     Object.assign(S, { name: v('s_name'), tax: v('s_tax'), addr: v('s_addr'), phone: v('s_phone'), email: v('s_email'), bank: v('s_bank'), bankAcctName: v('s_bname'), bankAcctNo: v('s_bno'),
       color: $('#s_color').value, remark: $('#s_remark').value, warranty: $('#s_warr').value,
-      prefix: { QT: v('p_QT') || 'QT', QTI: v('p_QTI') || 'QTPV', IV: v('p_IV') || 'INV', DO: v('p_DO') || 'DO', RC: v('p_RC') || 'RE' } });
+      prefix: { QT: v('p_QT') || 'QT', IV: v('p_IV') || 'INV', DO: v('p_DO') || 'DO', RC: v('p_RC') || 'RE' },
+      lastSeq: { QT: Math.max(0, parseInt(v('s_seqQT')) || 0), IV: Math.max(0, parseInt(v('s_seqIV')) || 0) } });
+    showNext();
     save(); toast('บันทึกข้อมูลบริษัทแล้ว');
   };
 }

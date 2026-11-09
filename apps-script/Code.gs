@@ -268,8 +268,14 @@ function remove_(name, keyCol, key) {
 }
 function parse_(s, fallback) { try { return JSON.parse(s); } catch (e) { return fallback; } }
 
-/** เลขถัดไปของชุดเดียวกัน เช่น QT202610-7 → ตัวนำหน้า QT202610- แล้วหาเลขสูงสุด + 1 */
+/** เลขถัดไปเมื่อเลขชนกัน: QT/INV รูปแบบรันต่อเนื่อง, ใบส่งของ/ใบเสร็จ รูปแบบเดิม (DO202611-7 → DO202611-8) */
 function nextNo_(tab, no) {
+  // QT / INV: ตัวนำหน้า + ปีเดือน 6 หลัก + ลำดับ 4 หลักที่รันต่อเนื่อง เช่น QT2026110050 → QT2026110051 (ลำดับไม่เริ่มใหม่ตามเดือน)
+  const SEQ = /^([A-Za-z]+)(\d{6})(\d{4,})$/, m = String(no).match(SEQ);
+  if (m) {
+    const max = rows_(tab).reduce((a, r) => { const x = String(r.no).match(SEQ); return x && x[1] === m[1] ? Math.max(a, Number(x[3])) : a; }, Number(m[3]));
+    return m[1] + m[2] + String(max + 1).padStart(4, '0');
+  }
   const prefix = no.replace(/\d+$/, '');
   const max = rows_(tab).filter(r => r.no.indexOf(prefix) === 0)
     .reduce((m, r) => Math.max(m, Number(r.no.slice(prefix.length)) || 0), 0);
