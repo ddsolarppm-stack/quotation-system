@@ -227,6 +227,34 @@
   .sec svg { width: 18px; height: 18px; }
   .sec[aria-current="page"] { color: var(--accent-fg); background: var(--accent); border-color: transparent; box-shadow: 0 8px 18px -10px var(--acc-l); }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tplbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 10px 14px; border-radius: var(--r); background: var(--accent-soft); }
+  .tpllist { gap: 0; padding: 8px; }
+  .tgh { font-size: .78rem; font-weight: 700; letter-spacing: .03em; color: var(--muted); padding: 12px 10px 6px; }
+  .trow { display: flex; justify-content: space-between; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 12px 10px; border: 0; border-top: 1px solid var(--line); background: none; color: var(--fg); cursor: pointer; border-radius: 10px; }
+  .tgh + .trow { border-top: 0; }
+  .trow:hover { background: var(--accent-soft); }
+  .trow .tn { display: grid; gap: 2px; min-width: 0; } .trow .tn b { font-weight: 600; }
+  .trow .tm { display: grid; justify-items: end; gap: 2px; white-space: nowrap; }
+  .lines .sale { border-color: color-mix(in srgb, var(--accent) 45%, transparent); background: var(--accent-soft); }
+  .lines td.prof { font-size: .86rem; line-height: 1.25; }
+  .pos { color: var(--ok); } .neg { color: var(--bad); }
+  .psum { display: grid; gap: 6px; }
+  .psum .ps { display: flex; justify-content: space-between; gap: 12px; font-variant-numeric: tabular-nums; }
+  .psum .ps.big { font-size: 1.15rem; border-top: 1px solid var(--line); padding-top: 8px; }
+  .psw { padding: 10px 12px; border-radius: 10px; background: color-mix(in srgb, var(--warn) 14%, transparent); color: var(--warn); font-weight: 600; font-size: .9rem; }
+  .btn:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; }
+  .kindopt:disabled { opacity: .5; cursor: not-allowed; }
+  .dgrid { display: grid; gap: 10px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .dk { display: grid; gap: 2px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; }
+  .dk span { color: var(--muted); font-size: .82rem; } .dk b { font-size: 1.25rem; font-variant-numeric: tabular-nums; } .dk small { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .dk.hi { background: color-mix(in srgb, var(--ok) 10%, transparent); border-color: color-mix(in srgb, var(--ok) 35%, transparent); } .dk.hi b { color: var(--ok); }
+  @media (max-width: 640px) {
+    .dgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .lines.quote tr { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .lines.quote td.n { grid-column: 1 / -1; }
+    .lines td[data-l]::before { content: attr(data-l); display: block; font-size: .72rem; color: var(--muted); text-align: left; }
+    .lines.quote td.amt, .lines.quote td.prof { text-align: left; }
+  }
   .mkrow { display: flex; gap: 6px; } .mkrow input { flex: 1; min-width: 0; } .mkrow select { width: auto; flex: none; }
   .mkbulk { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; } .mkbulk .mkrow { flex: 1 1 220px; }
   .warnc { color: var(--warn); font-weight: 600; }
@@ -626,15 +654,15 @@ function seed() {
   const warrantySolar = '- Inverter รับประกัน 10 ปี\n- PV Solar Cell รับประกัน 10/25 ปี\n- Mounting รับประกัน 10 ปี\n- งานติดตั้งรับประกัน 1 ปี';
   const remarkSolar = '- กำหนดยืนราคา 15 วัน\n- รับประกันและดูแลระบบนาน 1 ปี โดยล้างแผงปีละ 1 ครั้ง\n- รวมการขออนุญาตไฟฟ้า และสมัครเข้าโครงการโซลาร์ภาคประชาชน\n- ไม่รวมค่าเปลี่ยนมิเตอร์จากการไฟฟ้า ถ้าต้องเปลี่ยน';
   const templates = [
-    { id: 'T001', name: 'โซลาร์รูฟ On-grid 5kW (1 เฟส)', group: 'โซลาร์เซลล์', desc: 'บ้านพักอาศัย ค่าไฟ 2,000–3,500 บาท/เดือน',
+    { id: 'T001', name: 'โซลาร์รูฟ On-grid 5kW (1 เฟส)', group: 'ระบบโซลาร์ (Solar System)', desc: 'บ้านพักอาศัย ค่าไฟ 2,000–3,500 บาท/เดือน',
       system: 'Solar system Capacity 5.5 kWp (String)', lumpTitle: 'Solar Roof top system Installation', warranty: warrantySolar, remark: remarkSolar, sections: SEC,
       lines: [{ pid: 'P001', qty: 10, sec: 0 }, { pid: 'P002', qty: 1, sec: 0 }, { pid: 'P005', qty: 1, sec: 0 }, { pid: 'P007', qty: 16, sec: 1 }, { pid: 'P008', qty: 8, sec: 1 }, { pid: 'P009', qty: 16, sec: 1 }, { pid: 'P010', qty: 6, sec: 1 },
         { pid: 'P006', qty: 1, sec: 2 }, { pid: 'P011', qty: 30, sec: 2 }, { pid: 'P012', qty: 60, sec: 2 }, { pid: 'P013', qty: 4, sec: 2 }, { pid: 'P014', qty: 1, sec: 3 }, { pid: 'P015', qty: 1, sec: 3 }] },
-    { id: 'T002', name: 'โซลาร์รูฟ On-grid 10kW (3 เฟส)', group: 'โซลาร์เซลล์', desc: 'ธุรกิจขนาดเล็ก / บ้านใหญ่ ใช้ไฟกลางวันสูง',
+    { id: 'T002', name: 'โซลาร์รูฟ On-grid 10kW (3 เฟส)', group: 'ระบบโซลาร์ (Solar System)', desc: 'ธุรกิจขนาดเล็ก / บ้านใหญ่ ใช้ไฟกลางวันสูง',
       system: 'Solar system Capacity 9.9 kWp (String)', lumpTitle: 'Solar Roof top system Installation', warranty: warrantySolar, remark: remarkSolar, sections: SEC,
       lines: [{ pid: 'P001', qty: 18, sec: 0 }, { pid: 'P003', qty: 1, sec: 0 }, { pid: 'P005', qty: 1, sec: 0 }, { pid: 'P007', qty: 28, sec: 1 }, { pid: 'P008', qty: 12, sec: 1 }, { pid: 'P009', qty: 30, sec: 1 }, { pid: 'P010', qty: 10, sec: 1 },
         { pid: 'P011', qty: 40, sec: 2 }, { pid: 'P012', qty: 100, sec: 2 }, { pid: 'P013', qty: 6, sec: 2 }, { pid: 'P014', qty: 1, sec: 3 }, { pid: 'P015', qty: 1, sec: 3 }] },
-    { id: 'T003', name: 'ระบบไฮบริด 5kW + แบตเตอรี่ 10kWh', group: 'โซลาร์เซลล์', desc: 'มีไฟสำรองใช้ตอนกลางคืน / ไฟดับ',
+    { id: 'T003', name: 'ระบบไฮบริด 5kW + แบตเตอรี่ 10kWh', group: 'ระบบโซลาร์ (Solar System)', desc: 'มีไฟสำรองใช้ตอนกลางคืน / ไฟดับ',
       system: 'Hybrid Solar system 5.5 kWp + Battery 10 kWh', lumpTitle: 'Hybrid Solar system Installation', warranty: warrantySolar + '\n- Battery รับประกัน 10 ปี', remark: remarkSolar,
       sections: [...SEC.slice(0, 3), { name: 'Additional', lot: true }, SEC[3]],
       lines: [{ pid: 'P001', qty: 10, sec: 0 }, { pid: 'P002', qty: 1, sec: 0 }, { pid: 'P007', qty: 16, sec: 1 }, { pid: 'P008', qty: 8, sec: 1 }, { pid: 'P009', qty: 16, sec: 1 }, { pid: 'P010', qty: 6, sec: 1 },
@@ -711,7 +739,7 @@ const MDB_PRODUCTS = [
 ];
 const MDB_METER = [['MDB-M01', 7], ['MDB-M02', 7], ['MDB-M03', 1], ['MDB-M04', 2], ['MDB-M05', 7], ['MDB-M06', 1], ['MDB-M07', 1], ['MDB-M08', 1], ['MDB-M09', 3], ['MDB-M10', 1], ['MDB-M11', 1]];
 const mdbTemplate = (amp, panel, acb, mccb, mccbQty) => ({
-  name: `ตู้ MDB โซลาร์ ACB ${amp}A`, group: 'ตู้ MDB / ไฟฟ้า', desc: `SMDB.1 SOLAR PANEL (IN DOOR) · ACB ${amp}A + MCCB x${mccbQty}`,
+  name: `ตู้ MDB โซลาร์ ACB ${amp}A`, group: 'ตู้ MDB', desc: `SMDB.1 SOLAR PANEL (IN DOOR) · ACB ${amp}A + MCCB x${mccbQty}`,
   system: 'SMDB.1 SOLAR PANEL (IN DOOR)', lumpTitle: 'TOTAL MDB SOLAR PANEL',
   warranty: '- ระยะเวลาการรับประกัน 1 ปี',
   remark: '- กำหนดยืนราคา 30 วันนับจากวันที่เสนอราคา\n- ระยะเวลาการจัดส่ง 15-20 วันเมื่อได้รับ PO.',
@@ -734,11 +762,15 @@ function load(remote) {
   if (GAS) db = remote;
   else try { db = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
   if (GAS && (!db || !db.settings)) db = { ...seed(), customers: [], docs: [] }; // brand-new sheet: company, products and templates only
-  if (!db || !db.docs) db = seed();
+  if (!db || !db.docs) { db = seed(); db.docs.forEach(d => d.lines.forEach(l => { l.cost = r2(l.price / 1.15); })); } // demo data: about 15% profit
   if (db.settings && db.settings.name === 'บริษัท ตัวอย่าง จำกัด') db.settings = defaultSettings();
   if (!db.templates) db.templates = seed().templates;
   db.settings = { ...defaultSettings(), ...(db.settings || {}) };
   db.products.forEach(p => { if (!p.cat) p.cat = SEED_CAT[p.id] || 'อื่นๆ'; });
+  // products carry cost only; the selling price and profit are set per quotation
+  db.products.forEach(p => { if (p.cost == null) p.cost = +p.price || 0; p.price = p.cost; delete p.markup; });
+  const GROUPS = { 'ตู้ MDB / ไฟฟ้า': 'ตู้ MDB', 'โซลาร์เซลล์': 'ระบบโซลาร์ (Solar System)' };
+  db.templates.forEach(t => { if (GROUPS[t.group]) t.group = GROUPS[t.group]; });
 }
 const cats = () => [...new Set(db.products.map(p => p.cat))].sort((a, b) => a.localeCompare(b, 'th'));
 const catSelect = (id, val) => `<select id="${id}" aria-label="หมวดหมู่"><option value="">ทุกหมวดหมู่</option>${cats().map(c => `<option ${c === val ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select>`;
@@ -1018,11 +1050,11 @@ function viewList() {
   $('#main').innerHTML = `<div class="view">
     <div class="head"><div><span class="eyebrow">ขั้นที่ ${FLOW.indexOf(type) + 1} จาก 4</span><h1 class="hero">${T.name}</h1><p>${type === 'QT' ? 'สร้างเอกสารได้ที่ขั้นนี้ขั้นเดียว แล้วกดส่งต่อไปขั้นถัดไป' : 'เอกสารในขั้นนี้มาจากขั้นก่อนหน้าอัตโนมัติ'}</p></div>
       ${type === 'QT' ? '<button class="btn primary hide-sm" id="nb" type="button">+ สร้างใบเสนอราคา</button><button class="fab" id="fab" type="button" aria-label="สร้างใบเสนอราคา">+</button>' : ''}</div>
-    <div class="stats">
+    ${type === 'QT' ? dashHtml() : `    <div class="stats">
       <div class="stat"><span>${T.st[T.open]}</span><b data-count="${openDocs.length}">${openDocs.length} ฉบับ</b></div>
       <div class="stat glow"><span>มูลค่ารอดำเนินการ</span><b data-count="${sumOf(openDocs)}" data-fmt="money">฿${money(sumOf(openDocs))}</b></div>
       <div class="stat"><span>${T.st.finish}</span><b data-count="${sumOf(fin)}" data-fmt="money">฿${money(sumOf(fin))}</b></div>
-    </div>
+    </div>`}
     <div class="head">
       <div class="seg">${filters.map(([k, v]) => `<button data-f="${k}" aria-pressed="${filt === k}" type="button">${v}</button>`).join('')}</div>
       <input id="ds" type="search" placeholder="ค้นหาเลขที่ ลูกค้า โครงการ" value="${esc(search)}" style="max-width:300px">
@@ -1038,10 +1070,34 @@ function viewList() {
       </div>`; }).join('') || `<div class="empty">${filt === 'open' ? 'ไม่มีเอกสารที่รอดำเนินการในขั้นนี้' : 'ไม่พบเอกสาร'}${type === 'QT' ? '<br><button class="btn ghost" id="nb2" type="button">+ สร้างใบเสนอราคาใหม่</button>' : ''}</div>`}</div>
   </div>`;
   ['#nb', '#fab', '#nb2'].forEach(id => $(id)?.addEventListener('click', pickKind));
+  bindDash();
   $$('[data-f]').forEach(b => b.onclick = () => { filt = b.dataset.f; viewList(); afterRender(); glide($('.docs')); });
   $('#ds').oninput = e => { search = e.target.value; const p = e.target.selectionStart; $('#main').classList.add('calm'); viewList(); afterRender(); $('#ds').focus(); $('#ds').setSelectionRange(p, p); };
   $$('.doc').forEach(el => { el.onclick = () => go('doc', el.dataset.no); el.onkeydown = e => e.key === 'Enter' && e.target === el && el.onclick(); });
   bindActions($('#main'));
+}
+
+/* ---------- Dashboard ---------- */
+let dashPeriod = 'month';
+function bindDash() { $$('[data-dp]').forEach(b => b.onclick = () => { dashPeriod = b.dataset.dp; $('#dash').outerHTML = dashHtml(); afterRender(); bindDash(); }); }
+function dashHtml() {
+  const now = new Date(), ym = iso(now).slice(0, 7), y = ym.slice(0, 4);
+  const inP = d => dashPeriod === 'all' || (dashPeriod === 'year' ? d.date.slice(0, 4) === y : d.date.slice(0, 7) === ym);
+  const qt = db.docs.filter(d => d.type === 'QT' && !isRevised(d) && inP(d));
+  const sold = qt.filter(d => d.status === 'finish'), wait = qt.filter(d => d.status === 'issued');
+  const val = arr => arr.reduce((a, d) => a + docProfit(d).sale, 0);
+  const prof = sold.reduce((a, d) => a + docProfit(d).profit, 0), cost = sold.reduce((a, d) => a + docProfit(d).cost, 0);
+  const ivWait = db.docs.filter(d => d.type === 'IV' && d.status === 'pending'), rcWait = db.docs.filter(d => d.type === 'RC' && d.status === 'pending');
+  const decided = sold.length + qt.filter(d => d.status === 'cancel').length;
+  return `<div class="card dash" id="dash"><div class="head"><h2>ภาพรวม</h2><div class="seg">${[['month', 'เดือนนี้'], ['year', 'ปีนี้'], ['all', 'ทั้งหมด']].map(([k, n]) => `<button data-dp="${k}" aria-pressed="${dashPeriod === k}" type="button">${n}</button>`).join('')}</div></div>
+    <div class="dgrid">
+      <div class="dk"><span>ออกใบเสนอราคา</span><b>${qt.length} ใบ</b><small>฿${money(val(qt))}</small></div>
+      <div class="dk"><span>ลูกค้าซื้อแล้ว</span><b>${sold.length} ใบ</b><small>฿${money(val(sold))}${qt.length ? ` · ปิดได้ ${pctTxt(sold.length / qt.length * 100)}` : ''}</small></div>
+      <div class="dk hi"><span>กำไรจากที่ขายได้</span><b>฿${money(prof)}</b><small>${cost ? pctTxt(prof / cost * 100) + ' ของต้นทุน' : '-'}</small></div>
+      <div class="dk"><span>รอลูกค้าตอบ</span><b>${wait.length} ใบ</b><small>฿${money(val(wait))}</small></div>
+      <div class="dk"><span>ใบแจ้งหนี้รอส่งของ</span><b>${ivWait.length} ใบ</b><small>฿${money(ivWait.reduce((a, d) => a + totals(d).grand, 0))}</small></div>
+      <div class="dk"><span>ใบเสร็จรอชำระ</span><b>${rcWait.length} ใบ</b><small>฿${money(rcWait.reduce((a, d) => a + totals(d).grand, 0))}</small></div>
+    </div><p class="muted sm" style="margin:0">มูลค่าเป็นราคาขายหลังส่วนลด ก่อน VAT · ไม่นับฉบับที่ถูกแทนด้วยฉบับแก้ไข${decided ? '' : ''}</p></div>`;
 }
 
 /* ---------- Single document ---------- */
@@ -1060,8 +1116,12 @@ function viewDoc() {
           ${isOpen(d) ? `<div class="actions" style="justify-content:stretch">${actionButtons(d)}</div>
             <p class="muted sm" style="margin:0">${d.type === 'RC' ? 'กดยืนยันเมื่อได้รับชำระเงินครบแล้ว' : `กดแล้วระบบจะสร้าง${TYPES[FLOW[FLOW.indexOf(d.type) + 1]].name}ให้อัตโนมัติ`}</p>` :
             `<p class="muted sm" style="margin:0">${d.status === 'cancel' ? 'เอกสารนี้ถูกยกเลิกแล้ว' + (d.cancelReason ? ' · เหตุผล: ' + esc(d.cancelReason) : '') : T.next.done}</p>`}
-          ${d.type === 'QT' ? '<button class="btn small" id="dup" type="button">คัดลอกเป็นใบเสนอราคาใหม่</button>' : ''}
+          <div class="actions" style="justify-content:stretch">${d.status !== 'cancel' ? '<button class="btn small" id="edit" type="button">แก้ไข</button>' : ''}${d.type === 'QT' ? '<button class="btn small" id="dup" type="button">คัดลอกเป็นใบเสนอราคาใหม่</button>' : ''}</div>
         </div>
+        ${(() => { const P = docProfit(d); return `<div class="card"><h2>กำไร (ภายใน)</h2><div class="psum">
+          <div class="ps"><span>ต้นทุนรวม</span><b>฿${money(P.cost)}</b></div><div class="ps"><span>ราคาขายสุทธิ ก่อน VAT</span><b>฿${money(P.sale)}</b></div>
+          <div class="ps big ${P.profit < 0 ? 'neg' : 'pos'}"><span>กำไร</span><b>฿${money(P.profit)} <span class="sm">(${pctTxt(P.pct)})</span></b></div></div>
+          <p class="muted sm" style="margin:0">ไม่แสดงในเอกสาร/PDF</p></div>`; })()}
         <div class="card"><h2>พิมพ์ / ส่งเอกสาร</h2>
           ${d.kind === 'install' ? `<div><div class="muted sm" style="margin-bottom:6px">รูปแบบแสดงราคา</div><div class="seg">
             <button data-pm="breakdown" aria-pressed="${!lump}" type="button">แยกรายการ</button><button data-pm="lump" aria-pressed="${lump}" type="button">ราคารวมก้อนเดียว</button></div></div>` : ''}
@@ -1080,6 +1140,7 @@ function viewDoc() {
     </div></div>`;
   $('#back').onclick = () => go('list', d.type);
   $('#dup')?.addEventListener('click', () => go('new', { from: d.no }));
+  $('#edit')?.addEventListener('click', () => editDialog(d));
   $$('[data-pm]').forEach(b => b.onclick = () => { d.priceMode = b.dataset.pm; save(); const y = scrollY; viewDoc(); afterRender(); scrollTo(0, y); glide($('.paper')); });
   $('#pdf').onclick = () => previewDoc(d, 'pdf');
   $('#print').onclick = () => previewDoc(d, 'print');
@@ -1166,50 +1227,60 @@ function totalsRows(d, t) {
 }
 
 /* ---------- New quotation (the only place documents are created) ---------- */
-let draft;
+let draft, tplGroup = '', tplQ = '';
 function newDraft(kind) {
   const S = db.settings, inst = kind === 'install';
   return { kind, date: iso(new Date()), extra: iso(new Date(Date.now() + 15 * 864e5)), custId: '', project: '', vatMode: 'ex', discount: 0, priceMode: 'breakdown',
     system: '', lumpTitle: '', sections: inst ? [{ name: 'Main Equipment', lot: false }, { name: 'Mounting', lot: true }, { name: 'Accessories', lot: true }] : [],
-    warranty: S.warranty || '', remark: S.remark || '', pay: JSON.parse(JSON.stringify(inst ? S.payInstall : S.payGeneral)), lines: [] };
+    warranty: S.warranty || '', remark: S.remark || '', pay: JSON.parse(JSON.stringify(inst ? S.payInstall : S.payGeneral)), lines: [],
+    pct: 0, priced: false, _pick: inst };
 }
 function viewNew() {
   const today = iso(new Date());
-  if (param && param.from) {
+  if (param && param.edit) {
+    const src = findDoc(param.edit);
+    draft = { ...JSON.parse(JSON.stringify(src)), _edit: { no: src.no, mode: param.mode }, priced: true, pct: src.pct ?? 0 };
+  } else if (param && param.from) {
     const src = findDoc(param.from);
-    draft = { ...JSON.parse(JSON.stringify(src)), date: today, extra: iso(new Date(Date.now() + 15 * 864e5)), ref: '' };
+    draft = { ...JSON.parse(JSON.stringify(src)), date: today, extra: iso(new Date(Date.now() + 15 * 864e5)), ref: '', priced: true, pct: src.pct ?? 0 };
+    delete draft.cancelReason; delete draft.revOf;
   } else if (!draft || (param && param.kind)) {
     draft = newDraft(param?.kind || 'general');
-    if (param?.tpl) applyTemplate(db.templates.find(t => t.id === param.tpl), true);
+    if (param?.tpl) { applyTemplate(db.templates.find(t => t.id === param.tpl), true); draft._pick = false; }
   }
   param = null; ed = draft;
   draft.sections = draft.sections || []; draft.pay = draft.pay || [];
-  const inst = draft.kind === 'install';
+  if (draft._pick) return viewTplPick();
+  const inst = draft.kind === 'install', E = draft._edit, type = draft.type || 'QT', T = TYPES[type];
+  const no = E ? (E.mode === 'fix' ? E.no : revNo(E.no)) : nextDocNo('QT', draft.date, draft.kind);
+  const title = E ? (E.mode === 'fix' ? `แก้ไข${T.name} ${E.no}` : `ออกฉบับแก้ไขของ ${E.no}`) : inst ? 'ใบเสนอราคางานติดตั้ง' : 'ใบเสนอราคาขายสินค้า';
   $('#main').innerHTML = `<div class="view">
-    <div class="head"><div><button class="btn ghost" id="back" type="button">← ใบเสนอราคาทั้งหมด</button><h1>${inst ? 'ใบเสนอราคางานติดตั้ง' : 'ใบเสนอราคาขายสินค้า'}</h1>
-      <p>เลขที่จะได้ <b id="no" style="color:var(--accent)">${nextDocNo('QT', draft.date, draft.kind)}</b> · รันอัตโนมัติตามเดือน</p></div></div>
-    ${inst ? `<div class="card"><div class="head"><h2>เลือกเทมเพลตงาน</h2><button class="btn small" id="tplNew" type="button">+ สร้างเทมเพลต</button></div>
-      <div class="tpls">${db.templates.map(t => `<button class="tplcard" data-tpl="${t.id}" aria-pressed="${draft.tplId === t.id}" type="button">
-        <span class="kind">${esc(t.group)}</span><b>${esc(t.name)}</b><span class="muted sm">${esc(t.desc || '')}</span>
-        <span class="sm">${t.lines.length} รายการ · ประมาณ <b>฿${money(tplTotal(t))}</b></span></button>`).join('') || '<div class="empty">ยังไม่มีเทมเพลต กด “สร้างเทมเพลต”</div>'}</div>
-      <p class="muted sm" style="margin:0">เลือกแล้ว หมวดอุปกรณ์ รายการ เงื่อนไขรับประกัน และหมายเหตุ จะถูกเติมให้อัตโนมัติ แก้ไขต่อได้</p></div>` : ''}
+    <div class="head"><div><button class="btn ghost" id="back" type="button">← ${E ? 'กลับไปที่เอกสาร' : 'ใบเสนอราคาทั้งหมด'}</button><h1>${esc(title)}</h1>
+      <p>${E ? (E.mode === 'fix' ? 'บันทึกทับเลขเดิม' : 'เลขฉบับแก้ไข') : 'เลขที่จะได้'} <b id="no" style="color:var(--accent)">${esc(no)}</b>${E && E.mode === 'rev' ? ` · ฉบับ ${esc(E.no)} จะถูกเก็บเป็นประวัติ (ยกเลิก)` : E ? '' : ' · รันอัตโนมัติ'}</p></div></div>
+    ${inst && !E ? `<div class="tplbar"><span class="muted sm">เทมเพลต</span><b>${esc(draft.tplName || 'ไม่ใช้เทมเพลต')}</b><button class="btn small" id="tplChange" type="button">เปลี่ยนเทมเพลต</button></div>` : ''}
     <div class="card"><h2>ลูกค้า</h2><div id="custBox"></div>
       <div class="grid">
         <label class="f">โครงการ / อ้างอิง <input id="project" value="${esc(draft.project)}" placeholder="เช่น ติดตั้งโซลาร์รูฟ 5kW"></label>
         <label class="f">วันที่เอกสาร <input id="date" type="date" value="${draft.date}"></label>
-        <label class="f">ยืนราคาถึง <input id="extra" type="date" value="${draft.extra}"></label>
+        ${T.extra ? `<label class="f">${esc(T.extra)} <input id="extra" type="date" value="${draft.extra || ''}"></label>` : ''}
       </div></div>
-    <div class="card"><div class="head"><h2>รายการ</h2>
+    <div class="card"><div class="head"><h2>1. รายการและต้นทุน</h2>
         ${inst ? `<div class="seg" id="pmSeg"><button data-pm="breakdown" aria-pressed="${draft.priceMode !== 'lump'}" type="button">แยกราคารายการ</button><button data-pm="lump" aria-pressed="${draft.priceMode === 'lump'}" type="button">ราคารวมก้อนเดียว</button></div>` : ''}
         <select id="vat" style="width:auto" aria-label="รูปแบบ VAT"><option value="ex">ราคาไม่รวม VAT (+7%)</option><option value="in">ราคารวม VAT แล้ว</option><option value="none">ไม่มี VAT</option></select></div>
       ${inst ? `<div class="grid">
         <label class="f">หัวข้อระบบ (แถบสีบนตาราง) <input id="system" value="${esc(draft.system)}" placeholder="เช่น Solar system Capacity 5.5 kWp (String)"></label>
         <label class="f">ชื่อรายการเหมารวม (ใช้ตอนแสดงราคารวมก้อนเดียว) <input id="lumpTitle" value="${esc(draft.lumpTitle)}" placeholder="เช่น Solar Roof top system Installation"></label></div>` : ''}
-      ${lineEditorHtml(inst)}
-      <div class="grid" style="align-items:start">
-        <div></div>
-        <div><div class="totals" id="tot"></div><label class="f" style="max-width:360px;margin:10px 0 0 auto">ส่วนลดพิเศษ (บาท) <input id="disc" type="number" min="0" step="0.01" value="${draft.discount}" inputmode="decimal"></label></div>
-      </div>
+      ${lineEditorHtml(inst, 'quote')}
+    </div>
+    <div class="card"><h2>2. ใส่กำไร</h2>
+      <div class="mkbulk"><label class="f" style="flex:0 1 180px">กำไร % (ทุกรายการ) <input id="pct" type="number" step="0.1" value="${draft.pct ?? 0}" inputmode="decimal"></label>
+        <button class="btn primary" id="pctApply" type="button">ใช้กับทุกรายการ</button></div>
+      <p class="muted sm" style="margin:0">กดแล้วช่อง “ราคาขาย/หน่วย” ในตารางด้านบนจะเท่ากับ ต้นทุน + กำไร% แก้ราคาขายเองรายแถวได้ (เช่น ไม่เอากำไร ให้ใส่เท่าต้นทุน) · รายการต้นทุน 0 คือรวมในชุด ไม่คิดกำไร</p>
+      <label class="f" style="max-width:280px">ส่วนลดพิเศษ (บาท) <input id="disc" type="number" min="0" step="0.01" value="${draft.discount}" inputmode="decimal"></label>
+    </div>
+    <div class="card"><h2>3. สรุปใบเสนอราคา</h2>
+      <div class="psum" id="psum"></div>
+      <div class="totals" id="tot"></div>
       <div class="words" id="words"></div>
     </div>
     <div class="card"><h2>เงื่อนไขในเอกสาร</h2>
@@ -1220,26 +1291,59 @@ function viewNew() {
       <div class="f" style="display:grid;gap:8px"><span class="muted sm" style="font-weight:500">การชำระเงิน / Payment terms</span><div id="payBox" style="display:grid;gap:8px"></div>
         <div><button class="btn small" id="payAdd" type="button">+ เพิ่มงวดชำระ</button></div></div>
     </div>
-    ${inst ? '<button class="btn ghost" id="asTpl" type="button" style="justify-self:start">บันทึกรายการชุดนี้เป็นเทมเพลตใหม่</button>' : ''}
-    <div class="actions mbar-form"><button class="btn" id="clear" type="button">ล้างฟอร์ม</button><button class="btn primary" id="ssave" type="button">ออกใบเสนอราคา</button></div>
+    ${inst && !E ? '<button class="btn ghost" id="asTpl" type="button" style="justify-self:start">บันทึกรายการชุดนี้เป็นเทมเพลตใหม่</button>' : ''}
+    <div class="actions mbar-form"><button class="btn" id="clear" type="button">${E ? 'ยกเลิกการแก้ไข' : 'ล้างฟอร์ม'}</button><button class="btn primary" id="ssave" type="button">${E ? (E.mode === 'fix' ? 'บันทึกการแก้ไข' : 'ออกฉบับแก้ไข') : 'ออกใบเสนอราคา'}</button></div>
   </div>`;
   $('#vat').value = draft.vatMode;
-  $('#back').onclick = () => go('list', 'QT');
-  ['project', 'date', 'extra', 'remark', 'warranty', 'system', 'lumpTitle'].forEach(id => { const el = $('#' + id); if (el) el.oninput = () => { syncDraft(); if (id === 'date') $('#no').textContent = nextDocNo('QT', draft.date, draft.kind); }; });
-  $('#vat').onchange = () => { draft.vatMode = $('#vat').value; drawTotals(); drawPay(); };
+  $('#back').onclick = () => E ? go('doc', E.no) : go('list', 'QT');
+  ['project', 'date', 'extra', 'remark', 'warranty', 'system', 'lumpTitle'].forEach(id => { const el = $('#' + id); if (el) el.oninput = () => { syncDraft(); if (id === 'date' && !E) $('#no').textContent = nextDocNo('QT', draft.date, draft.kind); }; });
+  $('#vat').onchange = () => { draft.vatMode = $('#vat').value; drawTotals(); };
   $$('#pmSeg [data-pm]').forEach(b => b.onclick = () => { draft.priceMode = b.dataset.pm; $$('#pmSeg [data-pm]').forEach(x => x.setAttribute('aria-pressed', x === b)); afterRender();
     toast(b.dataset.pm === 'lump' ? 'ลูกค้าจะเห็นรายการอุปกรณ์ แต่ราคาเป็นก้อนเดียว' : 'ลูกค้าจะเห็นราคาแยกทุกรายการ'); });
-  $('#disc').oninput = () => { draft.discount = +$('#disc').value || 0; drawTotals(); drawPay(); };
+  $('#disc').oninput = () => { draft.discount = +$('#disc').value || 0; drawTotals(); };
+  $('#pctApply').onclick = () => {
+    draft.pct = +$('#pct').value || 0; draft.priced = true;
+    draft.lines.forEach(l => { const c = +(l.cost ?? l.price) || 0; l.cost = c; l.price = r2(c * (1 + draft.pct / 100)); });
+    drawLines(); toast(`ใส่กำไร ${pctTxt(draft.pct)} ให้ทุกรายการแล้ว`);
+  };
   $('#payAdd').onclick = () => { draft.pay.push({ text: '', pct: 0 }); drawPay(); $$('#payBox [data-pt]').pop()?.focus(); };
-  $('#clear').onclick = () => go('new', { kind: draft.kind });
+  $('#clear').onclick = () => E ? (draft = null, go('doc', E.no)) : go('new', { kind: draft.kind });
   $('#ssave').onclick = commit;
-  $$('[data-tpl]').forEach(b => b.onclick = () => { syncDraft(); applyTemplate(db.templates.find(t => t.id === b.dataset.tpl)); viewNew(); afterRender(); glide($('#main')); });
-  $('#tplNew')?.addEventListener('click', () => { syncDraft(); go('tpl', { id: 'new', back: true }); });
+  $('#tplChange')?.addEventListener('click', () => { syncDraft(); draft._pick = true; viewNew(); afterRender(); glide($('#main')); });
   $('#asTpl')?.addEventListener('click', () => { syncDraft(); if (!draft.lines.length) return toast('ยังไม่มีรายการให้บันทึก');
     go('tpl', { id: 'new', back: true, from: draft }); });
   drawCust(); drawLines(); drawPay(); setupProductPicker();
 }
-function lineEditorHtml(withSec) {
+/* Step 0 for installation quotes: pick one template from a grouped, searchable list */
+function viewTplPick() {
+  const groups = [...new Set(db.templates.map(t => t.group || 'อื่นๆ').reverse())]; // newest group first
+  $('#main').innerHTML = `<div class="view">
+    <div class="head"><div><button class="btn ghost" id="back" type="button">← ใบเสนอราคาทั้งหมด</button><h1>เลือกเทมเพลตงานติดตั้ง</h1><p>เลือก 1 ชุดเพื่อเริ่มใบเสนอราคา</p></div>
+      <button class="btn small" id="tplNew" type="button">+ สร้างเทมเพลต</button></div>
+    <div class="head"><div class="seg">${[['', 'ทั้งหมด'], ...groups.map(g => [g, g])].map(([k, n]) => `<button data-tg="${esc(k)}" aria-pressed="${tplGroup === k}" type="button">${esc(n)}</button>`).join('')}</div>
+      <input id="tq" type="search" placeholder="ค้นหาเทมเพลต" value="${esc(tplQ)}" style="max-width:300px"></div>
+    <div class="card tpllist" id="tplList"></div>
+    <button class="btn ghost" id="noTpl" type="button" style="justify-self:start">เริ่มแบบไม่ใช้เทมเพลต</button>
+  </div>`;
+  const drawList = () => {
+    const q = tplQ.toLowerCase(), list = db.templates.filter(t => (!tplGroup || t.group === tplGroup) && (!q || (t.name + (t.desc || '')).toLowerCase().includes(q)));
+    $('#tplList').innerHTML = groups.filter(g => list.some(t => t.group === g)).map(g => `<div class="tgh">${esc(g)}</div>` + list.filter(t => t.group === g).map(t => `
+      <button class="trow" data-tpl="${t.id}" type="button"><span class="tn"><b>${esc(t.name)}</b><span class="muted sm">${esc(t.desc || '')}</span></span>
+        <span class="tm"><span class="sm">${t.lines.length} รายการ</span><span class="muted sm">ทุน ฿${money(tplTotal(t))}</span></span></button>`).join('')).join('')
+      || '<div class="empty">ไม่พบเทมเพลต</div>';
+    $$('[data-tpl]').forEach(b => b.onclick = () => { applyTemplate(db.templates.find(t => t.id === b.dataset.tpl)); draft._pick = false; viewNew(); afterRender(); glide($('#main')); });
+  };
+  drawList();
+  $('#back').onclick = () => go('list', 'QT');
+  $$('[data-tg]').forEach(b => b.onclick = () => { tplGroup = b.dataset.tg; $$('[data-tg]').forEach(x => x.setAttribute('aria-pressed', x === b)); afterRender(); drawList(); glide($('#tplList')); });
+  $('#tq').oninput = e => { tplQ = e.target.value; drawList(); };
+  $('#noTpl').onclick = () => { draft._pick = false; viewNew(); afterRender(); glide($('#main')); };
+  $('#tplNew').onclick = () => go('tpl', { id: 'new', back: true });
+}
+function lineEditorHtml(withSec, mode = 'cost') {
+  const head = mode === 'quote'
+    ? '<th>รายการ</th><th class="num">จำนวน</th><th class="num">ต้นทุน/หน่วย</th><th class="num">ราคาขาย/หน่วย</th><th class="num">กำไร</th><th class="num">รวมราคาขาย</th><th></th>'
+    : '<th>รายการ</th><th class="num">จำนวน</th><th class="num">ต้นทุน/หน่วย</th><th class="num">รวมต้นทุน</th><th></th>';
   return `<div class="addline${withSec ? ' withsec' : ''}">
         <label class="f">หมวดสินค้า ${catSelect('pc', pickCat)}</label>
         ${withSec ? '<label class="f">ใส่ในหมวดเอกสาร <select id="psec"></select></label>' : ''}
@@ -1247,8 +1351,8 @@ function lineEditorHtml(withSec) {
         <label class="f">จำนวน <input id="pq" type="number" min="0" step="any" value="1" inputmode="decimal"></label>
         <button class="btn primary" id="padd" type="button">+ เพิ่มรายการ</button>
       </div>
-      <div class="tablewrap"><table class="lines">
-        <thead><tr><th>รายการ</th><th class="num">จำนวน</th><th class="num">ราคา/หน่วย</th><th class="num">จำนวนเงิน</th><th></th></tr></thead>
+      <div class="tablewrap"><table class="lines ${mode}">
+        <thead><tr>${head}</tr></thead>
         <tbody id="lines"></tbody></table></div>
       ${withSec ? '<div><button class="btn small" id="addSec" type="button">+ เพิ่มหมวดในเอกสาร</button></div>' : ''}`;
 }
@@ -1320,34 +1424,56 @@ function setupProductPicker() {
 }
 function addLine(p) {
   const qty = +$('#pq').value || 1, sec = ed.sections?.length ? +($('#psec')?.value || 0) : undefined;
-  const ex = ed.lines.find(l => l.pid === p.id && l.price === p.price && l.sec === sec);
-  if (ex) ex.qty += qty; else ed.lines.push({ pid: p.id, name: p.name, unit: p.unit, qty, price: p.price, sec });
+  const cost = +(p.cost ?? p.price) || 0, price = ed === draft ? r2(cost * (1 + (+draft.pct || 0) / 100)) : cost;
+  const ex = ed.lines.find(l => l.pid === p.id && l.sec === sec);
+  if (ex) ex.qty += qty; else ed.lines.push({ pid: p.id, name: p.name, unit: p.unit, qty, cost, price, sec });
   $('#pq').value = 1; drawLines(); toast(`เพิ่ม ${p.name} แล้ว`);
 }
+const quoteMode = () => ed === draft;
+function profitCell(l) {
+  const c = +(l.cost ?? l.price) || 0, pr = +l.price || 0;
+  if (!c && !pr) return '<span class="muted sm">รวมในชุด</span>';
+  const g = pr - c;
+  return `<span class="${g < 0 ? 'neg' : g > 0 ? 'pos' : ''}">${money(g)}<br><span class="sm">${c ? pctTxt(g / c * 100) : '-'}</span></span>`;
+}
 function lineRow(l, i) {
+  const cost = l.cost ?? l.price;
+  if (!quoteMode()) return `<tr>
+    <td class="n"><b style="font-weight:600">${esc(l.name)}</b><div class="muted sm">${esc(l.unit)}</div></td>
+    <td class="num" data-l="จำนวน"><input class="q num" type="number" min="0" step="any" value="${l.qty}" data-i="${i}" data-k="qty" aria-label="จำนวน"></td>
+    <td class="num" data-l="ต้นทุน/หน่วย"><input class="p num" type="number" min="0" step="0.01" value="${cost}" data-i="${i}" data-k="cost" aria-label="ต้นทุนต่อหน่วย"></td>
+    <td class="num amt">${money(l.qty * cost)}</td>
+    <td><button class="icon-btn" data-del="${i}" type="button" aria-label="ลบรายการ">✕</button></td></tr>`;
   return `<tr>
     <td class="n"><b style="font-weight:600">${esc(l.name)}</b><div class="muted sm">${esc(l.unit)}</div></td>
-    <td class="num"><input class="q num" type="number" min="0" step="any" value="${l.qty}" data-i="${i}" data-k="qty" aria-label="จำนวน"></td>
-    <td class="num"><input class="p num" type="number" min="0" step="0.01" value="${l.price}" data-i="${i}" data-k="price" aria-label="ราคาต่อหน่วย"></td>
-    <td class="num amt">${money(l.qty * l.price)}</td>
+    <td class="num" data-l="จำนวน"><input class="q num" type="number" min="0" step="any" value="${l.qty}" data-i="${i}" data-k="qty" aria-label="จำนวน"></td>
+    <td class="num" data-l="ต้นทุน/หน่วย"><input class="p num" type="number" min="0" step="0.01" value="${cost}" data-i="${i}" data-k="cost" aria-label="ต้นทุนต่อหน่วย"></td>
+    <td class="num" data-l="ราคาขาย/หน่วย"><input class="p num sale" type="number" min="0" step="0.01" value="${l.price}" data-i="${i}" data-k="price" aria-label="ราคาขายต่อหน่วย"></td>
+    <td class="num prof" data-l="กำไร/หน่วย">${profitCell(l)}</td>
+    <td class="num amt" data-l="รวมราคาขาย">${money(l.qty * l.price)}</td>
     <td><button class="icon-btn" data-del="${i}" type="button" aria-label="ลบรายการ">✕</button></td></tr>`;
 }
 function drawLines() {
-  const secs = ed.sections || [];
+  const secs = ed.sections || [], span = quoteMode() ? 7 : 5;
   let html = '';
   if (secs.length) secs.forEach((sc, si) => {
-    html += `<tr class="sechead"><td colspan="5"><div class="sh"><span class="sn">${si + 1}</span><input class="secname" data-s="${si}" value="${esc(sc.name)}" aria-label="ชื่อหมวด">
+    html += `<tr class="sechead"><td colspan="${span}"><div class="sh"><span class="sn">${si + 1}</span><input class="secname" data-s="${si}" value="${esc(sc.name)}" aria-label="ชื่อหมวด">
       <label class="lot"><input type="checkbox" data-lot="${si}" ${sc.lot ? 'checked' : ''}>แสดงเป็น 1 LOT</label><button class="icon-btn" data-sdel="${si}" type="button" aria-label="ลบหมวด">✕</button></div></td></tr>`;
     html += ed.lines.map((l, i) => [l, i]).filter(([l]) => (l.sec ?? 0) === si).map(([l, i]) => lineRow(l, i)).join('')
-      || '<tr><td colspan="5" class="muted sm" style="padding:8px 12px">ยังไม่มีรายการในหมวดนี้</td></tr>';
+      || `<tr><td colspan="${span}" class="muted sm" style="padding:8px 12px">ยังไม่มีรายการในหมวดนี้</td></tr>`;
   });
   else html = ed.lines.map(lineRow).join('');
-  $('#lines').innerHTML = html || `<tr><td colspan="5"><div class="empty">ยังไม่มีรายการ · ค้นหาสินค้าด้านบนแล้วกด “เพิ่มรายการ”</div></td></tr>`;
+  $('#lines').innerHTML = html || `<tr><td colspan="${span}"><div class="empty">ยังไม่มีรายการ · ค้นหาสินค้าด้านบนแล้วกด “เพิ่มรายการ”</div></td></tr>`;
   const ps = $('#psec');
   if (ps) { const v = ps.value; ps.innerHTML = secs.map((sc, si) => `<option value="${si}">${si + 1}. ${esc(sc.name)}</option>`).join(''); if (v && +v < secs.length) ps.value = v; }
   $$('#lines input[data-k]').forEach(inp => inp.oninput = () => {
-    const l = ed.lines[inp.dataset.i]; l[inp.dataset.k] = +inp.value || 0;
-    inp.closest('tr').querySelector('.amt').textContent = money(l.qty * l.price); drawTotals();
+    const l = ed.lines[inp.dataset.i], k = inp.dataset.k; l[k] = +inp.value || 0;
+    if (!quoteMode() && k === 'cost') l.price = l.cost;
+    if (quoteMode() && k === 'price') draft.priced = true;
+    const tr = inp.closest('tr');
+    tr.querySelector('.amt').textContent = money(l.qty * (quoteMode() ? l.price : l.cost));
+    if (tr.querySelector('.prof')) tr.querySelector('.prof').innerHTML = profitCell(l);
+    drawTotals();
   });
   $$('#lines [data-del]').forEach(b => b.onclick = () => { ed.lines.splice(+b.dataset.del, 1); drawLines(); });
   $$('#lines .secname').forEach(inp => inp.oninput = () => { secs[inp.dataset.s].name = inp.value; const o = $(`#psec option[value="${inp.dataset.s}"]`); if (o) o.textContent = `${+inp.dataset.s + 1}. ${inp.value}`; });
@@ -1361,12 +1487,38 @@ function drawLines() {
   const add = $('#addSec'); if (add) add.onclick = () => { secs.push({ name: 'หมวดใหม่', lot: true }); ed.sections = secs; drawLines(); $$('#lines .secname').pop()?.select(); };
   drawTotals();
 }
-function drawTotals() { const t = totals(ed), tot = $('#tot'); if (!tot) return; tot.innerHTML = totalsRows(ed, t); $('#words').textContent = `(${bahtText(t.grand)})`; if (ed === draft) drawPay(); }
+function drawTotals() {
+  const t = totals(ed), tot = $('#tot'); if (!tot) return;
+  tot.innerHTML = totalsRows(ed, t); $('#words').textContent = `(${bahtText(t.grand)})`;
+  if (ed !== draft) return;
+  drawPay();
+  const P = docProfit(draft), save = $('#ssave');
+  $('#psum').innerHTML = `<div class="ps"><span>ต้นทุนรวม</span><b>฿${money(P.cost)}</b></div>
+    <div class="ps"><span>ราคาขายรวม (หลังส่วนลด ก่อน VAT)</span><b>฿${money(P.sale)}</b></div>
+    <div class="ps big ${P.profit < 0 ? 'neg' : 'pos'}"><span>กำไร</span><b>฿${money(P.profit)} <span class="sm">(${pctTxt(P.pct)})</span></b></div>
+    <div class="muted sm">สำหรับภายใน ไม่แสดงในเอกสารที่ส่งลูกค้า</div>
+    ${draft.priced ? '' : '<div class="psw">ยังไม่ได้ใส่กำไร: ใส่ % ในขั้นที่ 2 แล้วกด “ใช้กับทุกรายการ” (ขายเท่าทุนให้ใส่ 0) หรือแก้ราคาขายเองในตาราง</div>'}`;
+  if (save) { save.disabled = !draft.priced; save.title = draft.priced ? '' : 'ใส่กำไรก่อน'; }
+}
 function commit() {
   syncDraft();
+  if (!draft.priced) { toast('ใส่กำไรก่อน: ขั้นที่ 2 กด “ใช้กับทุกรายการ” (ใส่ 0 ได้)'); $('#pct')?.focus(); return; }
   if (!cust(draft.custId)) { toast('กรุณาเลือกลูกค้าจากฐานข้อมูล'); $('#cs')?.focus(); return; }
   if (!draft.lines.length) { toast('กรุณาเพิ่มรายการอย่างน้อย 1 รายการ'); $('#ps').focus(); return; }
-  const doc = { ...draft, type: 'QT', no: nextDocNo('QT', draft.date, draft.kind), status: 'issued', discount: +draft.discount || 0, uid: uid() };
+  const data = { ...draft, discount: +draft.discount || 0 }; delete data._edit; delete data._pick; delete data.priced;
+  const E = draft._edit;
+  if (E) {
+    const old = findDoc(E.no);
+    if (E.mode === 'fix') {
+      Object.assign(old, data, { no: old.no, uid: old.uid, type: old.type, status: old.status, ref: old.ref });
+      save(); draft = null; toast(`บันทึกการแก้ไข ${old.no} แล้ว`); return go('doc', old.no);
+    }
+    const no = revNo(old.no), nd = { ...data, no, uid: uid(), type: old.type, status: TYPES[old.type].open, ref: old.ref, revOf: old.no };
+    delete nd.cancelReason;
+    old.status = 'cancel'; old.cancelReason = 'มีฉบับแก้ไข ' + no;
+    db.docs.push(nd); save(); draft = null; toast(`ออกฉบับแก้ไข ${no} แล้ว`); return go('doc', no);
+  }
+  const doc = { ...data, type: 'QT', no: nextDocNo('QT', draft.date, draft.kind), status: 'issued', uid: uid() };
   if (doc.kind !== 'install') { delete doc.tplId; delete doc.tplName; }
   db.docs.push(doc); save(); draft = null;
   toast(`ออกใบเสนอราคา ${doc.no} แล้ว`);
@@ -1455,6 +1607,21 @@ async function exportPdf(d, mode) {
   return saveFile(file);
 }
 
+/* Edit an issued document: fix in place (typo) or issue a revision -R1, -R2 (customer asked for changes) */
+function editDialog(d) {
+  const fixOk = d.status !== 'cancel' && !(d.type === 'RC' && d.status === 'finish'), revOk = isOpen(d);
+  const dlg = $('#dlg'), f = $('#dlgForm');
+  f.innerHTML = `<h2>แก้ไข ${esc(d.no)}</h2>
+    <button class="kindopt" data-em="fix" type="button" ${fixOk ? '' : 'disabled'}><span class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4l10-10-4-4L4 16z"/><path d="M13 7l4 4"/></svg></span>
+      <span><b>แก้ไขฉบับเดิม</b><span class="muted sm">${fixOk ? 'กรอกผิด แก้แล้วบันทึกทับ ใช้เลขเดิม ' + esc(d.no) : 'ใบเสร็จที่ยืนยันชำระเงินแล้วแก้ทับไม่ได้'}</span></span></button>
+    <button class="kindopt" data-em="rev" type="button" ${revOk ? '' : 'disabled'}><span class="ic"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 14h6M13 11v6"/></svg></span>
+      <span><b>ออกฉบับแก้ไข (Revise)</b><span class="muted sm">${revOk ? 'ลูกค้าขอแก้ ได้เลข ' + esc(revNo(d.no)) + ' ฉบับเดิมเก็บเป็นประวัติ' : 'ทำได้เฉพาะเอกสารที่ยังรอดำเนินการ (ยังไม่ได้ส่งต่อขั้นถัดไป)'}</span></span></button>
+    <div class="actions"><button class="btn" value="cancel">ปิด</button></div>`;
+  f.onsubmit = null;
+  $$('[data-em]', f).forEach(b => b.onclick = () => { dlg.close(); go('new', { edit: d.no, mode: b.dataset.em }); });
+  dlg.showModal();
+}
+
 /* ---------- Quotation kinds & templates ---------- */
 function pickKind() {
   const dlg = $('#dlg'), f = $('#dlgForm');
@@ -1466,12 +1633,25 @@ function pickKind() {
   $$('[data-k]', f).forEach(b => b.onclick = () => { dlg.close(); go('new', { kind: b.dataset.k }); });
   dlg.showModal();
 }
-const tplLine = l => { const p = db.products.find(x => x.id === l.pid); return p ? { pid: p.id, name: p.name, unit: p.unit, qty: l.qty, price: p.price, sec: l.sec } : null; };
+const tplLine = l => { const p = db.products.find(x => x.id === l.pid); const c = p ? +(l.cost ?? p.cost ?? p.price) || 0 : 0; return p ? { pid: p.id, name: p.name, unit: p.unit, qty: l.qty, cost: c, price: c, sec: l.sec } : null; };
 /* Selling price from cost + profit: markup { type: 'pct' | 'amt', value } */
 const r2 = n => Math.round(n * 100) / 100;
 const priceFrom = (cost, mk) => !mk ? +cost || 0 : r2(mk.type === 'amt' ? (+cost || 0) + (+mk.value || 0) : (+cost || 0) * (1 + (+mk.value || 0) / 100));
 const marginTxt = p => p.cost && p.price ? `${money(p.price - p.cost)} (${Math.round((p.price - p.cost) / p.cost * 100)}%)` : '-';
-const tplTotal = t => t.lines.map(tplLine).filter(Boolean).reduce((s, l) => s + l.qty * l.price, 0);
+const tplTotal = t => t.lines.map(tplLine).filter(Boolean).reduce((s, l) => s + l.qty * l.cost, 0);
+/* Profit of a document: selling price after discount (before VAT) minus the cost captured on each line */
+function docProfit(d) {
+  const t = totals(d), cost = d.lines.reduce((a, l) => a + (+l.qty || 0) * (+(l.cost ?? l.price) || 0), 0);
+  const sale = d.vatMode === 'in' ? t.base : t.after;
+  return { cost, sale, profit: sale - cost, pct: cost ? (sale - cost) / cost * 100 : 0 };
+}
+const pctTxt = n => (Math.round(n * 10) / 10).toLocaleString('en-US') + '%';
+const isRevised = d => d.status === 'cancel' && /^มีฉบับแก้ไข/.test(d.cancelReason || '');
+function revNo(no) {
+  const base = no.replace(/-R\d+$/, ''), rx = new RegExp('^' + base.replace(/[-]/g, '\\-') + '-R(\\d+)$');
+  const n = db.docs.reduce((m, x) => { const r = rx.exec(x.no); return r ? Math.max(m, +r[1]) : m; }, 0);
+  return base + '-R' + (n + 1);
+}
 const tplCost = t => t.lines.reduce((s, l) => { const p = db.products.find(x => x.id === l.pid); return s + (p ? l.qty * (p.cost ?? p.price) : 0); }, 0);
 function applyTemplate(t, silent) {
   if (!t) return;
@@ -1491,7 +1671,7 @@ function viewTemplates() {
       <div class="avatar"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18v3h3l6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.6-.6-.6-2.6z"/></svg></div>
       <div style="min-width:0"><div class="t"><b>${esc(t.name)}</b><span class="kind">${esc(t.group)}</span></div>
         <div class="muted sm">${esc(t.desc || '')}</div><div class="code">${t.lines.length} รายการ</div></div>
-      <div class="right"><span class="amt">฿${money(tplTotal(t))}</span><span class="muted sm">ราคาขาย ก่อน VAT · ต้นทุน ฿${money(tplCost(t))}${tplTotal(t) > tplCost(t) ? ` · กำไร ${Math.round((tplTotal(t) - tplCost(t)) / tplTotal(t) * 100)}%` : tplTotal(t) === tplCost(t) ? ' · ยังไม่ได้ตั้งราคาขาย' : ''}</span></div>
+      <div class="right"><span class="amt">฿${money(tplTotal(t))}</span><span class="muted sm">ต้นทุนรวม ก่อน VAT</span></div>
       <div class="acts"><button class="btn small" data-edit="${t.id}" type="button">แก้ไข</button><button class="btn small primary" data-use="${t.id}" type="button">ใช้เทมเพลตนี้ →</button></div>
     </div>`).join('') || '<div class="empty">ยังไม่มีเทมเพลต</div>'}</div></div>`;
   $('#add').onclick = () => go('tpl', { id: 'new' });
@@ -1503,9 +1683,9 @@ let tdraft;
 function viewTpl() {
   const P = param || { id: 'new' }, src = db.templates.find(t => t.id === P.id), f = P.from;
   tdraft = src ? JSON.parse(JSON.stringify(src))
-    : f ? { id: null, name: f.project || '', group: 'โซลาร์เซลล์', desc: '', system: f.system || '', lumpTitle: f.lumpTitle || '', warranty: f.warranty || '', remark: f.remark || '',
+    : f ? { id: null, name: f.project || '', group: 'ระบบโซลาร์ (Solar System)', desc: '', system: f.system || '', lumpTitle: f.lumpTitle || '', warranty: f.warranty || '', remark: f.remark || '',
         sections: JSON.parse(JSON.stringify(f.sections || [])), lines: f.lines.map(l => ({ pid: l.pid, qty: l.qty, sec: l.sec })) }
-    : { id: null, name: '', group: 'โซลาร์เซลล์', desc: '', system: '', lumpTitle: '', warranty: db.settings.warranty || '', remark: db.settings.remark || '',
+    : { id: null, name: '', group: 'ระบบโซลาร์ (Solar System)', desc: '', system: '', lumpTitle: '', warranty: db.settings.warranty || '', remark: db.settings.remark || '',
         sections: [{ name: 'Main Equipment', lot: false }, { name: 'Mounting', lot: true }, { name: 'Accessories', lot: true }], lines: [] };
   tdraft.lines = tdraft.lines.map(tplLine).filter(Boolean); tdraft.sections = tdraft.sections || []; tdraft.vatMode = 'ex'; tdraft.discount = 0;
   ed = tdraft;
@@ -1525,36 +1705,19 @@ function viewTpl() {
         <label class="f">Warranty / การรับประกัน (บรรทัดละข้อ) <textarea id="tw" rows="4">${esc(tdraft.warranty)}</textarea></label>
         <label class="f">หมายเหตุ / Remark (บรรทัดละข้อ) <textarea id="tr" rows="4">${esc(tdraft.remark)}</textarea></label>
       </div></div>
-    <div class="card"><h2>กำไรของชุดนี้</h2>
-      <div class="muted sm" id="tmkSum"></div>
-      <div class="mkbulk"><span class="mkrow"><input id="tmkVal" type="number" step="0.01" placeholder="เช่น 15" inputmode="decimal">
-        <select id="tmkType" aria-label="หน่วยกำไร"><option value="pct">% ของต้นทุน</option><option value="amt">บาท ทั้งชุด</option></select></span>
-        <button class="btn primary" id="tmkApply" type="button">คำนวณราคาขาย</button></div>
-      <p class="muted sm" style="margin:0">ระบบตั้งราคาขายของสินค้าที่มีต้นทุนในชุดนี้ (กำไรเป็นบาทจะเฉลี่ยตามสัดส่วนต้นทุน) · ราคาขายเก็บที่สินค้า ถ้าสินค้าตัวเดียวกันอยู่ในเทมเพลตอื่นก็ใช้ราคาใหม่ด้วย</p></div>
     <div class="card"><h2>หมวดอุปกรณ์และรายการ</h2>
       ${lineEditorHtml(true)}
       <div class="totals" id="tot"></div><div class="words" id="words"></div>
-      <p class="muted sm" style="margin:0">ราคาในเทมเพลตอ้างอิงจากฐานข้อมูลสินค้า เมื่อแก้ราคาสินค้า เทมเพลตจะใช้ราคาใหม่อัตโนมัติ · ติ๊ก “แสดงเป็น 1 LOT” เพื่อให้หมวดนั้นแสดงจำนวนรวมเป็น 1 LOT ในเอกสาร</p></div>
+      <p class="muted sm" style="margin:0">ตัวเลขในเทมเพลตคือต้นทุน (ดึงจากหน้าสินค้า) กำไรใส่ตอนออกใบเสนอราคา · ติ๊ก “แสดงเป็น 1 LOT” เพื่อให้หมวดนั้นแสดงจำนวนรวมเป็น 1 LOT ในเอกสาร</p></div>
     <div class="actions mbar-form">${src ? '<button class="btn danger" id="tdel" type="button">ลบ</button>' : ''}<button class="btn primary" id="tsave" type="button">บันทึกเทมเพลต</button></div>
   </div>`;
   const back = () => P.back ? go('new') : go('templates');
   const tmkSum = () => {
     const ps = tdraft.lines.map(l => [l, db.products.find(x => x.id === l.pid)]).filter(([, p]) => p);
     const cost = ps.reduce((a, [l, p]) => a + l.qty * (p.cost ?? p.price), 0), sale = ps.reduce((a, [l, p]) => a + l.qty * p.price, 0);
-    $('#tmkSum').innerHTML = `ต้นทุนรวม <b>฿${money(cost)}</b> · ราคาขายรวม <b>฿${money(sale)}</b> · กำไร <b>฿${money(sale - cost)}</b>${cost ? ` (${Math.round((sale - cost) / cost * 100)}%)` : ''}`;
+    if ($('#tmkSum')) $('#tmkSum').textContent = '';
   };
   tmkSum();
-  $('#tmkApply').onclick = () => {
-    const v = $('#tmkVal').value; if (v === '') { toast('ใส่ตัวเลขกำไรก่อน'); $('#tmkVal').focus(); return; }
-    const ids = [...new Set(tdraft.lines.map(l => l.pid))], ps = ids.map(id => db.products.find(p => p.id === id)).filter(p => p && p.cost);
-    const totalCost = tdraft.lines.reduce((a, l) => { const p = ps.find(x => x.id === l.pid); return a + (p ? l.qty * p.cost : 0); }, 0);
-    ps.forEach(p => {
-      p.markup = $('#tmkType').value === 'pct' ? { type: 'pct', value: +v } : { type: 'pct', value: totalCost ? +v / totalCost * 100 : 0 };
-      p.price = priceFrom(p.cost, p.markup);
-    });
-    tdraft.lines.forEach(l => { const p = db.products.find(x => x.id === l.pid); if (p) l.price = p.price; });
-    save(); drawLines(); tmkSum(); toast(`ตั้งราคาขาย ${ps.length} รายการในชุดนี้แล้ว`);
-  };
   $('#back').onclick = back;
   $('#tsave').onclick = () => {
     const name = $('#tn').value.trim();
@@ -1562,7 +1725,7 @@ function viewTpl() {
     if (!tdraft.lines.length) { toast('กรุณาเพิ่มอุปกรณ์อย่างน้อย 1 รายการ'); $('#ps').focus(); return; }
     const t = { id: src ? src.id : nextId(db.templates, 'T'), name, group: $('#tg').value.trim() || 'อื่นๆ', desc: $('#td').value.trim(),
       system: $('#tsys').value.trim(), lumpTitle: $('#tlump').value.trim(), warranty: $('#tw').value, remark: $('#tr').value,
-      sections: tdraft.sections, lines: tdraft.lines.map(l => ({ pid: l.pid, qty: l.qty, sec: l.sec })) };
+      sections: tdraft.sections, lines: tdraft.lines.map(l => ({ pid: l.pid, qty: l.qty, sec: l.sec, cost: l.cost })) };
     if (src) Object.assign(src, t); else db.templates.push(t);
     save(); toast(`บันทึกเทมเพลต “${name}” แล้ว`);
     if (P.back && draft) { draft.kind = 'install'; applyTemplate(t, true); }
@@ -1616,51 +1779,29 @@ function viewProducts() {
     <div class="head"><div><h1>ฐานข้อมูลสินค้า / บริการ</h1><p>${db.products.length} รายการ · สินค้าที่เพิ่มจากหน้าใบเสนอราคาจะถูกบันทึกที่นี่ด้วย</p></div><button class="btn primary" id="add" type="button">+ เพิ่มสินค้า</button></div>
     <label class="f" style="max-width:420px">หมวดหมู่ <select id="pcat">${[['', 'ทุกหมวดหมู่'], ...cats().map(c => [c, c])].map(([k, n]) => `<option value="${esc(k)}" ${prodCat === k ? 'selected' : ''}>${esc(n)} (${k ? db.products.filter(p => p.cat === k).length : db.products.length})</option>`).join('')}</select></label>
     <div hidden>${[['', 'ทั้งหมด'], ...cats().map(c => [c, c])].map(([k, n]) => `<button data-cat="${esc(k)}" aria-pressed="${prodCat === k}" type="button">${esc(n)} <span class="muted">${k ? db.products.filter(p => p.cat === k).length : db.products.length}</span></button>`).join('')}</div>
-    <div class="card"><h2>ตั้งกำไรหลายรายการพร้อมกัน</h2>
-      <div class="mkbulk"><span class="muted sm">${prodCat ? `สินค้าหมวด “${esc(prodCat)}”` : 'สินค้าทุกหมวด'} ที่มีต้นทุน (${list.filter(p => p.cost).length} รายการ) บวกกำไร</span>
-        <span class="mkrow"><input id="bkVal" type="number" step="0.01" placeholder="เช่น 20" inputmode="decimal"><select id="bkType" aria-label="หน่วยกำไร"><option value="pct">%</option><option value="amt">บาท/หน่วย</option></select></span>
-        <button class="btn primary" id="bkApply" type="button">คำนวณราคาขาย</button></div></div>
     <div class="card"><input id="s" type="search" placeholder="ค้นหาชื่อหรือรหัสสินค้า" value="${esc(prodSearch)}">
-      <div class="tablewrap"><table><thead><tr><th>รหัส</th><th>ชื่อสินค้า</th><th class="hide-sm">หมวดหมู่</th><th>หน่วย</th><th class="num hide-sm">ต้นทุน</th><th class="num hide-sm">กำไร</th><th class="num">ราคาขาย/หน่วย</th></tr></thead>
-      <tbody class="plist">${list.map(p => `<tr class="click" data-id="${p.id}" tabindex="0"><td class="p-code"><span class="tag">${esc(p.code)}</span></td><td class="p-name">${esc(p.name)}<div class="muted sm show-sm">${esc(p.cat)} · ${esc(p.unit)}</div></td><td class="hide-sm muted">${esc(p.cat)}</td><td class="hide-sm">${esc(p.unit)}</td><td class="num hide-sm muted">${p.cost ? money(p.cost) : '-'}</td><td class="num hide-sm ${p.cost && p.price <= p.cost ? 'warnc' : ''}">${p.cost && p.price && p.price <= p.cost ? 'ยังไม่ได้ตั้ง' : marginTxt(p)}</td><td class="num p-price">${p.price ? money(p.price) : '<span class="muted sm">รวมในชุด</span>'}</td></tr>`).join('') || `<tr><td colspan="5" class="empty">ไม่พบสินค้า</td></tr>`}</tbody></table></div></div></div>`;
-  $('#bkApply').onclick = () => {
-    const v = $('#bkVal').value; if (v === '') { toast('ใส่ตัวเลขกำไรก่อน'); $('#bkVal').focus(); return; }
-    const mk = { type: $('#bkType').value, value: +v }, items = list.filter(p => p.cost);
-    items.forEach(p => { p.markup = mk; p.price = priceFrom(p.cost, mk); });
-    save(); toast(`ตั้งราคาขาย ${items.length} รายการแล้ว`); viewProducts(); afterRender();
-  };
+      <div class="tablewrap"><table><thead><tr><th>รหัส</th><th>ชื่อสินค้า</th><th class="hide-sm">หมวดหมู่</th><th>หน่วย</th><th class="num">ต้นทุน/หน่วย</th></tr></thead>
+      <tbody class="plist">${list.map(p => `<tr class="click" data-id="${p.id}" tabindex="0"><td class="p-code"><span class="tag">${esc(p.code)}</span></td><td class="p-name">${esc(p.name)}<div class="muted sm show-sm">${esc(p.cat)} · ${esc(p.unit)}</div></td><td class="hide-sm muted">${esc(p.cat)}</td><td class="hide-sm">${esc(p.unit)}</td><td class="num p-price">${p.cost ? money(p.cost) : '<span class="muted sm">รวมในชุด</span>'}</td></tr>`).join('') || `<tr><td colspan="5" class="empty">ไม่พบสินค้า</td></tr>`}</tbody></table></div></div></div>`;
   $('#pcat').onchange = e => { prodCat = e.target.value; viewProducts(); afterRender(); glide($('#main .card')); };
   $('#add').onclick = () => productDialog(null, '', viewProducts);
   $('#s').oninput = e => { prodSearch = e.target.value; const p = e.target.selectionStart; viewProducts(); $('#s').focus(); $('#s').setSelectionRange(p, p); };
   $$('tr[data-id]').forEach(tr => { tr.onclick = () => productDialog(db.products.find(p => p.id === tr.dataset.id), '', viewProducts); tr.onkeydown = e => e.key === 'Enter' && tr.onclick(); });
 }
 function productDialog(p, name, done, cat = '') {
-  const v = p || { code: '', name, unit: 'ชิ้น', price: '', cat: cat || prodCat };
+  const v = p || { code: '', name, unit: 'ชิ้น', cost: '', cat: cat || prodCat };
   openDialog(`<h2>${p ? 'แก้ไขสินค้า' : 'เพิ่มสินค้าใหม่เข้าฐานข้อมูล'}</h2>
     <label class="f">ชื่อสินค้า / บริการ * <input name="name" required value="${esc(v.name)}"></label>
     <label class="f">หมวดหมู่ * <input name="cat" required list="catlist" value="${esc(v.cat)}" placeholder="เลือกหรือพิมพ์หมวดหมู่ใหม่"><datalist id="catlist">${cats().map(c => `<option value="${esc(c)}">`).join('')}</datalist></label>
     <div class="grid"><label class="f">รหัสสินค้า <input name="code" value="${esc(v.code)}" placeholder="เว้นว่างให้ระบบตั้งให้"></label>
       <label class="f">หน่วย * <input name="unit" required value="${esc(v.unit)}"></label>
-      <label class="f">ต้นทุน/หน่วย (ไม่แสดงในเอกสาร) <input name="cost" type="number" min="0" step="0.01" value="${v.cost ?? ''}" inputmode="decimal"></label></div>
-    <div class="grid">
-      <label class="f">กำไร <span class="mkrow"><input name="mkValue" type="number" step="0.01" value="${v.markup ? v.markup.value : ''}" placeholder="0" inputmode="decimal">
-        <select name="mkType" aria-label="หน่วยกำไร"><option value="pct">%</option><option value="amt" ${v.markup?.type === 'amt' ? 'selected' : ''}>บาท</option></select></span></label>
-      <label class="f">ราคาขาย/หน่วย (บาท) * <input name="price" type="number" min="0" step="0.01" required value="${v.price}" inputmode="decimal"></label></div>
-    <p class="muted sm" id="mkNote" style="margin:0">ใส่ต้นทุน + กำไร (เป็น % หรือบาท) ระบบคำนวณราคาขายให้ หรือพิมพ์ราคาขายเองก็ได้ · ราคาขาย 0 = รวมอยู่ในราคาชุดแล้ว</p>`,
+      <label class="f">ต้นทุน/หน่วย (บาท) * <input name="cost" type="number" min="0" step="0.01" required value="${v.cost ?? v.price ?? ''}" inputmode="decimal"></label></div>
+    <p class="muted sm" style="margin:0">ใส่แค่ต้นทุน กำไรและราคาขายใส่ตอนออกใบเสนอราคา · ต้นทุน 0 = รวมอยู่ในราคาชุดแล้ว (ในเอกสารจะไม่แสดงราคา)</p>`,
     data => {
-      data.price = +data.price || 0; data.cost = data.cost === '' ? undefined : +data.cost || 0;
-      data.markup = data.mkValue === '' ? undefined : { type: data.mkType, value: +data.mkValue || 0 }; delete data.mkValue; delete data.mkType;
+      data.cost = +data.cost || 0; data.price = data.cost;
       if (p) Object.assign(p, data);
       else { p = { id: nextId(db.products, 'P'), ...data }; if (!p.code) p.code = 'SKU-' + p.id.slice(1); db.products.push(p); }
       save(); toast(`บันทึกสินค้า ${p.name} ลงฐานข้อมูลแล้ว`); done(p);
     });
-  // live: cost/profit -> price, and typing a price fills the profit back in
-  const f = $('#dlgForm'), F = n => f.elements[n];
-  const note = () => { const c = +F('cost').value, pr = +F('price').value; $('#mkNote').textContent = c && pr ? `กำไร ${money(pr - c)} บาท (${Math.round((pr - c) / c * 100)}% ของต้นทุน)` : 'ใส่ต้นทุน + กำไร (เป็น % หรือบาท) ระบบคำนวณราคาขายให้ หรือพิมพ์ราคาขายเองก็ได้'; };
-  const fromMk = () => { if (F('cost').value !== '' && F('mkValue').value !== '') F('price').value = priceFrom(F('cost').value, { type: F('mkType').value, value: F('mkValue').value }); note(); };
-  F('cost').oninput = fromMk; F('mkValue').oninput = fromMk; F('mkType').onchange = fromMk;
-  F('price').oninput = () => { const c = +F('cost').value, pr = +F('price').value; if (c) F('mkValue').value = F('mkType').value === 'amt' ? r2(pr - c) : r2((pr / c - 1) * 100); note(); };
-  note();
 }
 
 /* ---------- Dialog ---------- */
