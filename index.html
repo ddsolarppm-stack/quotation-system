@@ -595,6 +595,30 @@
   .pvatt { width: 100%; max-width: 680px; display: grid; gap: 4px; padding: 18px; border-radius: 6px; background: #fff; color: #111; border-left: 5px solid #d93025; }
   .pvatt span { color: #555; font-size: .9rem; } .pvatt.bad { color: #b3261e; }
   .sigprev img { background: repeating-conic-gradient(#eee 0 25%, #fff 0 50%) 50% / 12px 12px; }
+  /* Paper form v3: Thai-only labels, fixed signature block that never shrinks */
+  .a4 .info { margin-bottom: 12px !important; }
+  .a4 .info th { width: 1%; white-space: nowrap; }
+  .a4 .items thead th { padding: 7px 6px !important; }
+  .a4 .sum { margin-top: -1px; }
+  .a4 .two { margin-top: 14px !important; display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 24px !important; }
+  .a4 .bankbar { margin-top: 12px !important; }
+  .a4 .sig { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 28px !important; padding-top: 16px !important; margin-top: auto; }
+  .a4 .sbox { border: 1px dashed #bbb; border-radius: 6px; padding: 10px 14px 8px; text-align: center; }
+  .a4 .sbox .who { font-weight: 600; text-align: center; }
+  .a4 .sig .line, .a4.tight .sig .line { height: 84px !important; border-bottom: 1px solid #333; position: relative; margin: 0 10px; }
+  .a4 .sigimg, .a4.tight .sigimg { max-height: 78px !important; max-width: 240px !important; }
+  .a4 .sbox .nm { margin-top: 4px; color: #444; } .a4 .sbox .role { font-size: 12px; color: #555; }
+  .a4 .sbox .dt { display: flex; justify-content: center; gap: 10px; margin-top: 4px; font-size: 12.5px; }
+  .a4.tight .sig { padding-top: 10px !important; }
+  .a4.tight2 { padding-top: 26px !important; padding-bottom: 22px !important; }
+  .a4.tight2 .ph { margin-bottom: 10px !important; } .a4.tight2 .info { margin-bottom: 8px !important; }
+  .a4.tight2 .info th, .a4.tight2 .info td, .a4.tight2 .sum th, .a4.tight2 .sum td { padding: 2px 10px !important; font-size: 12px !important; }
+  .a4.tight2 .items td { font-size: 11.5px !important; line-height: 1.3 !important; padding: 0 8px !important; }
+  .a4.tight2 .items thead th { padding: 4px 6px !important; }
+  .a4.tight2 .two { margin-top: 8px !important; } .a4.tight2 .bankbar { margin-top: 8px !important; }
+  .a4.tight2 .ln, .a4.tight2 .pay, .a4.tight2 .bank div, .a4.tight2 .sum .warr div { font-size: 11px !important; line-height: 1.4 !important; }
+  .a4.tight2 .sig { padding-top: 8px !important; } .a4.tight2 .sbox { padding: 6px 12px 4px; }
+  .a4.tight2 .sig .line { height: 72px !important; } .a4.tight2 .sigimg { max-height: 64px !important; }
 </style>
 </head>
 <body>
@@ -807,8 +831,6 @@ const mdbTemplate = (amp, panel, acb, mccb, mccbQty) => ({
   lines: [[panel, 1, 0], ['MDB-CUB-1021', 1, 0], ['MDB-ACC', 1, 0], ...MDB_METER.map(([c, q]) => [c, q, 1]), [acb, 1, 2], ['CB-SHUNT-220', 1, 2], [mccb, mccbQty, 2]]
 });
 const MDB_TEMPLATES = [mdbTemplate(1250, 'MDB-SOL-1250', 'CB-ACB-1250', 'CB-MCCB-250', 7), mdbTemplate(1600, 'MDB-SOL-1600', 'CB-ACB-1600', 'CB-MCCB-400', 4)];
-/* One-time fix: QT2026110049 / INV2026110035 are the NEXT numbers to use (not the last used).
-   Lower the counters and renumber the quotation issued as QT2026110050 to QT2026110049. */
 /* One-time: the partnership became a company (new name, tax ID, phone) */
 function fixCompanyOnce() {
   const S = db.settings;
@@ -818,6 +840,8 @@ function fixCompanyOnce() {
   S.coFix1 = true;
   return true;
 }
+/* One-time fix: QT2026110049 / INV2026110035 are the NEXT numbers to use (not the last used).
+   Lower the counters and renumber the quotation issued as QT2026110050 to QT2026110049. */
 function fixSeqOnce() {
   if (db.settings.seqFix1) return false;
   const L = db.settings.lastSeq = { ...(db.settings.lastSeq || {}) };
@@ -1288,7 +1312,7 @@ function paperHtml(d) {
   const rem = (d.remark || '').split('\n').filter(x => x.trim());
   const pay = d.pay || [];
   const vatLabel = d.vatMode === 'in' ? 'ภาษีมูลค่าเพิ่ม 7% (รวมในราคาแล้ว)' : 'จำนวนภาษีมูลค่าเพิ่ม 7%';
-  const right = d.type === 'DO' ? 'ผู้รับสินค้า / Receiver' : 'Customer';
+  const right = d.type === 'DO' ? 'ผู้รับสินค้า' : 'ลูกค้า';
   const stamp = d.status === 'finish' || d.status === 'cancel' ? `<div class="stamp ${d.status}">${d.status === 'cancel' ? 'ยกเลิก' : d.type === 'RC' ? 'ชำระแล้ว' : d.type === 'QT' ? 'สั่งซื้อแล้ว' : 'ดำเนินการแล้ว'}</div>` : '';
   return `<div class="a4wrap"><article class="paper a4" style="--dc:${esc(S.color)}">${stamp}
     <header class="ph">
@@ -1297,30 +1321,30 @@ function paperHtml(d) {
       <div class="ttl"><div>${th}</div><div>${en}</div></div>
     </header>
     <table class="info">
-      <tr><th>ชื่อลูกค้า / Customer</th><td>${esc(c.name || '-')}</td><th>เลขที่ / No.</th><td>${esc(d.no)}</td></tr>
-      <tr><th>ที่อยู่ / Address</th><td>${esc(c.addr || '')}</td><th>วันที่ / Date</th><td>${fmtDate(d.date)}</td></tr>
-      <tr><th>โทรศัพท์ / Tel.</th><td>${esc(c.phone || '-')}</td><th>${T.extra ? esc(T.extra) : ''}</th><td>${T.extra ? fmtDate(d.extra) : ''}</td></tr>
+      <tr><th>ชื่อลูกค้า</th><td>${esc(c.name || '-')}</td><th>เลขที่</th><td>${esc(d.no)}</td></tr>
+      <tr><th>ที่อยู่</th><td>${esc(c.addr || '')}</td><th>วันที่</th><td>${fmtDate(d.date)}</td></tr>
+      <tr><th>โทรศัพท์</th><td>${esc(c.phone || '-')}</td><th>${T.extra ? esc(T.extra) : ''}</th><td>${T.extra ? fmtDate(d.extra) : ''}</td></tr>
       <tr><th>เลขประจำตัวผู้เสียภาษี</th><td>${esc(c.tax || '-')}${c.branch && c.branch !== '-' ? ` (${esc(c.branch)})` : ''}</td><th>อ้างอิง</th><td>${esc(d.ref || d.project || '')}</td></tr>
     </table>
     <table class="items"><colgroup><col style="width:6%"><col><col style="width:9%"><col style="width:9%"><col style="width:13%"><col style="width:14%"></colgroup>
-      <thead><tr><th>No.</th><th>รายการ<br>Order</th><th>จำนวน<br>Qty</th><th>หน่วย<br>Unit</th><th>ราคา/หน่วย<br>Price/Unit</th><th>รวม<br>Total</th></tr></thead>
+      <thead><tr><th>ลำดับ</th><th>รายการ</th><th>จำนวน</th><th>หน่วย</th><th>ราคา/หน่วย</th><th>รวมเงิน</th></tr></thead>
       <tbody>${rows}<tr class="filler" style="--fill:${fill}px"><td></td><td></td><td></td><td></td><td></td><td></td></tr></tbody></table>
     <table class="sum"><colgroup><col style="width:56%"><col style="width:27%"><col style="width:17%"></colgroup>
-      <tr><td class="warr" rowspan="4">${warr.length ? `<b>Warranty :</b>${warr.map(w => `<div>${esc(w)}</div>`).join('')}` : ''}</td><th>รวมเป็นเงิน</th><td>${money(t.sum)}</td></tr>
+      <tr><td class="warr" rowspan="4">${warr.length ? `<b>การรับประกัน</b>${warr.map(w => `<div>${esc(w)}</div>`).join('')}` : ''}</td><th>รวมเป็นเงิน</th><td>${money(t.sum)}</td></tr>
       <tr><th>ส่วนลดพิเศษ</th><td>${+d.discount ? `(${money(d.discount)})` : '0.00'}</td></tr>
       <tr><th>จำนวนเงินหลังหักส่วนลด</th><td>${money(t.after)}</td></tr>
       <tr><th>${vatLabel}</th><td>${money(t.vat)}</td></tr>
       <tr class="g"><td class="words">${bahtText(t.grand)}</td><th>จำนวนเงินรวมทั้งสิ้น</th><td>${money(t.grand)}</td></tr>
     </table>
     <div class="two">
-      <div><div class="bar">หมายเหตุ / Remark :</div>${rem.map(r => `<div class="ln">${esc(r)}</div>`).join('')}</div>
-      <div><div class="bar">การชำระเงิน / Payment terms</div>${pay.map(p => `<div class="pay"><span>- ${esc(p.text)}</span><span>${(+p.pct).toFixed(2)}%</span><b>${money(t.grand * p.pct / 100)}</b></div>`).join('')}</div>
+      <div><div class="bar">หมายเหตุ</div>${rem.map(r => `<div class="ln">${esc(r)}</div>`).join('')}</div>
+      <div><div class="bar">เงื่อนไขการชำระเงิน</div>${pay.map(p => `<div class="pay"><span>- ${esc(p.text)}</span><span>${(+p.pct).toFixed(2)}%</span><b>${money(t.grand * p.pct / 100)}</b></div>`).join('')}</div>
     </div>
-    <div class="bar bankbar">ธนาคาร / Bank</div>
+    <div class="bar bankbar">ธนาคาร</div>
     <div class="bank"><div>${esc(S.bank)}</div><div>ชื่อบัญชีธนาคาร ${esc(S.bankAcctName)}</div><div>เลขที่บัญชี <b>${esc(S.bankAcctNo)}</b></div></div>
     <div class="sig">
-      <div><div class="who">${esc(S.name)}</div><div class="line">${S.signature && d.showSig !== false ? `<img class="sigimg" src="${S.signature}" alt="">` : ''}</div><div class="dt"><span>Date:</span><span>${fmtDate(d.date)}</span></div></div>
-      <div><div class="who">${right}</div><div class="line"></div><div class="dt"><span>Date :</span><span>${fmtDate(d.date)}</span></div></div>
+      <div class="sbox"><div class="who">${esc(S.name)}</div><div class="line">${S.signature && d.showSig !== false ? `<img class="sigimg" src="${S.signature}" alt="">` : ''}</div><div class="nm">( ........................................ )</div><div class="role">ผู้มีอำนาจลงนาม</div><div class="dt"><span>วันที่</span><span>${fmtDate(d.date)}</span></div></div>
+      <div class="sbox"><div class="who">${right}</div><div class="line"></div><div class="nm">( ........................................ )</div><div class="role">ลงชื่อ${right}</div><div class="dt"><span>วันที่</span><span>....../....../..........</span></div></div>
     </div>
   </article></div>`;
 }
@@ -1328,7 +1352,8 @@ function paperHtml(d) {
 function fitPaper() {
   $$('.a4wrap').forEach(w => {
     const p = w.firstElementChild, k = Math.min(1, w.clientWidth / 794);
-    p.classList.remove('tight'); if (p.scrollHeight > 1123) p.classList.add('tight');
+    // shrink the item rows step by step until the sheet fits one A4 page (signature block keeps its size)
+    p.classList.remove('tight', 'tight2'); if (p.scrollHeight > 1123) p.classList.add('tight'); if (p.scrollHeight > 1123) p.classList.add('tight2');
     p.style.transform = k < 1 ? `scale(${k})` : '';
     w.style.height = p.offsetHeight * k + 'px';
   });
