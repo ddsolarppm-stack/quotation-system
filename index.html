@@ -626,8 +626,10 @@
   .a4.tight2 .items tr.sub td { font-size: 10px !important; padding-top: 1px !important; padding-bottom: 1px !important; }
   /* customer box: same divider under every cell, closed border at the bottom */
   .a4 .info { border-collapse: collapse !important; border: 1px solid #333 !important; }
-  .a4 .info th, .a4 .info td { border: 0 !important; border-bottom: 1px solid #ddd !important; }
-  .a4 .info tr:last-child th, .a4 .info tr:last-child td { border-bottom: 0 !important; }
+  .a4 .info th, .a4 .info td { border: 0 !important; }
+  /* signature blocks: no frame, short centred signing line */
+  .a4 .sbox { border: 0 !important; padding: 6px 0 4px !important; }
+  .a4 .sig .line, .a4.tight .sig .line { margin: 0 auto !important; width: 60%; }
 </style>
 </head>
 <body>
