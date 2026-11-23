@@ -516,9 +516,9 @@
   .a4 .sechead-gap td { height: 4px; }
   .a4 .filler td { height: var(--fill, 20px); }
   .a4 .sum { border: 1px solid #333; border-top: 0; }
-  .a4 .sum th { text-align: right; font-weight: 400; padding: 2px 8px; border-left: 1px solid #333; border-bottom: 1px solid #333; width: 27%; white-space: nowrap; }
-  .a4 .sum td { text-align: right; padding: 2px 8px; border-bottom: 1px solid #333; border-left: 1px solid #333; width: 17%; font-variant-numeric: tabular-nums; }
-  .a4 .sum td.warr { text-align: left; vertical-align: top; width: auto; border-left: 0; border-bottom: 0; }
+  .a4 .sum th { text-align: right; font-weight: 400; padding: 2px 8px; border-left: 1px solid #333; border-bottom: 1px solid #333; white-space: nowrap; }
+  .a4 .sum td { text-align: right; padding: 2px 8px; border-bottom: 1px solid #333; border-left: 1px solid #333; font-variant-numeric: tabular-nums; }
+  .a4 .sum td.warr { text-align: left; vertical-align: top; border-left: 0; border-bottom: 0; }
   .a4 .sum .warr div { padding-left: 12px; }
   .a4 .sum tr.g th, .a4 .sum tr.g td { font-weight: 700; }
   .a4 .sum td.words { text-align: center; font-weight: 700; border-left: 0; border-top: 1px solid #333; }
@@ -630,6 +630,7 @@
   /* signature blocks: no frame, short centred signing line */
   .a4 .sbox { border: 0 !important; padding: 6px 0 4px !important; }
   .a4 .sig .line, .a4.tight .sig .line { margin: 0 auto !important; width: 60%; }
+  .a4 .sum td:last-child { white-space: nowrap; overflow: hidden; }
 </style>
 </head>
 <body>
@@ -1340,7 +1341,7 @@ function paperHtml(d) {
     <table class="items"><colgroup><col style="width:6%"><col><col style="width:9%"><col style="width:9%"><col style="width:13%"><col style="width:14%"></colgroup>
       <thead><tr><th>ลำดับ</th><th>รายการ</th><th>จำนวน</th><th>หน่วย</th><th>ราคา/หน่วย</th><th>รวมเงิน</th></tr></thead>
       <tbody>${rows}<tr class="filler" style="--fill:${fill}px"><td></td><td></td><td></td><td></td><td></td><td></td></tr></tbody></table>
-    <table class="sum"><colgroup><col style="width:56%"><col style="width:27%"><col style="width:17%"></colgroup>
+    <table class="sum"><colgroup><col style="width:55%"><col style="width:31%"><col style="width:14%"></colgroup>
       <tr><td class="warr" rowspan="4">${warr.length ? `<b>การรับประกัน</b>${warr.map(w => `<div>${esc(w)}</div>`).join('')}` : ''}</td><th>รวมเป็นเงิน</th><td>${money(t.sum)}</td></tr>
       <tr><th>ส่วนลดพิเศษ</th><td>${+d.discount ? `(${money(d.discount)})` : '0.00'}</td></tr>
       <tr><th>จำนวนเงินหลังหักส่วนลด</th><td>${money(t.after)}</td></tr>
@@ -1365,6 +1366,15 @@ function fitPaper() {
     const p = w.firstElementChild, k = Math.min(1, w.clientWidth / 794);
     // shrink the item rows step by step until the sheet fits one A4 page (signature block keeps its size)
     p.classList.remove('tight', 'tight2'); if (p.scrollHeight > 1123) p.classList.add('tight'); if (p.scrollHeight > 1123) p.classList.add('tight2');
+    // line the summary table's column borders up with the item table's (end of 'รายการ', start of 'รวมเงิน')
+    const ths = p.querySelectorAll('.items thead th'), cols = p.querySelectorAll('.sum col');
+    if (ths.length === 6 && cols.length === 3) {
+      const tw = p.querySelector('.items').getBoundingClientRect().width, x = el => el.getBoundingClientRect(), L = x(ths[0]).left;
+      const w1 = x(ths[1]).right - L, w3 = x(ths[5]).width;
+      cols[0].style.width = (w1 / tw * 100) + '%'; cols[2].style.width = (w3 / tw * 100) + '%'; cols[1].style.width = ((tw - w1 - w3) / tw * 100) + '%';
+    }
+    // amounts that do not fit the narrow total column shrink until they do
+    p.querySelectorAll('.sum td:last-child').forEach(td => { td.style.fontSize = ''; let f = parseFloat(getComputedStyle(td).fontSize); while (td.scrollWidth > td.clientWidth && f > 8) { f -= 0.5; td.style.setProperty('font-size', f + 'px', 'important'); } });
     p.style.transform = k < 1 ? `scale(${k})` : '';
     w.style.height = p.offsetHeight * k + 'px';
   });
