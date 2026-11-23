@@ -236,6 +236,33 @@ function sync(token, payload) {
   }
 }
 
+/* ---------- เอกสารแนบ (PDF) เก็บใน Google Drive โฟลเดอร์ "เอกสารแนบใบเสนอราคา" ---------- */
+const ATTACH_FOLDER = 'เอกสารแนบใบเสนอราคา';
+const ATTACH_MAX = 10 * 1024 * 1024;
+function attachFolder_() {
+  const props = PropertiesService.getScriptProperties(), id = props.getProperty('attachFolderId');
+  if (id) { try { return DriveApp.getFolderById(id); } catch (e) {} }
+  const f = DriveApp.createFolder(ATTACH_FOLDER);
+  props.setProperty('attachFolderId', f.getId());
+  return f;
+}
+function uploadAttachment(token, name, b64) {
+  auth_(token);
+  const bytes = Utilities.base64Decode(b64);
+  if (bytes.length > ATTACH_MAX) throw new Error('ไฟล์ใหญ่เกิน 10 MB');
+  const file = attachFolder_().createFile(Utilities.newBlob(bytes, 'application/pdf', String(name || 'attachment.pdf')));
+  return { id: file.getId(), name: file.getName(), size: bytes.length };
+}
+function getAttachment(token, id) {
+  auth_(token);
+  const file = DriveApp.getFileById(id), folderId = attachFolder_().getId();
+  // อ่านได้เฉพาะไฟล์ในโฟลเดอร์เอกสารแนบ
+  const parents = file.getParents(); let ok = false;
+  while (parents.hasNext()) if (parents.next().getId() === folderId) ok = true;
+  if (!ok) throw new Error('ไม่อนุญาตให้เปิดไฟล์นี้');
+  return Utilities.base64Encode(file.getBlob().getBytes());
+}
+
 /* ---------- ตัวช่วยอ่าน/เขียนชีต ---------- */
 function sheet_(name) {
   const sh = book_().getSheetByName(name);
