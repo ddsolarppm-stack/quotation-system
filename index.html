@@ -619,6 +619,11 @@
   .a4.tight2 .ln, .a4.tight2 .pay, .a4.tight2 .bank div, .a4.tight2 .sum .warr div { font-size: 11px !important; line-height: 1.4 !important; }
   .a4.tight2 .sig { padding-top: 8px !important; } .a4.tight2 .sbox { padding: 6px 12px 4px; }
   .a4.tight2 .sig .line { height: 72px !important; } .a4.tight2 .sigimg { max-height: 64px !important; }
+  /* sub-items under a section: one step smaller, indented with a hanging dash */
+  .a4 .items tr.sub td { font-size: 12px !important; }
+  .a4 .items td.ind { padding-left: 30px !important; text-indent: -9px; }
+  .a4 .items td.ind::before { content: '- '; }
+  .a4.tight2 .items tr.sub td { font-size: 10.5px !important; }
 </style>
 </head>
 <body>
@@ -1303,8 +1308,8 @@ function paperHtml(d) {
     rows += `<tr class="secrow"><td class="c">${si + 1}</td><td colspan="5">${esc(sec.name)}</td></tr>`; count++;
     if (sec.lot) {
       const sum = ls.reduce((a, l) => a + l.qty * l.price, 0), n = ls.length;
-      ls.forEach((l, i) => { rows += `<tr><td></td><td class="ind">${esc(l.name)}</td>${i ? '' : `<td class="c mid" rowspan="${n}">1</td><td class="c mid" rowspan="${n}">LOT</td><td class="r mid" rowspan="${n}">${cell(sum)}</td><td class="r mid" rowspan="${n}">${cell(sum)}</td>`}</tr>`; count++; });
-    } else ls.forEach(l => { rows += `<tr><td></td><td class="ind">${esc(l.name)}</td><td class="c">${fmtQty(l.qty)}</td><td class="c">${esc(l.unit)}</td><td class="r">${cell(l.price)}</td><td class="r">${cell(l.qty * l.price)}</td></tr>`; count++; });
+      ls.forEach((l, i) => { rows += `<tr class="sub"><td></td><td class="ind">${esc(l.name)}</td>${i ? '' : `<td class="c mid" rowspan="${n}">1</td><td class="c mid" rowspan="${n}">LOT</td><td class="r mid" rowspan="${n}">${cell(sum)}</td><td class="r mid" rowspan="${n}">${cell(sum)}</td>`}</tr>`; count++; });
+    } else ls.forEach(l => { rows += `<tr class="sub"><td></td><td class="ind">${esc(l.name)}</td><td class="c">${fmtQty(l.qty)}</td><td class="c">${esc(l.unit)}</td><td class="r">${cell(l.price)}</td><td class="r">${cell(l.qty * l.price)}</td></tr>`; count++; });
   });
   else d.lines.forEach((l, i) => { rows += `<tr><td class="c">${i + 1}</td><td>${esc(l.name)}</td><td class="c">${fmtQty(l.qty)}</td><td class="c">${esc(l.unit)}</td><td class="r">${cell(l.price)}</td><td class="r">${cell(l.qty * l.price)}</td></tr>`; count++; });
   const fill = Math.max(16, (secs ? 40 : 380) - count * 19);
